@@ -7341,29 +7341,63 @@ svg { flex-shrink: 0; }
 .rem-section-title--inactive { color: var(--gray-400); }
 .rem-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
 
-/* ── Diseases Page ────────────────────────────────────── */
-.diseases-page { max-width: 1200px; margin: 0 auto; padding: 32px 16px 60px; }
-.diseases-hero { text-align: center; margin-bottom: 40px; }
-.diseases-hero svg { color: var(--primary); margin-bottom: 10px; }
-.diseases-hero h1 { font-size: 1.7rem; font-weight: 700; color: var(--gray-800); margin: 0 0 8px; }
-.diseases-hero p { color: var(--gray-500); font-size: .95rem; }
-.diseases-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
-.disease-card {
-  background: var(--card-bg, #f5f5f5);
-  border: 1.5px solid transparent;
-  border-radius: 14px;
-  padding: 24px 12px 18px;
-  cursor: pointer;
-  display: flex; flex-direction: column; align-items: center; gap: 12px;
-  text-align: center;
-  transition: transform .18s, box-shadow .18s, border-color .18s;
+/* ── Diseases Page (1mg-style) ────────────────────────────────────── */
+.diseases-page { max-width: 1200px; margin: 0 auto; padding: 28px 16px 60px; }
+
+.diseases-header { margin-bottom: 18px; }
+.diseases-title { font-size: 1.35rem; font-weight: 700; color: #333; margin: 0; }
+.diseases-title__letter { color: var(--primary, #c0392b); text-transform: uppercase; }
+
+/* A-Z bar */
+.diseases-az {
+  display: flex; flex-wrap: wrap; gap: 4px;
+  background: #fff; border: 1px solid #e5e7eb;
+  border-radius: 8px; padding: 10px 12px;
+  margin-bottom: 14px;
 }
-.disease-card:hover { transform: translateY(-4px); box-shadow: 0 6px 20px rgba(0,0,0,.1); border-color: var(--card-accent, #999); }
-.disease-card__icon { color: var(--card-accent, #555); }
-.disease-card__name { font-size: .88rem; font-weight: 600; color: var(--gray-700); line-height: 1.3; }
-@media (max-width: 480px) {
-  .diseases-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .diseases-hero h1 { font-size: 1.3rem; }
+.diseases-az__btn {
+  width: 34px; height: 34px; border-radius: 6px;
+  border: 1.5px solid #e5e7eb; background: #fff;
+  font-size: .85rem; font-weight: 600; color: #374151;
+  cursor: pointer; transition: all .15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.diseases-az__btn:hover:not(:disabled) { background: var(--primary-light, #fdecea); border-color: var(--primary, #c0392b); color: var(--primary, #c0392b); }
+.diseases-az__btn--active { background: var(--primary, #c0392b) !important; border-color: var(--primary, #c0392b) !important; color: #fff !important; }
+.diseases-az__btn--empty { opacity: .35; cursor: not-allowed; }
+
+.diseases-count { font-size: .83rem; color: #6b7280; margin: 0 0 18px; }
+
+/* Disease cards grid — 3 columns like 1mg */
+.diseases-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.disease-card {
+  display: flex; align-items: flex-start; gap: 14px;
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
+  padding: 16px 14px; cursor: pointer; text-align: left;
+  transition: box-shadow .18s, border-color .18s;
+  width: 100%;
+}
+.disease-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.09); border-color: #d1d5db; }
+.disease-card__img {
+  flex-shrink: 0; width: 56px; height: 56px; border-radius: 8px;
+  background: linear-gradient(135deg, #fdecea 0%, #fca5a5 100%);
+  display: flex; align-items: center; justify-content: center;
+}
+.disease-card__initial { font-size: 1.5rem; font-weight: 800; color: var(--primary, #c0392b); line-height: 1; }
+.disease-card__body { flex: 1; min-width: 0; }
+.disease-card__name { font-size: .93rem; font-weight: 700; color: #111827; margin: 0 0 5px; line-height: 1.3; }
+.disease-card__desc { font-size: .78rem; color: #6b7280; line-height: 1.5; margin: 0;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+@media (max-width: 900px) { .diseases-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) {
+  .diseases-grid { grid-template-columns: 1fr; gap: 10px; }
+  .diseases-az__btn { width: 28px; height: 28px; font-size: .75rem; }
+  .diseases-title { font-size: 1.1rem; }
 }
 .rem-grid--inactive .rem-card { opacity: .65; }
 .rem-empty { text-align: center; padding: 80px 20px; color: var(--gray-400); }
