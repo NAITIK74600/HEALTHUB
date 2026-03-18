@@ -1,12 +1,12 @@
 ﻿import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  MessageCircle, Truck, MapPin, ShieldCheck, Clock, ChevronRight, ChevronLeft,
+  Truck, MapPin, ShieldCheck, Clock, ChevronRight, ChevronLeft,
   Navigation, ExternalLink,
   Stethoscope, Pill, Leaf, Sparkles, Baby, Scissors, Hospital, Star, Heart, Syringe,
   Droplets, Droplet, FlaskConical, Wind, Thermometer, ShoppingBag, Box,
-  TestTube, Package, Tag, GlassWater, Gem, LayoutGrid, Beaker, Activity,
-  SmilePlus, Users, Zap, Shield,
+  TestTube, Package, GlassWater, Gem, LayoutGrid, Activity,
+  SmilePlus, Users, Zap, Shield, Award, FileText, UploadCloud, CheckCircle, BadgePercent,
 } from 'lucide-react';
 import { getActiveOffers } from '../api/offers';
 import { getCategories } from '../api/categories';
@@ -77,6 +77,28 @@ const TRUST_FEATURES = [
 const STORE_ADDRESS = 'F 41/2, Nafees Road, Batla House, Jamia Nagar, New Delhi - 110025';
 const GOOGLE_MAPS_URL = 'https://maps.app.goo.gl/W4Qtps1fKbArBvz17';
 
+const HEALTH_TIPS = [
+  '💊 Always complete your antibiotic course even if you feel better',
+  '🥤 Drink 8–10 glasses of water daily to stay hydrated',
+  '🩺 Check blood pressure regularly after age 40',
+  '🌿 Ayurvedic herbs can complement modern medicine safely',
+  '💉 Keep your vaccine schedule up to date',
+  '🍎 Eat 5 portions of fruits & vegetables every day',
+  '😴 7–8 hours of sleep boosts your immune system',
+  '🚶 30 minutes of daily walking prevents diabetes & heart disease',
+  '🧴 Always read medicine labels and check expiry before use',
+  '🔬 Annual full-body checkup helps catch problems early',
+];
+
+const WHY_CHOOSE = [
+  { icon: <Award size={26} />,       bg: '#FEF2F2', color: '#C0392B', title: '20+ Years of Trust',   desc: 'Serving Jamia Nagar since 2005' },
+  { icon: <ShieldCheck size={26} />, bg: '#F0FBF4', color: '#1B8843', title: '100% Authentic',        desc: 'Direct from licensed distributors' },
+  { icon: <Truck size={26} />,       bg: '#EFF6FF', color: '#2563EB', title: 'Fast Delivery',         desc: 'Same-day delivery in Jamia Nagar' },
+  { icon: <Stethoscope size={26} />, bg: '#FDF4FF', color: '#9333EA', title: 'Free Consultation',     desc: 'Expert pharmacists, no charge' },
+  { icon: <Clock size={26} />,       bg: '#FFFBEB', color: '#D97706', title: 'Open 7 Days a Week',   desc: 'Monday to Sunday, 9 AM – 9 PM' },
+  { icon: <Heart size={26} />,       bg: '#FFF0F6', color: '#DB2777', title: 'Patient Care First',   desc: 'Your wellbeing is our mission' },
+];
+
 /* ── Horizontal scroll carousel with prev/next arrows ── */
 function ScrollRow({ children, title, link, linkLabel = 'See all', accent }) {
   const ref = useRef(null);
@@ -133,6 +155,23 @@ export default function Home() {
   const [newArrivals, setNewArrivals] = useState([]);
   const [featuredBrands, setFeaturedBrands] = useState([]);
   const [ayurvedaBrands, setAyurvedaBrands] = useState([]);
+  const [countdown, setCountdown]   = useState({ h: 0, m: 0, s: 0 });
+
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      const end = new Date(); end.setHours(23, 59, 59, 999);
+      const diff = Math.max(0, end - now);
+      setCountdown({
+        h: Math.floor(diff / 3600000),
+        m: Math.floor((diff % 3600000) / 60000),
+        s: Math.floor((diff % 60000) / 1000),
+      });
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     getActiveOffers().then(r => setOffers(r.data.offers)).catch(() => {});
@@ -183,9 +222,9 @@ export default function Home() {
             <p>Allopathic · Ayurvedic · Cosmetics · Baby Products · Surgical</p>
             <div className="hero__actions">
               <Link to="/products" className="btn btn--primary btn--lg">Shop Now <ChevronRight size={18} /></Link>
-              <a href={`https://wa.me/${WHATSAPP}?text=Hi%2C%20I%20want%20to%20place%20an%20order`} target="_blank" rel="noopener noreferrer" className="btn btn--ghost btn--lg">
-                <MessageCircle size={18} /> Order on WhatsApp
-              </a>
+              <Link to="/prescriptions" className="btn btn--ghost btn--lg">
+                <FileText size={18} /> Upload Prescription
+              </Link>
             </div>
           </div>
         </div>
@@ -360,26 +399,96 @@ export default function Home() {
         </section>
       )}
 
-      {/* ════════════════════ WHATSAPP CTA BANNER ════════════════════════ */}
-      <section className="wa-cta-banner">
+      {/* ════════════ HEALTH TIPS TICKER ════════════════════════════════ */}
+      <div className="health-ticker">
+        <div className="health-ticker__label"><Sparkles size={13} /> Health Tips</div>
+        <div className="health-ticker__track">
+          <div className="health-ticker__inner">
+            {[...HEALTH_TIPS, ...HEALTH_TIPS].map((tip, i) => (
+              <span key={i} className="health-ticker__item">{tip}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ════════════ DEAL OF THE DAY ════════════════════════════════════ */}
+      <section className="deal-section">
         <div className="container">
-          <div className="wa-cta-banner__inner">
-            <div className="wa-cta-banner__left">
-              <div className="wa-cta-banner__icon">
-                <MessageCircle size={32} color="#25D366" />
+          <div className="deal-card">
+            <div className="deal-card__badge"><BadgePercent size={16} /> Deal of the Day</div>
+            <div className="deal-card__content">
+              <div className="deal-card__text">
+                <h2>Up to <span>70% OFF</span></h2>
+                <p>On selected medicines, lab tests &amp; health essentials. Don't miss out!</p>
+                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1.2rem' }}>
+                  <Link to="/products" className="btn btn--white btn--lg">Shop Now <ChevronRight size={16} /></Link>
+                  <Link to="/lab-tests" className="btn btn--outline-white btn--lg">Book Lab Test</Link>
+                </div>
               </div>
-              <div>
-                <h3>Order on WhatsApp in seconds</h3>
-                <p>Send us a photo of your prescription or just message the medicine name</p>
+              <div className="deal-card__timer">
+                <p className="deal-card__timer-label">Ends in</p>
+                <div className="deal-card__timer-grid">
+                  <div className="deal-card__timer-unit">
+                    <span>{String(countdown.h).padStart(2, '0')}</span>
+                    <small>HRS</small>
+                  </div>
+                  <div className="deal-card__timer-sep">:</div>
+                  <div className="deal-card__timer-unit">
+                    <span>{String(countdown.m).padStart(2, '0')}</span>
+                    <small>MIN</small>
+                  </div>
+                  <div className="deal-card__timer-sep">:</div>
+                  <div className="deal-card__timer-unit">
+                    <span>{String(countdown.s).padStart(2, '0')}</span>
+                    <small>SEC</small>
+                  </div>
+                </div>
               </div>
             </div>
-            <a
-              href={`https://wa.me/${WHATSAPP}?text=Hi%2C%20I%20want%20to%20place%20an%20order`}
-              target="_blank" rel="noopener noreferrer"
-              className="btn btn--whatsapp btn--lg"
-            >
-              <MessageCircle size={20} /> Chat on WhatsApp
-            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════ PRESCRIPTION UPLOAD CTA ═══════════════════════════ */}
+      <section className="rx-cta-section">
+        <div className="container">
+          <div className="rx-cta-card">
+            <div className="rx-cta-card__left">
+              <div className="rx-cta-card__icon-wrap">
+                <FileText size={40} />
+              </div>
+              <div className="rx-cta-card__body">
+                <h3>Upload Your Prescription</h3>
+                <p>Pharmacist verifies &amp; prepares your order within minutes. Doorstep delivery available.</p>
+                <ul className="rx-cta-card__steps">
+                  <li><CheckCircle size={14} /> Upload prescription photo</li>
+                  <li><CheckCircle size={14} /> Pharmacist verifies &amp; packs</li>
+                  <li><CheckCircle size={14} /> Fast doorstep delivery</li>
+                </ul>
+              </div>
+            </div>
+            <Link to="/prescriptions" className="btn btn--primary btn--lg rx-cta-card__btn">
+              <UploadCloud size={20} /> Upload Prescription
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════ WHY CHOOSE US ══════════════════════════════════════ */}
+      <section className="section why-section">
+        <div className="container">
+          <div className="section__header" style={{ flexDirection: 'column', gap: '4px', textAlign: 'center' }}>
+            <h2 className="section__title" style={{ justifyContent: 'center' }}>Why Choose Batla Medicos?</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Trusted by 50,000+ families in Jamia Nagar</p>
+          </div>
+          <div className="why-grid">
+            {WHY_CHOOSE.map((w, i) => (
+              <div key={i} className="why-card">
+                <div className="why-card__icon" style={{ background: w.bg, color: w.color }}>{w.icon}</div>
+                <h4 className="why-card__title">{w.title}</h4>
+                <p className="why-card__desc">{w.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
