@@ -1,0 +1,24 @@
+import api from './axios';
+
+export const getProducts = (params) => api.get('/products', { params });
+export const getProductBySlug = (slug) => api.get(`/products/${slug}`);
+export const createProduct = (data) => api.post('/products', data, { headers: { 'Content-Type': 'multipart/form-data' } });
+export const updateProduct = (id, data) => api.put(`/products/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } });
+export const deleteProduct = (id) => api.delete(`/products/${id}`);
+export const bulkImportProducts = (file, mode = 'append') => {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('mode', mode);
+  return api.post('/products/bulk-import', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+};
+export const downloadImportTemplate = () => api.get('/products/import-template', { responseType: 'blob' });
+export const downloadCsvTemplate    = () => api.get('/products/csv-template',    { responseType: 'blob' });
+export const exportProductsExcel   = () => api.get('/products/export-excel',     { responseType: 'blob' });
+export const quickUpdateProduct  = (id, data) => api.patch(`/products/${id}/quick-update`, data);
+export const getAdminProducts    = (params)    => api.get('/products/admin/list', { params });
+export const bulkUpdateProducts  = (data)      => api.patch('/products/bulk-update', data);
+export const bulkDiscountProducts = (data)     => api.patch('/products/bulk-discount', data);
+export const aiFillProduct       = (productId) => api.post('/products/ai-fill', { productId });
+export const aiFillBulk          = (productIds) => api.post('/products/ai-fill-bulk', { productIds });
+export const getMissingInfoCount = ()          => api.get('/products/missing-info/count');
+export const getTopBrands        = ()          => api.get('/products/brands');

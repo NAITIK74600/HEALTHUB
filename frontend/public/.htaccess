@@ -1,0 +1,28 @@
+# React Router — all routes handled by index.html (SPA)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Don't rewrite existing files or directories
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+
+  # Send everything else to index.html
+  RewriteRule ^ index.html [QSA,L]
+</IfModule>
+
+# ── Force UTF-8 for all text/HTML/JS/CSS ─────────────────────────────────────
+AddDefaultCharset UTF-8
+
+<IfModule mod_mime.c>
+  AddCharset UTF-8 .html .htm .js .jsx .css .json .svg .txt
+  AddType application/javascript;charset=UTF-8 .js
+  AddType text/css;charset=UTF-8 .css
+  AddType text/html;charset=UTF-8 .html
+</IfModule>
+
+# ── Security headers ──────────────────────────────────────────────────────────
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+</IfModule>

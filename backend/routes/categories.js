@@ -1,0 +1,85 @@
+const express = require('express');
+const { body, param, validationResult } = require('express-validator');
+const { query, execute } = require('../db/mysql');
+const requireAuth = require('../middleware/requireAuth');
+const requireAdmin = require('../middleware/requireAdmin');
+const slugify = require('../utils/slugify');
+
+const router = express.Router();
+
+function mapCategory(row) {
+  return {
+    _id: String(row.id),
+    name: row.name,
+    slug: row.slug,
+    icon: row.icon || '',
+    order: row.ord || 0,
+    isDeleted: Boolean(row.is_deleted),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+router.get('/', async (req, res, next) => {
+  try {
+    const rows = await query('SELECT * FROM categories WHERE is_deleted = 0 ORDER BY ord ASC, name ASC', []);
+    res.json({ categories: rows.map(mapCategory) });
+  } catch (err) { next(err); }
+});
+
+router.post('/', requireAuth, requireAdmin, [
+  body('name').trim().notEmpty().isLength({ max: 100 }),
+  body('icon').optional().trim(),
+  body('order').optional().isInt({ min: 0 }).toInt(),
+], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+
+    const slug = slugify(req.body.name);
+    const existing = await query('SELECT id FROM categories WHERE slug = ? LIMIT 1', [slug]);
+    if (existing.length) return res.status(409).json({ message: 'Category already exists.' });
+
+    const result = await execute(
+      'INSERT INTO categories (name, slug, icon, ord, is_deleted) VALUES (?, ?, ?, ?, 0)',
+      [req.body.name.trim(), slug, req.body.icon || '', Number(req.body.order || 0)]
+    );
+    const rows = await query('SELECT * FROM categories WHERE id = ? LIMIT 1', [result.insertId]);
+    res.status(201).json(mapCategory(rows[0]));
+  } catch (err) { next(err); }
+});
+
+router.put('/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })], async (req, res, next) => {
+  try {
+    const rows = await query('SELECT * FROM categories WHERE id = ? AND is_deleted = 0 LIMIT 1', [req.params.id]);
+    if (!rows.length) return res.status(404).json({ message: 'Category not found.' });
+
+    const current = rows[0];
+    const nextName = req.body.name !== undefined ? String(req.body.name).trim() : current.name;
+    const nextSlug = req.body.name ? slugify(req.body.name) : current.slug;
+
+    await execute(
+      'UPDATE categories SET name = ?, slug = ?, icon = ?, ord = ? WHERE id = ?',
+      [
+        nextName,
+        nextSlug,
+        req.body.icon !== undefined ? req.body.icon : current.icon,
+        req.body.order !== undefined ? Number(req.body.order || 0) : current.ord,
+        req.params.id,
+      ]
+    );
+
+    const updated = await query('SELECT * FROM categories WHERE id = ? LIMIT 1', [req.params.id]);
+    res.json(mapCategory(updated[0]));
+  } catch (err) { next(err); }
+});
+
+router.delete('/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })], async (req, res, next) => {
+  try {
+    const result = await execute('UPDATE categories SET is_deleted = 1 WHERE id = ? AND is_deleted = 0', [req.params.id]);
+    if (!result.affectedRows) return res.status(404).json({ message: 'Category not found.' });
+    res.json({ message: 'Category deleted.' });
+  } catch (err) { next(err); }
+});
+
+module.exports = router;

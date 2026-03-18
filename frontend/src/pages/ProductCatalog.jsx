@@ -1,0 +1,404 @@
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Search, SlidersHorizontal, X, Package, ChevronRight, Pill, Leaf, Sparkles, Baby, Scissors, LayoutGrid, Droplets, Droplet, FlaskConical, Wind, Syringe, Thermometer, ShoppingBag, Star, Box, TestTube, GlassWater, Gem, Tag, Shield, Apple, Smile, ShoppingCart, Flower2 } from 'lucide-react';
+import { getProducts, getTopBrands } from '../api/products';
+import { getCategories } from '../api/categories';
+import ProductCard from '../components/ProductCard';
+
+const SORT_OPTIONS = [
+  { value: 'newest',     label: 'Newest First' },
+  { value: 'price_asc',  label: 'Price: Low → High' },
+  { value: 'price_desc', label: 'Price: High → Low' },
+  { value: 'name_asc',   label: 'Name: A – Z' },
+  { value: 'name_desc',  label: 'Name: Z – A' },
+];
+
+const CAT_ICONS = {
+  // actual DB slugs (seedCategories.js)
+  'caps-tabs':        <Pill size={15} />,
+  'liquids':          <Droplets size={15} />,
+  'cream-ointment':   <FlaskConical size={15} />,
+  'drop':             <Droplet size={15} />,
+  'powder':           <TestTube size={15} />,
+  'lotion':           <Sparkles size={15} />,
+  'injection':        <Syringe size={15} />,
+  'inhaler':          <Wind size={15} />,
+  'softgel-capsules': <Gem size={15} />,
+  'fluids':           <GlassWater size={15} />,
+  'high-value':       <Star size={15} />,
+  'fmcg':             <ShoppingBag size={15} />,
+  'surgicals':        <Scissors size={15} />,
+  'generic':          <Package size={15} />,
+  'keimed-generics':  <Tag size={15} />,
+  'container':        <Box size={15} />,
+  'pharma-misc':      <LayoutGrid size={15} />,
+  'fridge':           <Thermometer size={15} />,
+  // legacy fallbacks
+  allopathic:         <Pill size={15} />,
+  ayurvedic:          <Leaf size={15} />,
+  cosmetics:          <Sparkles size={15} />,
+  'baby-products':    <Baby size={15} />,
+  surgical:           <Scissors size={15} />,
+  // new categories
+  vaccines:           <Shield size={15} />,
+  nutrition:          <Apple size={15} />,
+  dental:             <Smile size={15} />,
+  otc:                <ShoppingCart size={15} />,
+  herbal:             <Flower2 size={15} />,
+};
+
+function Skeleton() {
+  return (
+    <div className="catalog__skeleton-grid">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="catalog__skeleton-card">
+          <div className="catalog__skeleton-img" />
+          <div className="catalog__skeleton-line" style={{ width: '80%' }} />
+          <div className="catalog__skeleton-line" style={{ width: '50%' }} />
+          <div className="catalog__skeleton-line" style={{ width: '60%', height: '28px' }} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function ProductCatalog() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [products, setProducts]   = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [total, setTotal]         = useState(0);
+  const [pages, setPages]         = useState(1);
+  const [loading, setLoading]     = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [brands, setBrands] = useState([]);
+
+  // Lock body scroll when mobile sidebar is open
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.classList.add('sidebar-open');
+    } else {
+      document.body.classList.remove('sidebar-open');
+    }
+    return () => document.body.classList.remove('sidebar-open');
+  }, [sidebarOpen]);
+
+  const page     = parseInt(searchParams.get('page')) || 1;
+  const search   = searchParams.get('search') || '';
+  const categoryParam = searchParams.get('category') || '';
+  const brand    = searchParams.get('brand') || '';
+  const sort     = searchParams.get('sort') || 'newest';
+
+  // Local search state — debounced so the product grid doesn't reload on every keystroke
+  const [inputSearch, setInputSearch] = useState(search);
+  const searchTimer = useRef(null);
+
+  const handleSearchInput = (value) => {
+    setInputSearch(value);
+    clearTimeout(searchTimer.current);
+    if (!value) {
+      // Clear immediately (no debounce needed when emptying)
+      const next = new URLSearchParams(searchParams);
+      next.delete('search');
+      next.set('page', '1');
+      setSearchParams(next);
+    } else {
+      searchTimer.current = setTimeout(() => setParam('search', value), 420);
+    }
+  };
+
+  // Sync local input when URL search is changed externally (e.g. category chip)
+  useEffect(() => { setInputSearch(search); }, [search]);
+
+  const clearAllFilters = () => {
+    clearTimeout(searchTimer.current);
+    setInputSearch('');
+    setSearchParams(new URLSearchParams());
+  };
+
+  const toggleBrand = (b) => {
+    setParam('brand', brand === b ? '' : b);
+    setSidebarOpen(false);
+  };
+
+  const setParam = (key, value) => {
+    const next = new URLSearchParams(searchParams);
+    if (value) next.set(key, value); else next.delete(key);
+    if (key !== 'page') next.set('page', '1');
+    setSearchParams(next);
+  };
+
+  const selectedCategory = categories.find(c => c._id === categoryParam || c.slug === categoryParam) || null;
+  const category = selectedCategory?._id || (/^[a-f\d]{24}$/i.test(categoryParam) ? categoryParam : '');
+
+  const fetchProducts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = { page, limit: 20, sort };
+      if (search) params.search = search;
+      if (category) params.category = category;
+      if (brand) params.brand = brand;
+      const { data } = await getProducts(params);
+      setProducts(data.products);
+      setTotal(data.total);
+      setPages(data.pages);
+    } catch {
+      setProducts([]);
+      setTotal(0);
+      setPages(1);
+    }
+    finally { setLoading(false); }
+  }, [page, search, category, brand, sort]);
+
+  useEffect(() => { fetchProducts(); }, [fetchProducts]);
+  useEffect(() => {
+    getCategories().then(r => setCategories(r.data.categories)).catch(() => {});
+    getTopBrands().then(r => setBrands(r.data.brands || [])).catch(() => {});
+  }, []);
+
+  const selectedCatName = selectedCategory?.name;
+  const hasFilter = !!(search || categoryParam || brand);
+
+  return (
+    <div className="catalog-page-wrap">
+
+      {/* ── Page Hero Banner ─────────────────────────────────────── */}
+      <div className="catalog-hero">
+        <div className="container">
+          <div className="catalog-hero__inner">
+            <div>
+              <h1 className="catalog-hero__title">
+                {selectedCatName ? selectedCatName : 'All Products'}
+              </h1>
+              <p className="catalog-hero__sub">
+                {search
+                  ? `Search results for "${search}"`
+                  : 'Medicines · Ayurvedic · Cosmetics · Baby Care · Surgical'}
+              </p>
+            </div>
+            {/* Breadcrumb */}
+            <nav className="catalog-hero__breadcrumb">
+              <span>Home</span>
+              <ChevronRight size={14} />
+              <span>Products</span>
+              {selectedCatName && <><ChevronRight size={14} /><span className="active">{selectedCatName}</span></>}
+            </nav>
+          </div>
+        </div>
+      </div>
+
+      <div className="container">
+        {/* ── Search + Sort toolbar ─────────────────────────────── */}
+        <div className="catalog-toolbar">
+          <div className="catalog-toolbar__search">
+            <Search size={18} />
+            <input
+              type="search"
+              placeholder="Search medicines, cosmetics, brands..."
+              value={inputSearch}
+              onChange={e => handleSearchInput(e.target.value)}
+              maxLength={100}
+            />
+            {inputSearch && (
+              <button className="catalog-toolbar__clear" onClick={() => handleSearchInput('')}>
+                <X size={16} />
+              </button>
+            )}
+          </div>
+
+          <div className="catalog-toolbar__right">
+            <div className="catalog-toolbar__sort-wrap">
+              <span className="catalog-toolbar__sort-label">Sort:</span>
+              <select
+                value={sort}
+                onChange={e => setParam('sort', e.target.value)}
+                className="catalog-toolbar__sort"
+              >
+                {SORT_OPTIONS.map(o => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              className={`catalog-toolbar__filter-btn ${sidebarOpen ? 'active' : ''}`}
+              onClick={() => setSidebarOpen(v => !v)}
+            >
+              <SlidersHorizontal size={16} />
+              <span>Filters</span>
+              {(categoryParam || brand) && <span className="catalog-toolbar__filter-dot" />}
+            </button>
+          </div>
+        </div>
+
+        {/* ── Layout: sidebar + grid ────────────────────────────── */}
+        <div className={`catalog-body ${sidebarOpen ? 'catalog-body--open' : ''}`}>
+
+          {/* Backdrop for mobile sidebar */}
+          <div
+            className="catalog-sidebar-backdrop"
+            onClick={() => setSidebarOpen(false)}
+            aria-hidden="true"
+          />
+
+          {/* Sidebar */}
+          <aside className="catalog-sidebar">
+            <div className="catalog-sidebar__header">
+              <LayoutGrid size={16} />
+              <span>Categories</span>
+            </div>
+            <ul className="catalog-sidebar__list">
+              <li>
+                <button
+                  className={`catalog-sidebar__item ${!categoryParam ? 'catalog-sidebar__item--active' : ''}`}
+                  onClick={() => { setParam('category', ''); setSidebarOpen(false); }}
+                >
+                  <span className="catalog-sidebar__icon"><Package size={15} /></span>
+                  All Products
+                  {!categoryParam && <span className="catalog-sidebar__check">✓</span>}
+                </button>
+              </li>
+              {categories.map(cat => (
+                <li key={cat._id}>
+                  <button
+                    className={`catalog-sidebar__item ${(categoryParam === cat._id || categoryParam === cat.slug) ? 'catalog-sidebar__item--active' : ''}`}
+                    onClick={() => { setParam('category', cat._id); setSidebarOpen(false); }}
+                  >
+                    <span className="catalog-sidebar__icon">
+                      {CAT_ICONS[cat.slug] || <Package size={15} />}
+                    </span>
+                    {cat.name}
+                    {(categoryParam === cat._id || categoryParam === cat.slug) && <span className="catalog-sidebar__check">✓</span>}
+                  </button>
+                </li>
+              ))}
+            </ul>
+
+            {/* Brand filter */}
+            {brands.length > 0 && (
+              <>
+                <div className="catalog-sidebar__header" style={{ marginTop: '20px' }}>
+                  <Tag size={16} />
+                  <span>Brand / Manufacturer</span>
+                </div>
+                <ul className="catalog-sidebar__list">
+                  {brands.map(b => (
+                    <li key={b.brand}>
+                      <button
+                        className={`catalog-sidebar__item ${brand === b.brand ? 'catalog-sidebar__item--active' : ''}`}
+                        onClick={() => toggleBrand(b.brand)}
+                      >
+                        <span className="catalog-sidebar__icon"><Tag size={15} /></span>
+                        {b.brand}
+                        <span style={{ marginLeft: 'auto', fontSize: '11px', color: 'var(--gray-400)', flexShrink: 0, paddingLeft: '6px' }}>{b.count}</span>
+                        {brand === b.brand && <span className="catalog-sidebar__check">✓</span>}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </aside>
+
+          {/* Main grid */}
+          <div className="catalog-main">
+            {/* Stats bar */}
+            <div className="catalog-main__bar">
+              <p className="catalog-main__count">
+                {loading
+                  ? 'Loading...'
+                  : <><strong>{total}</strong> {total === 1 ? 'product' : 'products'} found</>
+                }
+              </p>
+              {hasFilter && (
+                <button
+                  className="catalog-main__clear"
+                  onClick={clearAllFilters}
+                >
+                  <X size={13} /> Clear filters
+                </button>
+              )}
+            </div>
+
+            {/* Active filter chips */}
+            {(search || selectedCatName || brand) && (
+              <div className="catalog-chips">
+                {selectedCatName && (
+                  <span className="catalog-chip">
+                    {selectedCatName}
+                    <button onClick={() => setParam('category', '')}><X size={11} /></button>
+                  </span>
+                )}
+                {brand && (
+                  <span className="catalog-chip">
+                    {brand}
+                    <button onClick={() => setParam('brand', '')}><X size={11} /></button>
+                  </span>
+                )}
+                {(search || inputSearch) && (
+                  <span className="catalog-chip">
+                    "{search || inputSearch}"
+                    <button onClick={() => handleSearchInput('')}><X size={11} /></button>
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Products */}
+            {loading ? (
+              <Skeleton />
+            ) : products.length === 0 ? (
+              <div className="catalog-empty">
+                <div className="catalog-empty__icon">
+                  <Package size={48} />
+                </div>
+                <h3>No products found</h3>
+                <p>Try adjusting your search or browse a different category.</p>
+                <button
+                  className="btn btn--primary"
+                  onClick={clearAllFilters}
+                >
+                  Browse all products
+                </button>
+              </div>
+            ) : (
+              <div className="product-grid">
+                {products.map(p => <ProductCard key={p._id} product={p} />)}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {pages > 1 && (
+              <div className="pagination">
+                <button
+                  disabled={page <= 1}
+                  onClick={() => setParam('page', page - 1)}
+                >
+                  ← Prev
+                </button>
+                {Array.from({ length: Math.min(pages, 7) }, (_, i) => {
+                  const p = i + 1;
+                  return (
+                    <button
+                      key={p}
+                      className={page === p ? 'active' : ''}
+                      onClick={() => setParam('page', p)}
+                    >
+                      {p}
+                    </button>
+                  );
+                })}
+                {pages > 7 && <span style={{ padding: '0 4px', color: 'var(--gray-400)' }}>…</span>}
+                <button
+                  disabled={page >= pages}
+                  onClick={() => setParam('page', page + 1)}
+                >
+                  Next →
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

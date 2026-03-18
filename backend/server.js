@@ -1,0 +1,198 @@
+// Load backend/.env (override: true so .env wins over Passenger-injected empty vars)
+require('dotenv').config({ path: require('path').join(__dirname, '.env'), override: true });
+const path = require('path');
+const express = require('express');
+const helmet = require('helmet');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const rateLimit = require('express-rate-limit');
+const { verifySmtpConnection } = require('./utils/mailer');
+const { ensureCoreSchema } = require('./db/schema');
+
+const authRoutes         = require('./routes/auth');
+const productRoutes      = require('./routes/products');
+const uploadRoutes       = require('./routes/upload');
+const categoryRoutes     = require('./routes/categories');
+const adminRoutes        = require('./routes/admin');
+const geocodeRoutes       = require('./routes/geocode');
+
+const app = express();
+
+function unsupportedRoute(message) {
+  return (req, res) => res.status(503).json({ message });
+}
+
+// ── Trust proxy (needed for correct IP behind Vercel/Railway) ─────────────────
+app.set('trust proxy', 1);
+
+// ── Bypass localtunnel interstitial for all responses ─────────────────────────
+app.use((req, res, next) => {
+  res.setHeader('bypass-tunnel-reminder', 'true');
+  next();
+});
+
+// ── Security headers ──────────────────────────────────────────────────────────
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      imgSrc:     ["'self'", 'data:', 'blob:', 'https:', 'http:'],  // allow all image sources for product images
+      scriptSrc:  ["'self'", "'unsafe-inline'", 'https://checkout.razorpay.com', 'https://accounts.google.com', 'https://apis.google.com', 'https://www.gstatic.com'],
+      styleSrc:   ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://accounts.google.com'],
+      connectSrc: ["'self'", 'https://batlamedicos.shop', 'https://www.batlamedicos.shop',
+                   'https://en.wikipedia.org', 'https://world.openfoodfacts.org',
+                   'https://api.razorpay.com', 'https://lumberjack.razorpay.com',
+                   'https://accounts.google.com', 'https://www.googleapis.com'],
+      fontSrc:    ["'self'", 'data:', 'https://fonts.gstatic.com'],
+      frameSrc:   ["'self'", 'https://www.google.com', 'https://maps.google.com',
+                   'https://res.cloudinary.com', 'https://api.razorpay.com',
+                   'https://accounts.google.com'],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+}));
+
+// ── CORS ────────────────────────────────────────────────────────────────────
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:4173',
+  'http://127.0.0.1:4173',
+  'http://localhost:5000',
+  'http://127.0.0.1:5000',
+  'https://batlamedicos.shop',
+  'https://www.batlamedicos.shop',
+  process.env.FRONTEND_URL,
+  process.env.TUNNEL_URL,
+].filter(Boolean);
+app.use(cors({
+  origin: (origin, cb) => {
+    // Allow same-origin requests (no Origin header) and whitelisted origins
+    if (!origin || allowedOrigins.some(o => origin.startsWith(o))) return cb(null, true);
+    // Also allow *.trycloudflare.com and *.loca.lt tunnel URLs
+    if (/\.trycloudflare\.com$/.test(origin) || /\.loca\.lt$/.test(origin) || /\.ngrok.*\.app$/.test(origin) || /\.onrender\.com$/.test(origin) || /\.netlify\.app$/.test(origin)) return cb(null, true);
+    cb(new Error('CORS: origin not allowed'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+// ── Cookie parser ─────────────────────────────────────────────────────────────
+app.use(cookieParser());
+
+// ── Body parser — raw body preserved for Razorpay webhook ────────────────────
+app.use('/api/orders/webhook', express.raw({ type: 'application/json' }));
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: false, limit: '10kb' }));
+
+// ── Global rate limit ─────────────────────────────────────────────────────────
+app.use('/api/', rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  message: { message: 'Too many requests, please slow down.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+}));
+
+// ── Force HTTPS in production ─────────────────────────────────────────────────
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    const host = req.headers.host || '';
+    const isLocalHost = host.startsWith('localhost') || host.startsWith('127.0.0.1');
+    if (!isLocalHost && req.headers['x-forwarded-proto'] !== 'https') {
+      return res.redirect(301, `https://${req.headers.host}${req.url}`);
+    }
+    next();
+  });
+}
+
+// ── Routes ────────────────────────────────────────────────────────────────────
+app.use('/api/auth',          authRoutes);
+app.use('/api/products',     productRoutes);
+app.use('/api/orders',       unsupportedRoute('Orders are temporarily unavailable during MySQL migration.'));
+app.use('/api/upload',       uploadRoutes);
+app.use('/api/offers',       unsupportedRoute('Offers are temporarily unavailable during MySQL migration.'));
+app.use('/api/categories',   categoryRoutes);
+app.use('/api/admin',        adminRoutes);
+app.use('/api/reviews',      unsupportedRoute('Reviews are temporarily unavailable during MySQL migration.'));
+app.use('/api/notifications',  unsupportedRoute('Notifications are temporarily unavailable during MySQL migration.'));
+app.use('/api/prescriptions',  unsupportedRoute('Prescriptions are temporarily unavailable during MySQL migration.'));
+app.use('/api/lab',            unsupportedRoute('Lab services are temporarily unavailable during MySQL migration.'));
+app.use('/api/geocode',        geocodeRoutes);
+app.use('/api/delivery',       unsupportedRoute('Delivery panel is temporarily unavailable during MySQL migration.'));
+app.use('/api/coupons',        unsupportedRoute('Coupons are temporarily unavailable during MySQL migration.'));
+
+// ── Health check ──────────────────────────────────────────────────────────────
+app.get('/health', (req, res) => {
+  const { getGeminiKey } = require('./utils/gemini');
+  const key = getGeminiKey();
+  res.json({
+    status: 'ok',
+    db: process.env.MYSQL_DATABASE ? 'mysql' : 'missing-mysql-config',
+    gemini: key ? 'configured' : 'NOT configured',
+    keyLen: key ? key.length : 0,
+  });
+});
+
+// ── Serve React frontend (production build) ────────────────────────────
+const DIST = path.join(__dirname, '..', 'frontend', 'dist');
+const fs = require('fs');
+if (fs.existsSync(DIST)) {
+  app.use(express.static(DIST, {
+    maxAge: '1h',
+    etag: true,
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('.html')) {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+      }
+    },
+  }));
+  // React Router: any non-API route serves index.html (Express 5 wildcard syntax)
+  app.get(/(.*)/, (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.sendFile(path.join(DIST, 'index.html'));
+  });
+} else {
+  app.use((req, res) => res.status(404).json({ message: 'Route not found.' }));
+}
+
+// ── Global error handler — never expose stack traces in production ────────────
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  const status = err.status || 500;
+  const message = process.env.NODE_ENV === 'production' ? 'Internal server error.' : err.message;
+  if (process.env.NODE_ENV !== 'production') console.error(err);
+  res.status(status).json({ message });
+});
+
+// ── Database + Server ─────────────────────────────────────────────────────────
+const PORT = process.env.PORT || 5000;
+let serverStarted = false;
+
+function startServer() {
+  if (serverStarted) return;
+  serverStarted = true;
+
+  ensureCoreSchema()
+    .then(() => {
+      console.log('MySQL core schema ready');
+      console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? 'SET ✓' : 'NOT SET ✗');
+      verifySmtpConnection().catch(() => {});
+      app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    })
+    .catch((err) => {
+      console.error('MySQL initialization failed:', err.message);
+      process.exit(1);
+    });
+}
+
+if (require.main === module) {
+  startServer();
+}
+
+module.exports = { app, startServer };
