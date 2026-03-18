@@ -5,20 +5,30 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import MedicineImage from './MedicineImage';
 
-/* Tiny click-sound via Web Audio API — no external file needed */
-function playCartSound() {
+/* 🛒 Cart add sound — bright pop */
+function playCartSound(isIncrement = false) {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const o = ctx.createOscillator();
     const g = ctx.createGain();
     o.connect(g); g.connect(ctx.destination);
     o.type = 'sine';
-    o.frequency.setValueAtTime(520, ctx.currentTime);
-    o.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.08);
-    g.gain.setValueAtTime(0.18, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
-    o.start(ctx.currentTime);
-    o.stop(ctx.currentTime + 0.25);
+    if (isIncrement) {
+      // Softer tick for quantity increment
+      o.frequency.setValueAtTime(660, ctx.currentTime);
+      g.gain.setValueAtTime(0.10, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+      o.start(ctx.currentTime);
+      o.stop(ctx.currentTime + 0.12);
+    } else {
+      // Cheerful pop for first add
+      o.frequency.setValueAtTime(440, ctx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.06);
+      g.gain.setValueAtTime(0.20, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+      o.start(ctx.currentTime);
+      o.stop(ctx.currentTime + 0.22);
+    }
   } catch { /* AudioContext blocked — silent fail */ }
 }
 
@@ -76,6 +86,7 @@ export default function ProductCard({ product }) {
     e.preventDefault();
     e.stopPropagation();
     updateQty(product._id, cartItem.qty + 1);
+    playCartSound(true); // soft tick for increment
   }, [updateQty, product._id, cartItem]);
 
   const handleDec = useCallback((e) => {

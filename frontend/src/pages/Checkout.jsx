@@ -12,6 +12,30 @@ import { validateCoupon } from '../api/coupons';
 import api from '../api/axios';
 import { uploadPrescription } from '../api/upload';
 
+/* 🎵 Cheerful 3-note order-placed jingle (Web Audio API — no file needed) */
+function playOrderSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const notes = [
+      { freq: 523.25, start: 0,    dur: 0.15 },  // C5
+      { freq: 659.25, start: 0.14, dur: 0.15 },  // E5
+      { freq: 783.99, start: 0.28, dur: 0.28 },  // G5
+    ];
+    notes.forEach(({ freq, start, dur }) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'sine';
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(0, ctx.currentTime + start);
+      g.gain.linearRampToValueAtTime(0.22, ctx.currentTime + start + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+      o.start(ctx.currentTime + start);
+      o.stop(ctx.currentTime + start + dur + 0.05);
+    });
+  } catch { /* silent fail if blocked */ }
+}
+
 const DELIVERY_CHARGE = 29;
 const FREE_DELIVERY_THRESHOLD = 499;
 
@@ -195,6 +219,7 @@ export default function Checkout() {
                 razorpaySignature: response.razorpay_signature,
                 orderId:           data.order._id,
               });
+              playOrderSound();
               clearCart();
               navigate(`/orders/${data.order._id}?placed=1`);
             } catch { toast.error('Payment verification failed. Contact support.'); }
@@ -205,6 +230,7 @@ export default function Checkout() {
       } else if (formData.method === 'paytm') {
         toast('Paytm checkout wiring will be enabled once merchant API credentials are added.');
       } else {
+        playOrderSound();
         clearCart();
         navigate(`/orders/${data.order._id}?placed=1`);
       }

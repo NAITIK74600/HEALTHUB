@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Search, SlidersHorizontal, X, Package, ChevronRight, Pill, Leaf, Sparkles, Baby, Scissors, LayoutGrid, Droplets, Droplet, FlaskConical, Wind, Syringe, Thermometer, ShoppingBag, Star, Box, TestTube, GlassWater, Gem, Tag, Shield, Apple, Smile, ShoppingCart, Flower2 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';import { Search, SlidersHorizontal, X, Package, ChevronRight, Pill, Leaf, Sparkles, Baby, Scissors, LayoutGrid, Droplets, Droplet, FlaskConical, Wind, Syringe, Thermometer, ShoppingBag, Star, Box, TestTube, GlassWater, Gem, Tag, Shield, Apple, Smile, ShoppingCart, Flower2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getProducts, getTopBrands, requestMedicineAvailability } from '../api/products';
 import { getCategories } from '../api/categories';
@@ -160,6 +159,10 @@ export default function ProductCatalog() {
     if (value) next.set(key, value); else next.delete(key);
     if (key !== 'page') next.set('page', '1');
     setSearchParams(next);
+    // Scroll to top of product grid on page/filter change
+    if (key === 'page') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const selectedCategory = categories.find(c => c._id === categoryParam || c.slug === categoryParam) || null;
@@ -449,35 +452,59 @@ export default function ProductCatalog() {
             )}
 
             {/* Pagination */}
-            {pages > 1 && (
-              <div className="pagination">
-                <button
-                  disabled={page <= 1}
-                  onClick={() => setParam('page', page - 1)}
-                >
-                  ← Prev
-                </button>
-                {Array.from({ length: Math.min(pages, 7) }, (_, i) => {
-                  const p = i + 1;
-                  return (
-                    <button
-                      key={p}
-                      className={page === p ? 'active' : ''}
-                      onClick={() => setParam('page', p)}
-                    >
-                      {p}
-                    </button>
-                  );
-                })}
-                {pages > 7 && <span style={{ padding: '0 4px', color: 'var(--gray-400)' }}>…</span>}
-                <button
-                  disabled={page >= pages}
-                  onClick={() => setParam('page', page + 1)}
-                >
-                  Next →
-                </button>
-              </div>
-            )}
+            {pages > 1 && (() => {
+              // Build a sliding-window page list: always show first, last,
+              // current ± 2, and ellipsis where there are gaps.
+              const WINDOW = 2;
+              const pageSet = new Set([
+                1, pages,
+                ...Array.from({ length: WINDOW * 2 + 1 }, (_, i) => page - WINDOW + i),
+              ].filter(p => p >= 1 && p <= pages));
+              const pageList = [...pageSet].sort((a, b) => a - b);
+
+              // Insert ellipsis markers where there are gaps
+              const items = [];
+              let prev = null;
+              for (const p of pageList) {
+                if (prev !== null && p - prev > 1) items.push('…');
+                items.push(p);
+                prev = p;
+              }
+
+              return (
+                <div className="pagination">
+                  <button
+                    disabled={page <= 1}
+                    onClick={() => setParam('page', page - 1)}
+                    className="pagination__prev"
+                  >
+                    ← Prev
+                  </button>
+
+                  {items.map((item, idx) =>
+                    item === '…'
+                      ? <span key={`ellipsis-${idx}`} className="pagination__ellipsis">…</span>
+                      : (
+                        <button
+                          key={item}
+                          className={page === item ? 'active' : ''}
+                          onClick={() => setParam('page', item)}
+                        >
+                          {item}
+                        </button>
+                      )
+                  )}
+
+                  <button
+                    disabled={page >= pages}
+                    onClick={() => setParam('page', page + 1)}
+                    className="pagination__next"
+                  >
+                    Next →
+                  </button>
+                </div>
+              );
+            })()}
           </div>
         </div>
       </div>
