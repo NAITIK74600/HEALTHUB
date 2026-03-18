@@ -137,6 +137,23 @@ async function ensureCoreSchema() {
   `);
 
   await execute(`
+    CREATE TABLE IF NOT EXISTS brands (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      name VARCHAR(150) NOT NULL,
+      slug VARCHAR(160) NOT NULL,
+      logo_url VARCHAR(500) NULL,
+      category ENUM('featured', 'ayurvedic', 'general') NOT NULL DEFAULT 'general',
+      ord INT NOT NULL DEFAULT 0,
+      is_active TINYINT(1) NOT NULL DEFAULT 1,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_brands_slug (slug),
+      KEY idx_brands_category_active (category, is_active, ord)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await execute(`
     CREATE TABLE IF NOT EXISTS availability_requests (
       id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
       medicine_name VARCHAR(180) NOT NULL,

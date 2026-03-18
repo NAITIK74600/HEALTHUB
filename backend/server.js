@@ -13,6 +13,7 @@ const authRoutes         = require('./routes/auth');
 const productRoutes      = require('./routes/products');
 const uploadRoutes       = require('./routes/upload');
 const categoryRoutes     = require('./routes/categories');
+const brandRoutes        = require('./routes/brands');
 const adminRoutes        = require('./routes/admin');
 const geocodeRoutes       = require('./routes/geocode');
 
@@ -114,6 +115,7 @@ app.use('/api/orders',       unsupportedRoute('Orders are temporarily unavailabl
 app.use('/api/upload',       uploadRoutes);
 app.use('/api/offers',       unsupportedRoute('Offers are temporarily unavailable during MySQL migration.'));
 app.use('/api/categories',   categoryRoutes);
+app.use('/api/brands',        brandRoutes);
 app.use('/api/admin',        adminRoutes);
 app.use('/api/reviews',      unsupportedRoute('Reviews are temporarily unavailable during MySQL migration.'));
 app.use('/api/notifications',  unsupportedRoute('Notifications are temporarily unavailable during MySQL migration.'));

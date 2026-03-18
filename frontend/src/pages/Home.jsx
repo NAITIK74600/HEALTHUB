@@ -10,6 +10,7 @@ import {
 import { getActiveOffers } from '../api/offers';
 import { getCategories } from '../api/categories';
 import { getProducts } from '../api/products';
+import { getBrands } from '../api/brands';
 import ProductCard from '../components/ProductCard';
 import OfferBanner from '../components/OfferBanner';
 
@@ -57,11 +58,15 @@ export default function Home() {
   const [offers, setOffers]     = useState([]);
   const [categories, setCategories] = useState([]);
   const [featured, setFeatured] = useState([]);
+  const [featuredBrands, setFeaturedBrands] = useState([]);
+  const [ayurvedaBrands, setAyurvedaBrands] = useState([]);
 
   useEffect(() => {
     getActiveOffers().then(r => setOffers(r.data.offers)).catch(() => {});
     getCategories().then(r => setCategories(r.data.categories)).catch(() => {});
     getProducts({ limit: 8, sort: 'newest' }).then(r => setFeatured(r.data.products)).catch(() => {});
+    getBrands({ category: 'featured'  }).then(r => setFeaturedBrands(r.data.brands || [])).catch(() => {});
+    getBrands({ category: 'ayurvedic' }).then(r => setAyurvedaBrands(r.data.brands || [])).catch(() => {});
   }, []);
 
   const WHATSAPP = import.meta.env.VITE_WHATSAPP_NUMBER || '919990165925';
@@ -192,6 +197,54 @@ export default function Home() {
             </div>
             <div className="product-grid">
               {featured.map(p => <ProductCard key={p._id} product={p} />)}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Featured Brands */}
+      {featuredBrands.length > 0 && (
+        <section className="section">
+          <div className="container">
+            <div className="section__header">
+              <h2 className="section__title">Featured Brands</h2>
+              <Link to="/products" className="section__link">See all <ChevronRight size={14} /></Link>
+            </div>
+            <div className="brands-scroll">
+              {featuredBrands.map(b => (
+                <Link key={b._id} to={`/products?brand=${encodeURIComponent(b.name)}`} className="brand-card" title={b.name}>
+                  {b.logoUrl
+                    ? <img src={b.logoUrl} alt={b.name} className="brand-card__img" />
+                    : <span className="brand-card__fallback">{b.name.slice(0, 2).toUpperCase()}</span>
+                  }
+                  <span className="brand-card__name">{b.name}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Ayurvedic Brands */}
+      {ayurvedaBrands.length > 0 && (
+        <section className="section section--gray">
+          <div className="container">
+            <div className="section__header">
+              <h2 className="section__title" style={{ color: '#1B8843' }}>
+                <Leaf size={20} style={{ marginRight: 8 }} />Ayurveda Top Brands
+              </h2>
+              <Link to="/products?category=ayurvedic" className="section__link">See all <ChevronRight size={14} /></Link>
+            </div>
+            <div className="brands-scroll">
+              {ayurvedaBrands.map(b => (
+                <Link key={b._id} to={`/products?brand=${encodeURIComponent(b.name)}`} className="brand-card brand-card--ayurvedic" title={b.name}>
+                  {b.logoUrl
+                    ? <img src={b.logoUrl} alt={b.name} className="brand-card__img" />
+                    : <span className="brand-card__fallback brand-card__fallback--green">{b.name.slice(0, 2).toUpperCase()}</span>
+                  }
+                  <span className="brand-card__name">{b.name}</span>
+                </Link>
+              ))}
             </div>
           </div>
         </section>

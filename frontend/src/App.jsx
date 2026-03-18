@@ -44,6 +44,7 @@ import AdminLabTests from './pages/admin/AdminLabTests';
 import AdminLabBookings from './pages/admin/AdminLabBookings';
 import AdminDelivery from './pages/admin/AdminDelivery';
 import AdminCoupons from './pages/admin/AdminCoupons';
+import AdminBrands from './pages/admin/AdminBrands';
 
 const PublicLayout = () => (
   <>
@@ -98,6 +99,7 @@ export default function App() {
                 <Route path="lab-bookings" element={<AdminLabBookings />} />
                 <Route path="delivery" element={<AdminDelivery />} />
                 <Route path="coupons" element={<AdminCoupons />} />
+                <Route path="brands" element={<AdminBrands />} />
               </Route>
             </Routes>
           </CartProvider>

@@ -712,6 +712,120 @@ svg { flex-shrink: 0; }
 /* ================================================================
    CATEGORY GRID  —  HCI: Visual recognition, clear affordance
    ================================================================ */
+/* ================================================================
+   BRANDS — horizontal scroll carousel + admin grid
+   ================================================================ */
+.brands-scroll {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: none;
+}
+.brands-scroll::-webkit-scrollbar { display: none; }
+
+.brand-card {
+  flex: 0 0 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-lg);
+  text-decoration: none;
+  transition: border-color 0.18s, box-shadow 0.18s, transform 0.18s;
+  cursor: pointer;
+}
+.brand-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 16px rgba(192,57,43,0.10);
+  transform: translateY(-2px);
+}
+.brand-card--ayurvedic:hover {
+  border-color: #1B8843;
+  box-shadow: 0 4px 16px rgba(27,136,67,0.10);
+}
+.brand-card__img {
+  width: 64px;
+  height: 48px;
+  object-fit: contain;
+}
+.brand-card__fallback {
+  width: 64px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-50);
+  color: var(--primary);
+  font-size: 18px;
+  font-weight: 700;
+  border-radius: var(--r-md);
+}
+.brand-card__fallback--green {
+  background: #F0FBF4;
+  color: #1B8843;
+}
+.brand-card__name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-700);
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* Admin brands */
+.admin-section-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+.admin-section-box__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gray-800);
+  margin-bottom: 16px;
+}
+.brands-admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 14px;
+}
+.brand-admin-card {
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  transition: border-color 0.15s;
+}
+.brand-admin-card--inactive { opacity: 0.5; }
+.brand-admin-card__logo {
+  width: 72px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.brand-admin-card__logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.brand-admin-card__name { font-size: 12px; font-weight: 600; text-align: center; color: var(--gray-700); }
+.brand-admin-card__meta { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; }
+.brand-admin-card__actions { display: flex; gap: 6px; }
+
+/* ================================================================
+   CATEGORY GRID
+   ================================================================ */
 .category-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));

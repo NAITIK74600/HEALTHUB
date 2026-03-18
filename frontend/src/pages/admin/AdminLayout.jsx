@@ -1,6 +1,6 @@
 import { useState, useEffect, Component } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Percent, Shield, LogOut, ExternalLink, ChevronLeft, ChevronRight, Bell, FileText, FlaskConical, Menu, X, Truck, Ticket } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Percent, Shield, LogOut, ExternalLink, ChevronLeft, ChevronRight, Bell, FileText, FlaskConical, Menu, X, Truck, Ticket, Star } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import NotificationBell from '../../components/NotificationBell';
 
@@ -36,6 +36,7 @@ const NAV = [
   { to: '/admin/lab-bookings',   label: 'Lab Bookings',   icon: FlaskConical },
   { to: '/admin/delivery',       label: 'Delivery',       icon: Truck },
   { to: '/admin/coupons',        label: 'Coupons',        icon: Ticket },
+  { to: '/admin/brands',         label: 'Brands',         icon: Star },
   { to: '/admin/notifications',  label: 'Notifications',  icon: Bell },
   { to: '/admin/admins',         label: 'Admins',         icon: Shield, superAdminOnly: true },
   { to: '/admin/audit',          label: 'Audit Log',      icon: Shield, superAdminOnly: true },
