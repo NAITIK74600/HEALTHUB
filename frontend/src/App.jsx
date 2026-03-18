@@ -7,6 +7,7 @@ import { WishlistProvider } from './context/WishlistContext';
 import { RequireAuth, RequireAdmin, RequireSuperAdmin } from './components/ProtectedRoutes';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import ChatBot from './components/ChatBot';
 
 import Home from './pages/Home';
 import ProductCatalog from './pages/ProductCatalog';
@@ -51,6 +52,7 @@ const PublicLayout = () => (
     <Navbar />
     <Outlet />
     <Footer />
+    <ChatBot />
   </>
 );
 
