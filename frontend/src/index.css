@@ -584,7 +584,28 @@ svg { flex-shrink: 0; }
   transform: rotate(180deg);
 }
 
-/* Dropdown panel — position: fixed so it escapes ANY overflow context */
+/* "Currently browsing" underline dot — shows which category page you're on */
+.cat-nav__item--browsing .cat-nav__label::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  background: var(--primary);
+  border-radius: 50%;
+}
+.cat-nav__label { position: relative; }
+
+/* Highlight active child in dropdown */
+.cat-nav__dropdown-item--active {
+  color: var(--primary);
+  background: var(--primary-50);
+  font-weight: 600;
+}
+
+
 .cat-nav__dropdown {
   position: fixed;
   min-width: 220px;

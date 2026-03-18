@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 
 // path = direct route link; slug = /products?category=slug
@@ -132,6 +132,16 @@ export default function CategoryNav() {
   const itemRefs = useRef([]);
   const closeTimer = useRef(null);
 
+  // ── URL-based "currently browsing" highlight ──────────────────────────────
+  const location = useLocation();
+  const currentCatSlug = new URLSearchParams(location.search).get('category') || '';
+
+  // Find which top-level nav item owns the active slug (direct parent match OR child match)
+  const browsingIdx = CATEGORIES.findIndex(cat =>
+    cat.slug === currentCatSlug ||
+    cat.children?.some(child => child.slug === currentCatSlug)
+  );
+
   // Close on outside click or scroll
   useEffect(() => {
     const close = (e) => {
@@ -189,7 +199,9 @@ export default function CategoryNav() {
             return (
               <div
                 key={cat.slug}
-                className={`cat-nav__item${isActive ? ' cat-nav__item--active' : ''}`}
+                className={`cat-nav__item${
+                  isActive || browsingIdx === idx ? ' cat-nav__item--active' : ''
+                }${browsingIdx === idx && activeIdx !== idx ? ' cat-nav__item--browsing' : ''}`}
                 ref={el => { itemRefs.current[idx] = el; }}
                 onMouseEnter={() => openAt(idx)}
                 onMouseLeave={scheduleClose}
@@ -220,16 +232,20 @@ export default function CategoryNav() {
           onMouseLeave={scheduleClose}
           onClick={e => e.stopPropagation()}
         >
-          {activeCat.children.map((child) => (
-            <Link
-              key={child.path || child.slug}
-              to={child.path || `/products?category=${child.slug}`}
-              className="cat-nav__dropdown-item"
-              onClick={handleChildClick}
-            >
-              {child.label}
-            </Link>
-          ))}
+          {activeCat.children.map((child) => {
+            const childSlug = child.slug || '';
+            const isChildActive = childSlug && childSlug === currentCatSlug;
+            return (
+              <Link
+                key={child.path || child.slug}
+                to={child.path || `/products?category=${child.slug}`}
+                className={`cat-nav__dropdown-item${isChildActive ? ' cat-nav__dropdown-item--active' : ''}`}
+                onClick={handleChildClick}
+              >
+                {child.label}
+              </Link>
+            );
+          })}
         </div>
       )}
     </>

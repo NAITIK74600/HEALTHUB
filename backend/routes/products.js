@@ -22,26 +22,44 @@ const SLUG_ALIASES = {
   'keimed-generics': 'generic',
 };
 
+// ── Virtual parent-group slugs (used in CategoryNav) ────────────────────────
+// Maps a URL ?category= slug → array of real DB category slugs
 const PARENT_GROUPS = {
-  allopathic: ['allopathic', 'caps-tabs', 'liquids', 'cream-ointment', 'drop', 'powder', 'injection', 'inhaler', 'softgel-capsules', 'fluids', 'high-value', 'generic', 'fridge', 'vaccines', 'dental', 'otc'],
-  ayurvedic: ['ayurvedic', 'herbal'],
-  cosmetics: ['cosmetics', 'cream-ointment', 'lotion', 'fmcg'],
-  'baby-products': ['baby-products', 'nutrition', 'drop', 'lotion', 'powder'],
-  surgical: ['surgical', 'surgicals', 'container', 'pharma-misc'],
-  surgicals: ['surgical', 'surgicals', 'container', 'pharma-misc'],
-  herbal: ['herbal', 'ayurvedic'],
-  // CategoryNav parent slugs
-  'hair-care':          ['fmcg', 'lotion', 'cream-ointment'],
+  // ── CategoryNav top-level groups ─────────────────────────────────────────
+  // Health Resource Center
+  allopathic:           ['allopathic', 'caps-tabs', 'liquids', 'cream-ointment', 'drop', 'powder',
+                         'injection', 'inhaler', 'softgel-capsules', 'fluids', 'high-value',
+                         'generic', 'fridge', 'vaccines', 'dental', 'otc'],
+  // Hair Care group
+  'hair-care':          ['lotion', 'fmcg', 'cream-ointment', 'caps-tabs'],
+  // Fitness & Health group
   'fitness-health':     ['caps-tabs', 'softgel-capsules', 'powder', 'liquids'],
+  // Sexual Wellness group
   'sexual-wellness':    ['fmcg', 'caps-tabs'],
-  'vitamins-nutrition': ['caps-tabs', 'softgel-capsules', 'powder', 'liquids', 'drop'],
+  // Vitamins & Nutrition group
+  'vitamins-nutrition': ['caps-tabs', 'softgel-capsules', 'powder', 'liquids', 'drop', 'nutrition'],
+  // Supports & Braces group
   'supports-braces':    ['surgicals', 'container', 'pharma-misc'],
-  'immunity-boosters':  ['caps-tabs', 'liquids', 'powder'],
-  homeopathy:           ['drop', 'liquids', 'caps-tabs', 'powder'],
-  ayurveda:             ['caps-tabs', 'liquids', 'lotion', 'powder', 'cream-ointment'],
+  // Immunity Boosters group
+  'immunity-boosters':  ['caps-tabs', 'liquids', 'powder', 'drop'],
+  // Homeopathy group
+  homeopathy:           ['homeopathy', 'drop', 'liquids', 'caps-tabs', 'powder'],
+  // Ayurveda group
+  ayurveda:             ['ayurvedic', 'herbal', 'caps-tabs', 'liquids', 'lotion', 'powder', 'cream-ointment'],
+  // Skin Care group
   'skin-care':          ['cream-ointment', 'lotion', 'fmcg'],
-  'baby-care':          ['drop', 'powder', 'lotion'],
-  'diabetes-care':      ['caps-tabs', 'injection', 'surgicals', 'drop'],
+  // Baby Care group
+  'baby-care':          ['drop', 'powder', 'lotion', 'nutrition'],
+  // Diabetes Care group
+  'diabetes-care':      ['caps-tabs', 'injection', 'surgicals', 'drop', 'fluids'],
+
+  // ── Legacy / alias parent slugs ─────────────────────────────────────────
+  ayurvedic:            ['ayurvedic', 'herbal'],
+  cosmetics:            ['cream-ointment', 'lotion', 'fmcg'],
+  'baby-products':      ['nutrition', 'drop', 'lotion', 'powder'],
+  surgical:             ['surgicals', 'container', 'pharma-misc'],
+  surgicals:            ['surgicals', 'container', 'pharma-misc'],
+  herbal:               ['herbal', 'ayurvedic'],
 };
 
 function normalizeCategorySlug(input = '') {
@@ -94,11 +112,15 @@ function mapProduct(row) {
 }
 
 async function resolveCategoryIds(categoryParam) {
-  if (!categoryParam) return [];
+  if (!categoryParam) return null; // null = no filter (show all)
   const raw = String(categoryParam).trim();
-  if (!raw) return [];
+  if (!raw) return null;
 
-  if (/^\d+$/.test(raw)) return [Number(raw)];
+  // Numeric ID — direct lookup
+  if (/^\d+$/.test(raw)) {
+    const rows = await query('SELECT id FROM categories WHERE id = ? AND is_deleted = 0 LIMIT 1', [Number(raw)]);
+    return rows.length ? [Number(raw)] : []; // [] = empty/invalid → 0 results
+  }
 
   const slug = normalizeCategorySlug(raw);
   const group = PARENT_GROUPS[slug] || [slug];
@@ -106,6 +128,9 @@ async function resolveCategoryIds(categoryParam) {
     `SELECT id FROM categories WHERE is_deleted = 0 AND slug IN (${group.map(() => '?').join(', ')})`,
     group
   );
+  // If slug matched a group but none of the sub-slugs are seeded yet, return null (show all)
+  // rather than [] which would return 0 products
+  if (!rows.length) return null;
   return rows.map((row) => Number(row.id));
 }
 
@@ -199,11 +224,13 @@ router.get('/', [
     const page = Number(req.query.page || 1);
     const limit = Number(req.query.limit || 20);
     const categoryIds = await resolveCategoryIds(req.query.category);
-    if (req.query.category && !categoryIds.length) {
+    // [] means a specific numeric ID was requested but not found → 0 results
+    if (Array.isArray(categoryIds) && !categoryIds.length) {
       return res.json({ products: [], total: 0, page, pages: 0 });
     }
+    // null means unknown slug with no DB match → show all products (graceful fallback)
 
-    const { whereSql, values } = buildProductWhere({ params: req.query, categoryIds });
+    const { whereSql, values } = buildProductWhere({ params: req.query, categoryIds: categoryIds || [] });
     const [products, totalRows] = await Promise.all([
       fetchProducts({ whereSql, values, sort: sortSql(req.query.sort), limit, offset: (page - 1) * limit }),
       query(`SELECT COUNT(*) AS total FROM products p ${whereSql}`, values),
@@ -234,11 +261,11 @@ router.get('/admin/list', requireAuth, requireAdmin, async (req, res, next) => {
     const page = Number(req.query.page || 1);
     const limit = Number(req.query.limit || 20);
     const categoryIds = await resolveCategoryIds(req.query.category);
-    if (req.query.category && !categoryIds.length) {
+    if (Array.isArray(categoryIds) && !categoryIds.length) {
       return res.json({ products: [], total: 0, page, pages: 0 });
     }
 
-    const { whereSql, values } = buildProductWhere({ admin: true, params: req.query, categoryIds });
+    const { whereSql, values } = buildProductWhere({ admin: true, params: req.query, categoryIds: categoryIds || [] });
     const [products, totalRows] = await Promise.all([
       fetchProducts({ whereSql, values, sort: sortSql(req.query.sort, true), limit, offset: (page - 1) * limit }),
       query(`SELECT COUNT(*) AS total FROM products p ${whereSql}`, values),
