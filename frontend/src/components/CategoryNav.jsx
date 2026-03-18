@@ -59,10 +59,9 @@ const CATEGORIES = [
     label: 'Supports & Braces',
     slug: 'supports-braces',
     children: [
-      { label: 'Back & Neck Support',        slug: 'surgicals' },
-      { label: 'Knee & Joint Support',       slug: 'surgicals' },
-      { label: 'Medical Equipment',          slug: 'pharma-misc' },
-      { label: 'Devices & Containers',       slug: 'container' },
+      { label: 'Surgical Supports',       slug: 'surgicals' },
+      { label: 'Medical Equipment',        slug: 'pharma-misc' },
+      { label: 'Devices & Containers',     slug: 'container' },
     ],
   },
   {
