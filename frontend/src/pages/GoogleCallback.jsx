@@ -10,6 +10,12 @@ export default function GoogleCallback() {
   const { setUser } = useAuth();
   const processed = useRef(false);
 
+  const getDefaultRedirectUri = () => {
+    const host = window.location.hostname.toLowerCase();
+    if (host === 'www.batlamedicos.shop') return 'https://batlamedicos.shop/google-callback';
+    return `${window.location.origin}/google-callback`;
+  };
+
   useEffect(() => {
     if (processed.current) return;
     processed.current = true;
@@ -29,7 +35,7 @@ export default function GoogleCallback() {
       return;
     }
 
-    const redirectUri = import.meta.env.VITE_GOOGLE_REDIRECT_URI || `${window.location.origin}/google-callback`;
+    const redirectUri = import.meta.env.VITE_GOOGLE_REDIRECT_URI || getDefaultRedirectUri();
 
     (async () => {
       try {

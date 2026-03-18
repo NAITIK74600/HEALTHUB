@@ -12,10 +12,16 @@ const GOOGLE_SVG = (
 export default function GoogleSignInButton({ redirectTo }) {
   const [loading, setLoading] = useState(false);
 
+  const getDefaultRedirectUri = () => {
+    const host = window.location.hostname.toLowerCase();
+    if (host === 'www.batlamedicos.shop') return 'https://batlamedicos.shop/google-callback';
+    return `${window.location.origin}/google-callback`;
+  };
+
   const handleClick = () => {
     setLoading(true);
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    const redirectUri = import.meta.env.VITE_GOOGLE_REDIRECT_URI || `${window.location.origin}/google-callback`;
+    const redirectUri = import.meta.env.VITE_GOOGLE_REDIRECT_URI || getDefaultRedirectUri();
     const scope = 'email profile';
 
     const url = `https://accounts.google.com/o/oauth2/v2/auth?` +
