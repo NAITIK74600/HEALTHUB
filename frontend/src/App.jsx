@@ -60,6 +60,15 @@ const PublicLayout = () => (
   </>
 );
 
+// Auth pages — Navbar only, no CategoryNav or ChatBot
+const AuthLayout = () => (
+  <>
+    <Navbar />
+    <Outlet />
+    <Footer />
+  </>
+);
+
 // Standalone layout for delivery partners — no Navbar/Footer/ChatBot visible on main site
 const DeliveryLayout = () => (
   <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
@@ -92,9 +101,6 @@ export default function App() {
                 <Route path="/products" element={<ProductCatalog />} />
                 <Route path="/diseases" element={<Diseases />} />
                 <Route path="/products/:slug" element={<ProductDetail />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/google-callback" element={<GoogleCallback />} />
                 <Route path="/checkout" element={<RequireAuth><Checkout /></RequireAuth>} />
                 <Route path="/orders" element={<RequireAuth><Orders /></RequireAuth>} />
                 <Route path="/orders/:id" element={<RequireAuth><OrderDetail /></RequireAuth>} />
@@ -103,11 +109,16 @@ export default function App() {
                 <Route path="/prescriptions" element={<RequireAuth><Prescriptions /></RequireAuth>} />
                 <Route path="/reminders" element={<RequireAuth><Reminders /></RequireAuth>} />
                 <Route path="/account" element={<RequireAuth><Account /></RequireAuth>} />
+                <Route path="/lab" element={<LabTests />} />
+                <Route path="/lab/bookings" element={<RequireAuth><LabBookings /></RequireAuth>} />
+              </Route>
+              <Route element={<AuthLayout />}>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/google-callback" element={<GoogleCallback />} />
                 <Route path="/verify-email" element={<VerifyEmail />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/lab" element={<LabTests />} />
-                <Route path="/lab/bookings" element={<RequireAuth><LabBookings /></RequireAuth>} />
               </Route>
               <Route element={<DeliveryLayout />}>
                 <Route path="/delivery" element={<RequireAuth><DeliveryPanel /></RequireAuth>} />

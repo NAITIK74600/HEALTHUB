@@ -169,6 +169,44 @@ async function ensureCoreSchema() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
 
+  await execute(`
+    CREATE TABLE IF NOT EXISTS coupons (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      code VARCHAR(50) NOT NULL,
+      discount_type ENUM('percent', 'flat') NOT NULL DEFAULT 'percent',
+      discount_value DECIMAL(10,2) NOT NULL DEFAULT 0,
+      min_order_value DECIMAL(10,2) NOT NULL DEFAULT 0,
+      max_discount DECIMAL(10,2) NULL,
+      max_uses INT NULL,
+      uses_count INT NOT NULL DEFAULT 0,
+      expires_at DATETIME NULL,
+      is_active TINYINT(1) NOT NULL DEFAULT 1,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_coupons_code (code)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await execute(`
+    CREATE TABLE IF NOT EXISTS delivery_boys (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      user_id BIGINT UNSIGNED NOT NULL,
+      name VARCHAR(100) NOT NULL DEFAULT '',
+      phone VARCHAR(20) NOT NULL DEFAULT '',
+      email VARCHAR(190) NOT NULL DEFAULT '',
+      status ENUM('pending','active','suspended') NOT NULL DEFAULT 'pending',
+      is_available TINYINT(1) NOT NULL DEFAULT 0,
+      lat DECIMAL(10,8) NULL,
+      lng DECIMAL(11,8) NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_delivery_boys_user (user_id),
+      CONSTRAINT fk_delivery_boys_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
   await ensureSuperAdmin();
   initialized = true;
 }

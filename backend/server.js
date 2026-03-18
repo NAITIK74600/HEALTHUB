@@ -18,7 +18,9 @@ const categoryRoutes     = require('./routes/categories');
 const brandRoutes        = require('./routes/brands');
 const chatRoutes         = require('./routes/chat');
 const adminRoutes        = require('./routes/admin');
-const geocodeRoutes       = require('./routes/geocode');
+const geocodeRoutes      = require('./routes/geocode');
+const couponRoutes       = require('./routes/coupons');
+const deliveryRoutes     = require('./routes/delivery');
 
 const app = express();
 
@@ -126,8 +128,8 @@ app.use('/api/notifications',  unsupportedRoute('Notifications are temporarily u
 app.use('/api/prescriptions',  unsupportedRoute('Prescriptions are temporarily unavailable during MySQL migration.'));
 app.use('/api/lab',            unsupportedRoute('Lab services are temporarily unavailable during MySQL migration.'));
 app.use('/api/geocode',        geocodeRoutes);
-app.use('/api/delivery',       unsupportedRoute('Delivery panel is temporarily unavailable during MySQL migration.'));
-app.use('/api/coupons',        unsupportedRoute('Coupons are temporarily unavailable during MySQL migration.'));
+app.use('/api/delivery',       deliveryRoutes);
+app.use('/api/coupons',        couponRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => {
