@@ -698,8 +698,8 @@ router.delete('/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })]
 });
 
 // ── Dedicated image management (add / remove) — NO Cloudinary dependency ────
-// Uses MySQL JSON_ARRAY_APPEND / direct write to avoid parseImages bugs
-router.patch('/:id/images', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })], async (req, res, next) => {
+// Uses POST instead of PATCH to avoid Apache/Passenger blocking non-standard methods
+router.post('/:id/images', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })], async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
