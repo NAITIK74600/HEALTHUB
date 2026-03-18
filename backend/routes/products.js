@@ -738,6 +738,48 @@ router.delete('/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })]
   } catch (err) { next(err); }
 });
 
+// ── Dedicated image management (add / remove) ──────────────────────────────
+router.patch('/:id/images', requireAuth, requireAdmin, upload.array('images', 5), [param('id').isInt({ min: 1 })], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+
+    const rows = await query('SELECT id, images_json FROM products WHERE id = ? AND is_deleted = 0 LIMIT 1', [req.params.id]);
+    if (!rows.length) return res.status(404).json({ message: 'Product not found.' });
+
+    let images = parseImages(rows[0].images_json);
+
+    // Remove specified images
+    if (req.body.removeImages) {
+      let toRemove = [];
+      try { toRemove = typeof req.body.removeImages === 'string' ? JSON.parse(req.body.removeImages) : req.body.removeImages; } catch {}
+      if (Array.isArray(toRemove) && toRemove.length) {
+        for (const imgUrl of toRemove) {
+          const publicId = extractPublicId(imgUrl);
+          if (publicId) await deleteByPublicId(publicId).catch(() => {});
+        }
+        images = images.filter(u => !toRemove.includes(u));
+      }
+    }
+
+    // Upload new files to Cloudinary
+    if (req.files?.length) {
+      for (const file of req.files) {
+        const { url } = await uploadBuffer(file.buffer, 'batla-medicos/products');
+        images.unshift(url);
+      }
+    }
+
+    // Add image by URL
+    if (req.body.imageUrl && /^https?:\/\//i.test(String(req.body.imageUrl).trim())) {
+      images.unshift(String(req.body.imageUrl).trim());
+    }
+
+    await execute('UPDATE products SET images_json = ? WHERE id = ?', [JSON.stringify(images), req.params.id]);
+    res.json({ images });
+  } catch (err) { next(err); }
+});
+
 router.patch('/:id/quick-update', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })], async (req, res, next) => {
   try {
     const errors = validationResult(req);
