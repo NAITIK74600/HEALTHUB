@@ -1,14 +1,22 @@
-import { Phone, MessageCircle, MapPin, Plus, Shield, Mail } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { Phone, MessageCircle, MapPin, Plus, Shield, Mail, Clock, Navigation, ChevronRight } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 
-const FULL_FOOTER_PATHS = ['/', '/products'];
+const GOOGLE_MAPS_URL = 'https://maps.app.goo.gl/W4Qtps1fKbArBvz17';
+
+const QUICK_LINKS = [
+  { label: 'All Products',      to: '/products' },
+  { label: 'Lab Tests',         to: '/lab' },
+  { label: 'Upload Prescription', to: '/prescriptions' },
+  { label: 'My Orders',         to: '/orders' },
+  { label: 'My Account',        to: '/account' },
+];
 
 export default function Footer() {
   const WHATSAPP = import.meta.env.VITE_WHATSAPP_NUMBER || '919990165925';
   const { pathname } = useLocation();
-  const isFull = FULL_FOOTER_PATHS.includes(pathname) || pathname.startsWith('/products');
+  const isMinimal = pathname.startsWith('/admin') || pathname.startsWith('/login') || pathname.startsWith('/register');
 
-  if (!isFull) {
+  if (isMinimal) {
     return (
       <footer className="footer footer--minimal">
         <span>&copy; {new Date().getFullYear()} <strong>Batla Medicos</strong> — All rights reserved.</span>
@@ -22,38 +30,88 @@ export default function Footer() {
   return (
     <footer className="footer">
       <div className="footer__inner">
+
+        {/* ── Column 1: Brand ── */}
         <div className="footer__brand">
-          <h3>
-            <div className="footer__brand-logo"><Plus size={18} color="white" strokeWidth={3} /></div>
-            <span className="brand-gradient">Batla Medicos</span>
-          </h3>
-          <p>Your trusted neighbourhood chemist &amp; cosmetics store serving Batla House, Jamia Nagar since 2005.</p>
+          <div className="footer__logo">
+            <div className="footer__logo-icon">
+              <svg viewBox="0 0 40 40" width="22" height="22" fill="none">
+                <rect x="16" y="3" width="8" height="34" rx="4" fill="white" opacity="0.95"/>
+                <rect x="3" y="16" width="34" height="8" rx="4" fill="white" opacity="0.95"/>
+              </svg>
+            </div>
+            <div className="footer__logo-text">
+              <span className="footer__logo-name">Batla Medicos</span>
+              <span className="footer__logo-tagline">Chemist &amp; Cosmetics</span>
+            </div>
+          </div>
+          <p>Your trusted neighbourhood pharmacy serving Batla House, Jamia Nagar since 2005. Genuine medicines, free delivery.</p>
           <div className="footer__services">
-            {['Allopathic', 'Ayurvedic', 'Cosmetics', 'Baby Products', 'Surgical', 'Free Delivery'].map(s => (
-              <span key={s} className="footer__service-chip"><Shield size={11} /> {s}</span>
+            {['Allopathic', 'Ayurvedic', 'Cosmetics', 'Baby Care', 'Surgical', 'Free Delivery'].map(s => (
+              <span key={s} className="footer__service-chip"><Shield size={10} /> {s}</span>
             ))}
           </div>
         </div>
+
+        {/* ── Column 2: Store Info ── */}
         <div className="footer__info">
           <h4>Store Information</h4>
-          <p><MapPin size={15} /> F 41/2, Nafees Road, Batla House,<br />Jamia Nagar, New Delhi – 110025</p>
-          <a href="tel:+919990165925"><Phone size={15} /> 9990165925</a>
-          <a href="mailto:ordersupport@batlamedicos.shop" style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}><Mail size={15} /> ordersupport@batlamedicos.shop</a>
+          <a href={GOOGLE_MAPS_URL} target="_blank" rel="noopener noreferrer">
+            <MapPin size={15} />
+            <span>F 41/2, Nafees Road, Batla House,<br />Jamia Nagar, New Delhi – 110025</span>
+          </a>
+          <a href="tel:+919990165925"><Phone size={14} /> +91 99901 65925</a>
+          <a href="mailto:ordersupport@batlamedicos.shop"><Mail size={14} /> ordersupport@batlamedicos.shop</a>
+          <div className="footer__hours">
+            <Clock size={14} />
+            <div>
+              <div className="footer__hours-row"><span>Mon – Sat</span><span>9:00 AM – 9:00 PM</span></div>
+              <div className="footer__hours-row"><span>Sunday</span><span>10:00 AM – 7:00 PM</span></div>
+            </div>
+          </div>
+          <a href={GOOGLE_MAPS_URL} target="_blank" rel="noopener noreferrer" className="footer__map-link">
+            <Navigation size={13} /> Get Directions on Google Maps
+          </a>
         </div>
+
+        {/* ── Column 3: Quick Links ── */}
+        <div className="footer__links">
+          <h4>Quick Links</h4>
+          <ul>
+            {QUICK_LINKS.map(l => (
+              <li key={l.to}>
+                <Link to={l.to}><ChevronRight size={13} /> {l.label}</Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* ── Column 4: Contact ── */}
         <div className="footer__contact">
           <h4>Quick Contact</h4>
           <a
             href={`https://wa.me/${WHATSAPP}?text=Hi%2C%20I%20want%20to%20place%20an%20order`}
             target="_blank" rel="noopener noreferrer"
-            className="btn btn--whatsapp"
+            className="footer__contact-btn footer__contact-btn--wa"
           >
-            <MessageCircle size={18} /> WhatsApp Us
+            <MessageCircle size={17} /> WhatsApp Order
           </a>
+          <a href="tel:+919990165925" className="footer__contact-btn footer__contact-btn--phone">
+            <Phone size={17} /> Call the Store
+          </a>
+          <a href="mailto:ordersupport@batlamedicos.shop" className="footer__contact-btn footer__contact-btn--email">
+            <Mail size={17} /> Email Support
+          </a>
+          <div className="footer__note">
+            <Shield size={12} /> 100% Genuine &amp; Licensed medicines
+          </div>
         </div>
+
       </div>
       <div className="footer__copy">
-        &copy; {new Date().getFullYear()} Batla Medicos Chemist &amp; Cosmetics — All rights reserved.
+        &copy; {new Date().getFullYear()} Batla Medicos Chemist &amp; Cosmetics, New Delhi — All rights reserved.
       </div>
     </footer>
   );
 }
+

@@ -6,7 +6,7 @@ import {
   Stethoscope, Pill, Leaf, Sparkles, Baby, Scissors, Hospital, Star, Heart, Syringe,
   Droplets, Droplet, FlaskConical, Wind, Thermometer, ShoppingBag, Box,
   TestTube, Package, GlassWater, Gem, LayoutGrid, Activity,
-  SmilePlus, Users, Zap, Shield, Award, FileText, UploadCloud, CheckCircle, BadgePercent,
+  SmilePlus, Users, Zap, Shield, Award, FileText, BadgePercent,
 } from 'lucide-react';
 import { getActiveOffers } from '../api/offers';
 import { getCategories } from '../api/categories';
@@ -427,31 +427,6 @@ export default function Home() {
         </section>
       )}
 
-      {/* ════════════ PRESCRIPTION UPLOAD CTA ═══════════════════════════ */}
-      <section className="rx-cta-section">
-        <div className="container">
-          <div className="rx-cta-card">
-            <div className="rx-cta-card__left">
-              <div className="rx-cta-card__icon-wrap">
-                <FileText size={40} />
-              </div>
-              <div className="rx-cta-card__body">
-                <h3>Upload Your Prescription</h3>
-                <p>Pharmacist verifies &amp; prepares your order within minutes. Doorstep delivery available.</p>
-                <ul className="rx-cta-card__steps">
-                  <li><CheckCircle size={14} /> Upload prescription photo</li>
-                  <li><CheckCircle size={14} /> Pharmacist verifies &amp; packs</li>
-                  <li><CheckCircle size={14} /> Fast doorstep delivery</li>
-                </ul>
-              </div>
-            </div>
-            <Link to="/prescriptions" className="btn btn--primary btn--lg rx-cta-card__btn">
-              <UploadCloud size={20} /> Upload Prescription
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* ════════════ WHY CHOOSE US ══════════════════════════════════════ */}
       <section className="section why-section">
         <div className="container">
@@ -471,28 +446,26 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ════════════════════ STORE MAP ══════════════════════════════════ */}
-      <section className="section map-section">
-        <div className="container">
-          <h2 className="section__title" style={{ justifyContent: 'center', marginBottom: '6px' }}>
-            <MapPin size={20} /> Visit Us In-Store
-          </h2>
-          <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px', marginBottom: '24px' }}>{STORE_ADDRESS}</p>
-          <div className="map-wrapper">
-            <div className="map-card">
-              <div className="map-card__pin"><MapPin size={24} /></div>
-              <div className="map-card__content">
-                <h3>Batla Medicos</h3>
-                <p>{STORE_ADDRESS}</p>
-                <div className="map-card__actions">
-                  <a href={GOOGLE_MAPS_URL} target="_blank" rel="noopener noreferrer" className="btn btn--primary"><Navigation size={16} /> Get Directions</a>
-                  <a href={GOOGLE_MAPS_URL} target="_blank" rel="noopener noreferrer" className="btn btn--outline"><ExternalLink size={16} /> Open in Maps</a>
-                </div>
-              </div>
+      {/* ════════════════════ STORE MAP STRIP ═══════════════════════════ */}
+      <div className="map-strip">
+        <div className="map-strip__inner">
+          <div className="map-strip__left">
+            <div className="map-strip__pin"><MapPin size={18} /></div>
+            <div>
+              <div className="map-strip__name">Batla Medicos — Batla House, Jamia Nagar</div>
+              <div className="map-strip__addr">{STORE_ADDRESS}</div>
             </div>
           </div>
+          <div className="map-strip__actions">
+            <a href={GOOGLE_MAPS_URL} target="_blank" rel="noopener noreferrer" className="map-strip__btn map-strip__btn--primary">
+              <Navigation size={14} /> Get Directions
+            </a>
+            <a href={GOOGLE_MAPS_URL} target="_blank" rel="noopener noreferrer" className="map-strip__btn map-strip__btn--outline">
+              <ExternalLink size={14} /> Open Maps
+            </a>
+          </div>
         </div>
-      </section>
+      </div>
     </main>
   );
 }
