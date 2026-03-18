@@ -329,9 +329,3 @@ router.post('/', chatLimit, async (req, res) => {
 });
 
 module.exports = router;
-
-    res.status(500).json({ message: 'Chat is temporarily unavailable. Please try again shortly.' });
-  }
-});
-
-module.exports = router;
