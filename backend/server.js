@@ -1,5 +1,7 @@
-// Load backend/.env (override: true so .env wins over Passenger-injected empty vars)
+// Load backend/.env (override: true so .env wins over env vars, except PORT which Passenger controls)
+const _savedPort = process.env.PORT;
 require('dotenv').config({ path: require('path').join(__dirname, '.env'), override: true });
+if (_savedPort) process.env.PORT = _savedPort;
 const path = require('path');
 const express = require('express');
 const helmet = require('helmet');
