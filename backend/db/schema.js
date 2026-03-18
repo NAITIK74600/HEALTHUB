@@ -207,8 +207,87 @@ async function ensureCoreSchema() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
 
+  await execute(`
+    CREATE TABLE IF NOT EXISTS lab_tests (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      name VARCHAR(200) NOT NULL,
+      slug VARCHAR(210) NOT NULL,
+      category ENUM('blood','urine','stool','imaging','cardiac','hormones','vitamins','other') NOT NULL DEFAULT 'other',
+      description TEXT NULL,
+      sample_type VARCHAR(100) NOT NULL DEFAULT 'Blood',
+      turnaround_time VARCHAR(50) NOT NULL DEFAULT '24 hrs',
+      parameters_json JSON NULL,
+      price DECIMAL(10,2) NOT NULL DEFAULT 0,
+      home_collection TINYINT(1) NOT NULL DEFAULT 1,
+      is_active TINYINT(1) NOT NULL DEFAULT 1,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_lab_tests_slug (slug),
+      KEY idx_lab_tests_category_active (category, is_active)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await execute(`
+    CREATE TABLE IF NOT EXISTS lab_bookings (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      user_id BIGINT UNSIGNED NOT NULL,
+      test_ids_json JSON NOT NULL,
+      test_snapshots_json JSON NOT NULL,
+      total_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
+      patient_name VARCHAR(100) NOT NULL,
+      patient_age INT NULL,
+      patient_gender ENUM('male','female','other') NOT NULL DEFAULT 'male',
+      phone VARCHAR(20) NOT NULL,
+      collection_type ENUM('home','walkin') NOT NULL DEFAULT 'home',
+      address_json JSON NULL,
+      booking_date DATE NOT NULL,
+      slot VARCHAR(50) NOT NULL,
+      status ENUM('pending','confirmed','sample_collected','processing','report_ready','completed','cancelled') NOT NULL DEFAULT 'pending',
+      report_url VARCHAR(500) NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      KEY idx_lab_bookings_user (user_id),
+      KEY idx_lab_bookings_status (status),
+      KEY idx_lab_bookings_date (booking_date),
+      CONSTRAINT fk_lab_bookings_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await seedDefaultLabTests();
   await ensureSuperAdmin();
   initialized = true;
+}
+
+async function seedDefaultLabTests() {
+  const [[{ cnt }]] = await query('SELECT COUNT(*) AS cnt FROM lab_tests', []);
+  if (Number(cnt) > 0) return; // already seeded
+
+  const tests = [
+    { name: 'Complete Blood Count (CBC)', slug: 'complete-blood-count-cbc', category: 'blood',    description: 'Measures all blood cell components including RBC, WBC and platelets.', sample_type: 'Blood',  turnaround_time: '24 hrs',  parameters_json: JSON.stringify(['RBC','WBC','Haemoglobin','Platelets','Haematocrit']), price: 249,  home_collection: 1 },
+    { name: 'Blood Sugar Fasting',        slug: 'blood-sugar-fasting',        category: 'blood',    description: 'Measures glucose level after 8–12 hours of fasting.',                   sample_type: 'Blood',  turnaround_time: '24 hrs',  parameters_json: JSON.stringify(['Fasting Glucose']),                                  price: 99,   home_collection: 1 },
+    { name: 'HbA1c (Diabetes Panel)',     slug: 'hba1c-diabetes-panel',       category: 'blood',    description: 'Reflects average blood sugar over the past 2–3 months.',               sample_type: 'Blood',  turnaround_time: '24 hrs',  parameters_json: JSON.stringify(['HbA1c','Fasting Glucose']),                          price: 349,  home_collection: 1 },
+    { name: 'Thyroid Profile (T3,T4,TSH)',slug: 'thyroid-profile-t3-t4-tsh',  category: 'hormones', description: 'Evaluates thyroid gland function.',                                     sample_type: 'Blood',  turnaround_time: '48 hrs',  parameters_json: JSON.stringify(['T3','T4','TSH']),                                    price: 499,  home_collection: 1 },
+    { name: 'Lipid Profile',              slug: 'lipid-profile',              category: 'cardiac',  description: 'Measures cholesterol, HDL, LDL and triglycerides.',                    sample_type: 'Blood',  turnaround_time: '24 hrs',  parameters_json: JSON.stringify(['Total Cholesterol','HDL','LDL','Triglycerides']),   price: 399,  home_collection: 1 },
+    { name: 'Kidney Function Test (KFT)', slug: 'kidney-function-test-kft',   category: 'blood',    description: 'Assesses kidney health via creatinine, urea and uric acid.',            sample_type: 'Blood',  turnaround_time: '24 hrs',  parameters_json: JSON.stringify(['Creatinine','Urea','Uric Acid','eGFR']),             price: 449,  home_collection: 1 },
+    { name: 'Liver Function Test (LFT)',  slug: 'liver-function-test-lft',    category: 'blood',    description: 'Checks liver enzymes, bilirubin and protein levels.',                  sample_type: 'Blood',  turnaround_time: '24 hrs',  parameters_json: JSON.stringify(['SGOT','SGPT','Bilirubin','ALT','AST']),              price: 449,  home_collection: 1 },
+    { name: 'Vitamin D (25-OH)',          slug: 'vitamin-d-25-oh',            category: 'vitamins', description: 'Checks vitamin D deficiency, common in India.',                        sample_type: 'Blood',  turnaround_time: '48 hrs',  parameters_json: JSON.stringify(['25-OH Vitamin D']),                                  price: 649,  home_collection: 1 },
+    { name: 'Vitamin B12',               slug: 'vitamin-b12',                category: 'vitamins', description: 'Measures B12 level; deficiency causes fatigue & nerve issues.',        sample_type: 'Blood',  turnaround_time: '48 hrs',  parameters_json: JSON.stringify(['Vitamin B12']),                                      price: 449,  home_collection: 1 },
+    { name: 'Full Body Checkup',          slug: 'full-body-checkup',          category: 'blood',    description: 'Comprehensive health screen covering 72+ parameters.',                  sample_type: 'Blood',  turnaround_time: '48 hrs',  parameters_json: JSON.stringify(['CBC','LFT','KFT','Lipid Profile','Thyroid','HbA1c','Vitamin D','Vitamin B12']), price: 1499, home_collection: 1 },
+    { name: 'Urine Routine & Microscopy', slug: 'urine-routine-microscopy',   category: 'urine',    description: 'Screens for infection, diabetes, kidney disease via urine analysis.',   sample_type: 'Urine', turnaround_time: '24 hrs',  parameters_json: JSON.stringify(['Protein','Glucose','Pus Cells','RBC']),              price: 149,  home_collection: 1 },
+    { name: 'Dengue NS1 Antigen',         slug: 'dengue-ns1-antigen',         category: 'blood',    description: 'Early detection of dengue fever infection.',                            sample_type: 'Blood',  turnaround_time: '24 hrs',  parameters_json: JSON.stringify(['NS1 Antigen']),                                      price: 499,  home_collection: 1 },
+  ];
+
+  for (const t of tests) {
+    try {
+      await execute(
+        `INSERT IGNORE INTO lab_tests (name, slug, category, description, sample_type, turnaround_time, parameters_json, price, home_collection)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [t.name, t.slug, t.category, t.description, t.sample_type, t.turnaround_time, t.parameters_json, t.price, t.home_collection]
+      );
+    } catch (_) { /* skip duplicates */ }
+  }
 }
 
 async function ensureSuperAdmin() {

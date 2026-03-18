@@ -21,6 +21,7 @@ const adminRoutes        = require('./routes/admin');
 const geocodeRoutes      = require('./routes/geocode');
 const couponRoutes       = require('./routes/coupons');
 const deliveryRoutes     = require('./routes/delivery');
+const labRoutes          = require('./routes/lab');
 
 const app = express();
 
@@ -126,7 +127,7 @@ app.use('/api/admin',        adminRoutes);
 app.use('/api/reviews',      unsupportedRoute('Reviews are temporarily unavailable during MySQL migration.'));
 app.use('/api/notifications',  unsupportedRoute('Notifications are temporarily unavailable during MySQL migration.'));
 app.use('/api/prescriptions',  unsupportedRoute('Prescriptions are temporarily unavailable during MySQL migration.'));
-app.use('/api/lab',            unsupportedRoute('Lab services are temporarily unavailable during MySQL migration.'));
+app.use('/api/lab',            labRoutes);
 app.use('/api/geocode',        geocodeRoutes);
 app.use('/api/delivery',       deliveryRoutes);
 app.use('/api/coupons',        couponRoutes);

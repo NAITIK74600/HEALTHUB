@@ -12,6 +12,7 @@ import { getActiveOffers } from '../api/offers';
 import { getCategories } from '../api/categories';
 import { getProducts } from '../api/products';
 import { getBrands } from '../api/brands';
+import { getLabTests } from '../api/lab';
 import ProductCard from '../components/ProductCard';
 import OfferBanner from '../components/OfferBanner';
 
@@ -147,6 +148,7 @@ export default function Home() {
   const [featuredBrands, setFeaturedBrands] = useState([]);
   const [ayurvedaBrands, setAyurvedaBrands] = useState([]);
   const [countdown, setCountdown]   = useState({ h: 0, m: 0, s: 0 });
+  const [labTests, setLabTests]       = useState([]);
 
   useEffect(() => {
     const tick = () => {
@@ -171,6 +173,7 @@ export default function Home() {
     getProducts({ limit: 8, sort: 'price_asc' }).then(r => setFeatured(r.data.products)).catch(() => {});
     getBrands({ category: 'featured'  }).then(r => setFeaturedBrands(r.data.brands || [])).catch(() => {});
     getBrands({ category: 'ayurvedic' }).then(r => setAyurvedaBrands(r.data.brands || [])).catch(() => {});
+    getLabTests({ limit: 6 }).then(r => setLabTests(r.data.tests || [])).catch(() => {});
   }, []);
 
   const WHATSAPP = import.meta.env.VITE_WHATSAPP_NUMBER || '919990165925';
@@ -369,7 +372,7 @@ export default function Home() {
                 <p>On selected medicines, lab tests &amp; health essentials. Don't miss out!</p>
                 <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1.2rem' }}>
                   <Link to="/products" className="btn btn--white btn--lg">Shop Now <ChevronRight size={16} /></Link>
-                  <Link to="/lab-tests" className="btn btn--outline-white btn--lg">Book Lab Test</Link>
+                  <Link to="/lab" className="btn btn--outline-white btn--lg">Book Lab Test</Link>
                 </div>
               </div>
               <div className="deal-card__timer">
@@ -395,6 +398,34 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ════════════ PATHOLOGY TESTS ══════════════════════════════════ */}
+      {labTests.length > 0 && (
+        <section className="section">
+          <div className="container">
+            <div className="section__header">
+              <h2 className="section__title">Pathology Tests <span className="lab-section__badge">UP TO 70% OFF</span></h2>
+              <Link to="/lab" className="section__link">See all <ChevronRight size={14} /></Link>
+            </div>
+            <div className="lab-home-grid">
+              {labTests.map(test => (
+                <Link key={test._id} to="/lab" className="lab-home-card">
+                  <div className="lab-home-card__icon">
+                    <FlaskConical size={22} />
+                  </div>
+                  <div className="lab-home-card__body">
+                    <div className="lab-home-card__name">{test.name}</div>
+                    {test.parameters?.length > 0 && (
+                      <div className="lab-home-card__params">{test.parameters.slice(0, 3).join(', ')}</div>
+                    )}
+                  </div>
+                  <div className="lab-home-card__price">₹{test.price}</div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ════════════ PRESCRIPTION UPLOAD CTA ═══════════════════════════ */}
       <section className="rx-cta-section">
