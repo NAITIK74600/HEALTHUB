@@ -3,7 +3,7 @@ const multer = require('multer');
 const ALLOWED_IMG_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
-// Memory storage — file buffer passed directly to Cloudinary / parser
+// Memory storage — file buffer kept in memory for further processing
 const storage = multer.memoryStorage();
 
 // ── Image / PDF uploader (product images, prescription files) ─────────────────
