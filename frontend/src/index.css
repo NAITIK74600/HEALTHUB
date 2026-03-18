@@ -528,6 +528,97 @@ svg { flex-shrink: 0; }
 }
 
 /* ================================================================
+   CATEGORY NAV — horizontal scrolling bar with dropdowns (1mg-style)
+   ================================================================ */
+.cat-nav {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  position: sticky;
+  top: var(--nav-h, 64px);
+  z-index: 90;
+}
+.cat-nav__scroll {
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  scrollbar-width: none;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+.cat-nav__scroll::-webkit-scrollbar { display: none; }
+
+.cat-nav__item {
+  position: relative;
+  flex-shrink: 0;
+}
+.cat-nav__label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  padding: 11px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-700);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  cursor: pointer;
+}
+.cat-nav__item:hover .cat-nav__label,
+.cat-nav__item--active .cat-nav__label {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+.cat-nav__chevron {
+  transition: transform 0.18s;
+  flex-shrink: 0;
+}
+.cat-nav__item--active .cat-nav__chevron {
+  transform: rotate(180deg);
+}
+
+/* Dropdown panel */
+.cat-nav__dropdown {
+  position: absolute;
+  top: calc(100% + 1px);
+  left: 0;
+  min-width: 220px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 0 0 var(--r-lg) var(--r-lg);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  z-index: 200;
+  padding: 6px 0;
+  animation: catDropIn 0.14s ease;
+}
+@keyframes catDropIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.cat-nav__dropdown-item {
+  display: block;
+  padding: 9px 18px;
+  font-size: 13px;
+  color: var(--gray-700);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s;
+}
+.cat-nav__dropdown-item:hover {
+  background: var(--primary-50);
+  color: var(--primary);
+}
+
+/* Mobile: hide cat-nav below 640px (cramped) */
+@media (max-width: 640px) {
+  .cat-nav__label { padding: 10px 11px; font-size: 12px; }
+  .cat-nav__scroll { padding: 0 8px; }
+}
+
+/* ================================================================
    SECTION LAYOUT
    ================================================================ */
 .section {

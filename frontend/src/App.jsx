@@ -8,6 +8,7 @@ import { RequireAuth, RequireAdmin, RequireSuperAdmin } from './components/Prote
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ChatBot from './components/ChatBot';
+import CategoryNav from './components/CategoryNav';
 import { Truck } from 'lucide-react';
 
 import Home from './pages/Home';
@@ -51,6 +52,7 @@ import AdminBrands from './pages/admin/AdminBrands';
 const PublicLayout = () => (
   <>
     <Navbar />
+    <CategoryNav />
     <Outlet />
     <Footer />
     <ChatBot />
