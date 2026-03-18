@@ -58,7 +58,9 @@ router.post('/', chatLimit, async (req, res) => {
     const { getGeminiKey } = require('../utils/gemini');
     const geminiKey = getGeminiKey();
     if (!geminiKey) {
-      return res.status(503).json({ message: 'Chat service is not available right now. Please call the store directly.' });
+      return res.status(503).json({
+        message: 'AI chat is not configured yet. Please add GEMINI_API_KEY to the backend .env file. Get a free key at aistudio.google.com',
+      });
     }
 
     const { GoogleGenerativeAI } = require('@google/generative-ai');

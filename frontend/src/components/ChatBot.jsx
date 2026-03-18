@@ -52,10 +52,12 @@ export default function ChatBot() {
       const { data } = await api.post('/chat', { message: msg, history });
       setMessages(prev => [...prev, { role: 'bot', text: data.reply }]);
       if (!open) setUnread(u => u + 1);
-    } catch {
+    } catch (err) {
+      // Show the server's error message if available, otherwise generic fallback
+      const serverMsg = err?.response?.data?.message;
       setMessages(prev => [...prev, {
         role: 'bot',
-        text: 'Sorry, I ran into an issue. Please try again in a moment.',
+        text: serverMsg || 'Sorry, I ran into an issue. Please try again in a moment.',
       }]);
     } finally {
       setLoading(false);
