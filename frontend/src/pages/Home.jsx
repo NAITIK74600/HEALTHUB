@@ -56,15 +56,6 @@ const PERSONAL_CARE_CATS = [
   { label: 'Men Grooming',    slug: 'fmcg',            gradient: 'linear-gradient(135deg,#607D8B,#37474F)', img: 'https://www.1mg.com/images/category_page_icons/mens_grooming.png' },
 ];
 
-const LAB_TESTS = [
-  { label: 'Diabetes Panel',     desc: 'HbA1c, Fasting Glucose', discount: '70%', icon: <Activity size={26} color="#DB2777" /> },
-  { label: 'Heart Health',       desc: 'Lipid Profile, CBC',      discount: '65%', icon: <Heart size={26} color="#C0392B" /> },
-  { label: 'Full Body Checkup',  desc: '72+ Parameters',          discount: '60%', icon: <Stethoscope size={26} color="#4F46E5" /> },
-  { label: 'Thyroid Profile',    desc: 'T3, T4, TSH',             discount: '55%', icon: <Zap size={26} color="#D97706" /> },
-  { label: 'Kidney Function',    desc: 'Creatinine, Uric Acid',   discount: '50%', icon: <Shield size={26} color="#0891B2" /> },
-  { label: 'Vitamin Panel',      desc: 'B12, D3, Folate',         discount: '68%', icon: <Sparkles size={26} color="#9333EA" /> },
-];
-
 const TRUST_FEATURES = [
   { icon: <Truck size={22} />,       bg: '#FEF2F2', color: '#C0392B', title: 'Free Delivery',           desc: 'On every order, every day' },
   { icon: <ShieldCheck size={22} />, bg: '#F0FBF4', color: '#1B8843', title: '100% Genuine',            desc: 'Licensed & verified sources' },
@@ -250,25 +241,6 @@ export default function Home() {
       {/* ══════════════════════════ OFFER BANNER ═════════════════════════ */}
       {offers.length > 0 && <OfferBanner offers={offers} />}
 
-      {/* ══════════════════ STATS COUNTER BANNER ════════════════════════ */}
-      <section className="stats-banner">
-        <div className="container">
-          <div className="stats-banner__grid">
-            {[
-              { val: 50000, suffix: '+', label: 'Happy Customers' },
-              { val: 50000, suffix: '+', label: 'Products' },
-              { val: 20, suffix: '+', label: 'Years of Trust' },
-              { val: 100, suffix: '%', label: 'Genuine Medicines' },
-            ].map((s, i) => (
-              <div key={i} className="stats-banner__item">
-                <div className="stats-banner__num"><Counter target={s.val} suffix={s.suffix} /></div>
-                <div className="stats-banner__label">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ═══════════════════ PERSONAL CARE CATEGORIES ═══════════════════ */}
       <section className="section">
         <div className="container">
@@ -327,31 +299,6 @@ export default function Home() {
                 </Link>
               );
             })}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════ PATHOLOGY / LAB TESTS ══════════════════════ */}
-      <section className="section">
-        <div className="container">
-          <div className="section__header">
-            <h2 className="section__title">Pathology Tests <span className="section__badge">Up to 70% off</span></h2>
-            <Link to="/lab-tests" className="section__link">See all <ChevronRight size={14} /></Link>
-          </div>
-          <div className="lab-grid">
-            {LAB_TESTS.map((t, i) => (
-              <Link key={i} to="/lab-tests" className="lab-card">
-                <div className="lab-card__icon">{t.icon}</div>
-                <div className="lab-card__body">
-                  <div className="lab-card__title">{t.label}</div>
-                  <div className="lab-card__desc">{t.desc}</div>
-                </div>
-                <div className="lab-card__discount">
-                  <span>{t.discount}</span>
-                  <small>off</small>
-                </div>
-              </Link>
-            ))}
           </div>
         </div>
       </section>
