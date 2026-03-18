@@ -8,6 +8,7 @@ import { RequireAuth, RequireAdmin, RequireSuperAdmin } from './components/Prote
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ChatBot from './components/ChatBot';
+import { Truck } from 'lucide-react';
 
 import Home from './pages/Home';
 import ProductCatalog from './pages/ProductCatalog';
@@ -56,6 +57,25 @@ const PublicLayout = () => (
   </>
 );
 
+// Standalone layout for delivery partners — no Navbar/Footer/ChatBot visible on main site
+const DeliveryLayout = () => (
+  <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
+    <div style={{
+      background: '#fff',
+      borderBottom: '2px solid #c0392b',
+      padding: '12px 24px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+    }}>
+      <Truck size={20} color="#c0392b" />
+      <span style={{ fontWeight: 700, fontSize: '15px', color: '#c0392b' }}>Batla Medicos</span>
+      <span style={{ color: '#6b7280', fontSize: '13px', marginLeft: '4px' }}>· Delivery Partner Portal</span>
+    </div>
+    <Outlet />
+  </div>
+);
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -84,6 +104,8 @@ export default function App() {
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/lab" element={<LabTests />} />
                 <Route path="/lab/bookings" element={<RequireAuth><LabBookings /></RequireAuth>} />
+              </Route>
+              <Route element={<DeliveryLayout />}>
                 <Route path="/delivery" element={<RequireAuth><DeliveryPanel /></RequireAuth>} />
               </Route>
               <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>

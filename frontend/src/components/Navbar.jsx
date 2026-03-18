@@ -69,9 +69,6 @@ export default function Navbar() {
                 <NavLink to="/reminders" onClick={() => setMobileOpen(false)}>
                   <BellIcon size={15} /> Reminders
                 </NavLink>
-                <NavLink to="/delivery" onClick={() => setMobileOpen(false)}>
-                  <Truck size={15} /> Delivery
-                </NavLink>
                 <NavLink to="/account" onClick={() => setMobileOpen(false)}>
                   <User size={15} /> Account
                 </NavLink>
