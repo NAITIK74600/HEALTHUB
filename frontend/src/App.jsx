@@ -31,6 +31,7 @@ import LabTests from './pages/LabTests';
 import LabBookings from './pages/LabBookings';
 import GoogleCallback from './pages/GoogleCallback';
 import DeliveryPanel from './pages/DeliveryPanel';
+import Diseases from './pages/Diseases';
 
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -89,6 +90,7 @@ export default function App() {
               <Route element={<PublicLayout />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/products" element={<ProductCatalog />} />
+                <Route path="/diseases" element={<Diseases />} />
                 <Route path="/products/:slug" element={<ProductDetail />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />

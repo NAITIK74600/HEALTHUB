@@ -30,6 +30,18 @@ const PARENT_GROUPS = {
   surgical: ['surgical', 'surgicals', 'container', 'pharma-misc'],
   surgicals: ['surgical', 'surgicals', 'container', 'pharma-misc'],
   herbal: ['herbal', 'ayurvedic'],
+  // CategoryNav parent slugs
+  'hair-care':          ['fmcg', 'lotion', 'cream-ointment'],
+  'fitness-health':     ['caps-tabs', 'softgel-capsules', 'powder', 'liquids'],
+  'sexual-wellness':    ['fmcg', 'caps-tabs'],
+  'vitamins-nutrition': ['caps-tabs', 'softgel-capsules', 'powder', 'liquids', 'drop'],
+  'supports-braces':    ['surgicals', 'container', 'pharma-misc'],
+  'immunity-boosters':  ['caps-tabs', 'liquids', 'powder'],
+  homeopathy:           ['drop', 'liquids', 'caps-tabs', 'powder'],
+  ayurveda:             ['caps-tabs', 'liquids', 'lotion', 'powder', 'cream-ointment'],
+  'skin-care':          ['cream-ointment', 'lotion', 'fmcg'],
+  'baby-care':          ['drop', 'powder', 'lotion'],
+  'diabetes-care':      ['caps-tabs', 'injection', 'surgicals', 'drop'],
 };
 
 function normalizeCategorySlug(input = '') {

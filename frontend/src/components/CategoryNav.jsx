@@ -2,145 +2,125 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 
+// path = direct route link; slug = /products?category=slug
 const CATEGORIES = [
   {
     label: 'Health Resource Center',
-    slug: 'health-resource-center',
+    slug: 'allopathic',
     children: [
-      { label: 'All Diseases', slug: 'all-diseases' },
-      { label: 'All Medicines', slug: 'all-medicines' },
-      { label: 'Medicines by Therapeutic Class', slug: 'therapeutic-class' },
+      { label: 'All Diseases',               path: '/diseases' },
+      { label: 'All Medicines',              path: '/products' },
+      { label: 'Capsules & Tablets',         slug: 'caps-tabs' },
+      { label: 'Liquids & Syrups',           slug: 'liquids' },
+      { label: 'Generic Medicines',          slug: 'generic' },
+      { label: 'High Value Medicines',       slug: 'high-value' },
     ],
   },
   {
     label: 'Hair Care',
     slug: 'hair-care',
     children: [
-      { label: 'Hair Oils', slug: 'hair-oils' },
-      { label: 'Shampoos & Conditioners', slug: 'shampoos-conditioners' },
-      { label: 'Hair Serums', slug: 'hair-serums' },
-      { label: 'Hair Creams & Masks', slug: 'hair-creams-masks' },
-      { label: 'Hair Colour', slug: 'hair-colour' },
-      { label: 'Hair Growth Products', slug: 'hair-growth-products' },
-      { label: 'Essential Oils', slug: 'essential-oils' },
+      { label: 'Hair Oils & Lotions',        slug: 'lotion' },
+      { label: 'Shampoos & Products',        slug: 'fmcg' },
+      { label: 'Hair Creams & Serums',       slug: 'cream-ointment' },
+      { label: 'Hair Growth Tablets',        slug: 'caps-tabs' },
     ],
   },
   {
     label: 'Fitness & Health',
     slug: 'fitness-health',
     children: [
-      { label: 'Pre/Post Workout', slug: 'pre-post-workout' },
-      { label: 'Mass Gainers', slug: 'mass-gainers' },
-      { label: 'Plant Protein', slug: 'plant-protein' },
-      { label: 'Smart Watches & Rings', slug: 'smart-watches-rings' },
-      { label: 'Fat Burners', slug: 'fat-burners' },
+      { label: 'Protein & Supplement Powders', slug: 'powder' },
+      { label: 'Vitamin Capsules',           slug: 'caps-tabs' },
+      { label: 'Softgel Supplements',        slug: 'softgel-capsules' },
+      { label: 'Health Drinks & Syrups',     slug: 'liquids' },
     ],
   },
   {
     label: 'Sexual Wellness',
     slug: 'sexual-wellness',
     children: [
-      { label: 'Condoms', slug: 'condoms' },
-      { label: 'Lubricants & Massage Gels', slug: 'lubricants-massage-gels' },
-      { label: 'Sexual Wellness Devices', slug: 'sexual-wellness-devices' },
-      { label: 'Performance Enhancers', slug: 'performance-enhancers' },
-      { label: 'Oral Contraceptives', slug: 'oral-contraceptives' },
+      { label: 'Contraceptives & Wellness',  slug: 'fmcg' },
+      { label: 'Wellness Tablets',           slug: 'caps-tabs' },
     ],
   },
   {
     label: 'Vitamins & Nutrition',
     slug: 'vitamins-nutrition',
     children: [
-      { label: 'Omega & Fish Oil & DHA', slug: 'omega-fish-oil-dha' },
-      { label: 'Fish Oil', slug: 'fish-oil' },
-      { label: 'Cod Liver Oil', slug: 'cod-liver-oil' },
-      { label: 'Flax Seed Oil', slug: 'flax-seed-oil' },
-      { label: 'Vitamin D', slug: 'vitamin-d' },
-      { label: 'Vitamin B', slug: 'vitamin-b' },
-      { label: 'Vitamin C', slug: 'vitamin-c' },
-      { label: 'Vitamin A', slug: 'vitamin-a' },
-      { label: 'Minerals', slug: 'minerals' },
-      { label: 'Calcium', slug: 'calcium' },
-      { label: 'Global Supplements', slug: 'global-supplements' },
-      { label: 'Hair & Skin Supplements', slug: 'hair-skin-supplements' },
-      { label: 'Specialty Supplements', slug: 'specialty-supplements' },
-      { label: 'Antioxidants', slug: 'antioxidants' },
-      { label: 'Vitamin K', slug: 'vitamin-k' },
-      { label: 'Gummies Vitamins', slug: 'gummies-vitamins' },
+      { label: 'Vitamin Tablets & Capsules', slug: 'caps-tabs' },
+      { label: 'Vitamin Syrups',             slug: 'liquids' },
+      { label: 'Nutrition Powders',          slug: 'powder' },
+      { label: 'Softgel Vitamins',           slug: 'softgel-capsules' },
+      { label: 'Nutritional Drops',          slug: 'drop' },
     ],
   },
   {
     label: 'Supports & Braces',
     slug: 'supports-braces',
     children: [
-      { label: 'Back & Abdomen Support', slug: 'back-abdomen-support' },
-      { label: 'Ankle, Foot & Leg Support', slug: 'ankle-foot-leg-support' },
-      { label: 'Knee Support', slug: 'knee-support' },
-      { label: 'Neck & Shoulder Support', slug: 'neck-shoulder-support' },
+      { label: 'Back & Neck Support',        slug: 'surgicals' },
+      { label: 'Knee & Joint Support',       slug: 'surgicals' },
+      { label: 'Medical Equipment',          slug: 'pharma-misc' },
+      { label: 'Devices & Containers',       slug: 'container' },
     ],
   },
   {
     label: 'Immunity Boosters',
     slug: 'immunity-boosters',
     children: [
-      { label: 'Chyawanprash', slug: 'chyawanprash' },
-      { label: 'Antioxidant Supplements', slug: 'antioxidant-supplements' },
-      { label: 'Ayurvedic Supplements', slug: 'ayurvedic-supplements' },
-      { label: 'Herbal Tea', slug: 'herbal-tea' },
-      { label: 'Immunity Tablets', slug: 'immunity-tablets' },
+      { label: 'Immunity Tablets',           slug: 'caps-tabs' },
+      { label: 'Immunity Syrups',            slug: 'liquids' },
+      { label: 'Health Powders',             slug: 'powder' },
     ],
   },
   {
     label: 'Homeopathy',
     slug: 'homeopathy',
     children: [
-      { label: 'Homeopathic Medicines', slug: 'homeopathic-medicines' },
-      { label: 'Homeopathic Drops', slug: 'homeopathic-drops' },
-      { label: 'Homeopathic Creams', slug: 'homeopathic-creams' },
+      { label: 'Homeopathic Drops',          slug: 'drop' },
+      { label: 'Homeopathic Syrups',         slug: 'liquids' },
+      { label: 'Homeopathic Tablets',        slug: 'caps-tabs' },
+      { label: 'Homeopathic Powders',        slug: 'powder' },
     ],
   },
   {
     label: 'Ayurveda',
     slug: 'ayurveda',
     children: [
-      { label: 'Patanjali', slug: 'patanjali' },
-      { label: 'Dabur', slug: 'dabur' },
-      { label: 'Himalaya', slug: 'himalaya' },
-      { label: 'Hamdard', slug: 'hamdard' },
-      { label: 'Ayurvedic Tonics', slug: 'ayurvedic-tonics' },
-      { label: 'Ayurvedic Oils', slug: 'ayurvedic-oils' },
+      { label: 'Ayurvedic Tablets',          slug: 'caps-tabs' },
+      { label: 'Ayurvedic Syrups & Tonics',  slug: 'liquids' },
+      { label: 'Ayurvedic Oils & Lotions',   slug: 'lotion' },
+      { label: 'Ayurvedic Powders',          slug: 'powder' },
+      { label: 'Herbal Creams',              slug: 'cream-ointment' },
     ],
   },
   {
     label: 'Skin Care',
     slug: 'skin-care',
     children: [
-      { label: 'Face Wash & Cleansers', slug: 'face-wash-cleansers' },
-      { label: 'Moisturizers', slug: 'moisturizers' },
-      { label: 'Sunscreen', slug: 'sunscreen' },
-      { label: 'Acne & Pimple Care', slug: 'acne-pimple-care' },
-      { label: 'Anti Ageing', slug: 'anti-ageing' },
-      { label: 'Face Serums', slug: 'face-serums' },
+      { label: 'Creams & Ointments',         slug: 'cream-ointment' },
+      { label: 'Lotions & Moisturizers',     slug: 'lotion' },
+      { label: 'Skin Care Products',         slug: 'fmcg' },
     ],
   },
   {
     label: 'Baby Care',
     slug: 'baby-care',
     children: [
-      { label: 'Baby Food & Nutrition', slug: 'baby-food-nutrition' },
-      { label: 'Diapers & Wipes', slug: 'diapers-wipes' },
-      { label: 'Baby Skincare', slug: 'baby-skincare' },
-      { label: 'Baby Medicines', slug: 'baby-medicines' },
+      { label: 'Baby Drops',                 slug: 'drop' },
+      { label: 'Baby Powders',               slug: 'powder' },
+      { label: 'Baby Creams & Lotions',      slug: 'lotion' },
     ],
   },
   {
     label: 'Diabetes Care',
     slug: 'diabetes-care',
     children: [
-      { label: 'Glucometers & Strips', slug: 'glucometers-strips' },
-      { label: 'Insulin Syringes', slug: 'insulin-syringes' },
-      { label: 'Sugar-free Products', slug: 'sugar-free-products' },
-      { label: 'Diabetic Footwear', slug: 'diabetic-footwear' },
+      { label: 'Diabetes Tablets',           slug: 'caps-tabs' },
+      { label: 'Insulin & Injections',       slug: 'injection' },
+      { label: 'Strips & Devices',           slug: 'surgicals' },
+      { label: 'Diabetes Drops',             slug: 'drop' },
     ],
   },
 ];
@@ -208,7 +188,7 @@ export default function CategoryNav() {
                 onMouseLeave={scheduleClose}
               >
                 <Link
-                  to={`/products?category=${cat.slug}`}
+                  to={cat.path || `/products?category=${cat.slug}`}
                   className="cat-nav__label"
                   onClick={(e) => toggle(idx, hasChildren, e)}
                 >
@@ -233,8 +213,8 @@ export default function CategoryNav() {
         >
           {activeCat.children.map((child) => (
             <Link
-              key={child.slug}
-              to={`/products?category=${child.slug}`}
+              key={child.path || child.slug}
+              to={child.path || `/products?category=${child.slug}`}
               className="cat-nav__dropdown-item"
               onClick={() => setActiveIdx(null)}
             >
