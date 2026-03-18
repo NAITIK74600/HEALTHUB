@@ -22,3 +22,4 @@ export const aiFillProduct       = (productId) => api.post('/products/ai-fill', 
 export const aiFillBulk          = (productIds) => api.post('/products/ai-fill-bulk', { productIds });
 export const getMissingInfoCount = ()          => api.get('/products/missing-info/count');
 export const getTopBrands        = ()          => api.get('/products/brands');
+export const requestMedicineAvailability = (data) => api.post('/products/request-availability', data);

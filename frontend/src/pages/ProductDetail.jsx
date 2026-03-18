@@ -182,10 +182,10 @@ export default function ProductDetail() {
 
             <p className={`product-detail__stock ${product.stock === 0 ? 'out' : product.stock <= 5 ? 'low' : ''}`}>
               {product.stock === 0
-                ? 'Out of Stock'
+                ? 'Currently unavailable'
                 : product.stock <= 5
-                  ? `⚠️ Only ${product.stock} left in stock!`
-                  : `✅ In Stock (${product.stock} available)`}
+                  ? 'Available - limited units'
+                  : 'Available for order'}
             </p>
 
             {product.salt && (

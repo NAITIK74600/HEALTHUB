@@ -310,6 +310,36 @@ router.get('/missing-info/count', requireAuth, requireAdmin, async (req, res, ne
   } catch (err) { next(err); }
 });
 
+router.post('/request-availability', [
+  body('medicineName').trim().isLength({ min: 2, max: 180 }),
+  body('customerName').optional({ values: 'falsy' }).trim().isLength({ max: 120 }),
+  body('phone').optional({ values: 'falsy' }).trim().isLength({ max: 25 }),
+  body('email').optional({ values: 'falsy' }).trim().isEmail().isLength({ max: 190 }),
+  body('searchQuery').optional({ values: 'falsy' }).trim().isLength({ max: 200 }),
+], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+
+    await execute(
+      `INSERT INTO availability_requests
+        (medicine_name, customer_name, phone, email, search_query, status)
+       VALUES (?, ?, ?, ?, ?, 'pending')`,
+      [
+        String(req.body.medicineName || '').trim(),
+        String(req.body.customerName || '').trim(),
+        String(req.body.phone || '').trim(),
+        String(req.body.email || '').trim().toLowerCase(),
+        String(req.body.searchQuery || '').trim(),
+      ]
+    );
+
+    res.status(201).json({
+      message: 'Request received. Batla Medicos will contact you if medicine becomes available.',
+    });
+  } catch (err) { next(err); }
+});
+
 router.post('/bulk-import', requireAuth, requireAdmin, async (req, res) => {
   res.status(503).json({ message: 'Bulk import is disabled in MySQL runtime. Use scripts/resetMySqlFromExcel.js.' });
 });

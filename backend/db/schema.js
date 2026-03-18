@@ -136,6 +136,22 @@ async function ensureCoreSchema() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
 
+  await execute(`
+    CREATE TABLE IF NOT EXISTS availability_requests (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      medicine_name VARCHAR(180) NOT NULL,
+      customer_name VARCHAR(120) NOT NULL DEFAULT '',
+      phone VARCHAR(25) NOT NULL DEFAULT '',
+      email VARCHAR(190) NOT NULL DEFAULT '',
+      search_query VARCHAR(200) NOT NULL DEFAULT '',
+      status ENUM('pending', 'reviewed', 'fulfilled', 'rejected') NOT NULL DEFAULT 'pending',
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      KEY idx_availability_requests_status_created (status, created_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
   await ensureSuperAdmin();
   initialized = true;
 }

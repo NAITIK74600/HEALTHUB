@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, SlidersHorizontal, X, Package, ChevronRight, Pill, Leaf, Sparkles, Baby, Scissors, LayoutGrid, Droplets, Droplet, FlaskConical, Wind, Syringe, Thermometer, ShoppingBag, Star, Box, TestTube, GlassWater, Gem, Tag, Shield, Apple, Smile, ShoppingCart, Flower2 } from 'lucide-react';
-import { getProducts, getTopBrands } from '../api/products';
+import toast from 'react-hot-toast';
+import { getProducts, getTopBrands, requestMedicineAvailability } from '../api/products';
 import { getCategories } from '../api/categories';
 import ProductCard from '../components/ProductCard';
 
@@ -71,6 +72,11 @@ export default function ProductCatalog() {
   const [loading, setLoading]     = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [brands, setBrands] = useState([]);
+  const [requestName, setRequestName] = useState('');
+  const [requestPhone, setRequestPhone] = useState('');
+  const [requestEmail, setRequestEmail] = useState('');
+  const [requestLoading, setRequestLoading] = useState(false);
+  const [requestSent, setRequestSent] = useState(false);
 
   // Lock body scroll when mobile sidebar is open
   useEffect(() => {
@@ -108,11 +114,40 @@ export default function ProductCatalog() {
 
   // Sync local input when URL search is changed externally (e.g. category chip)
   useEffect(() => { setInputSearch(search); }, [search]);
+  useEffect(() => { setRequestSent(false); }, [search, categoryParam, brand]);
 
   const clearAllFilters = () => {
     clearTimeout(searchTimer.current);
     setInputSearch('');
     setSearchParams(new URLSearchParams());
+  };
+
+  const handleRequestAvailability = async (e) => {
+    e.preventDefault();
+    const medicineName = (search || inputSearch || '').trim();
+    if (medicineName.length < 2) {
+      toast.error('Please type medicine name first.');
+      return;
+    }
+    setRequestLoading(true);
+    try {
+      await requestMedicineAvailability({
+        medicineName,
+        customerName: requestName,
+        phone: requestPhone,
+        email: requestEmail,
+        searchQuery: medicineName,
+      });
+      setRequestSent(true);
+      setRequestName('');
+      setRequestPhone('');
+      setRequestEmail('');
+      toast.success('Request sent. Batla Medicos team will contact you.');
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Could not send request. Please try again.');
+    } finally {
+      setRequestLoading(false);
+    }
   };
 
   const toggleBrand = (b) => {
@@ -353,6 +388,50 @@ export default function ProductCatalog() {
                 </div>
                 <h3>No products found</h3>
                 <p>Try adjusting your search or browse a different category.</p>
+                {(search || inputSearch) && (
+                  <form className="catalog-empty__request" onSubmit={handleRequestAvailability}>
+                    <p className="catalog-empty__request-title">
+                      Medicine not available? Request Batla Medicos to arrange it.
+                    </p>
+                    <input
+                      type="text"
+                      value={search || inputSearch}
+                      readOnly
+                      aria-label="Medicine name"
+                    />
+                    <div className="catalog-empty__request-grid">
+                      <input
+                        type="text"
+                        placeholder="Your name (optional)"
+                        value={requestName}
+                        onChange={(e) => setRequestName(e.target.value)}
+                        maxLength={120}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Phone number (optional)"
+                        value={requestPhone}
+                        onChange={(e) => setRequestPhone(e.target.value)}
+                        maxLength={25}
+                      />
+                    </div>
+                    <input
+                      type="email"
+                      placeholder="Email (optional)"
+                      value={requestEmail}
+                      onChange={(e) => setRequestEmail(e.target.value)}
+                      maxLength={190}
+                    />
+                    <button className="btn btn--secondary" type="submit" disabled={requestLoading}>
+                      {requestLoading ? 'Sending request...' : 'Request availability'}
+                    </button>
+                    {requestSent && (
+                      <p className="catalog-empty__request-success">
+                        Request received. Team Batla Medicos will update you soon.
+                      </p>
+                    )}
+                  </form>
+                )}
                 <button
                   className="btn btn--primary"
                   onClick={clearAllFilters}
