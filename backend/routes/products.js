@@ -658,10 +658,13 @@ router.put('/:id', requireAuth, requireAdmin, upload.array('images', 5), [param(
     }
 
     if (req.files?.length) {
+      const uploadedUrls = [];
       for (const file of req.files) {
         const { url } = await uploadBuffer(file.buffer, 'batla-medicos/products');
-        images.push(url);
+        uploadedUrls.push(url);
       }
+      // Keep newly uploaded image(s) first so product cards/details show the latest update.
+      images = [...uploadedUrls, ...images];
     }
 
     if (req.body.imageUrl && /^https?:\/\//i.test(String(req.body.imageUrl).trim())) {
