@@ -245,7 +245,7 @@ router.post('/google', authLimiter, async (req, res, next) => {
     const { code } = req.body;
     if (!code) return res.status(422).json({ message: 'Google authorization code required.' });
 
-    const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'https://batlamedicos.shop/google-callback';
+    const redirectUri = req.body.redirectUri || process.env.GOOGLE_REDIRECT_URI || 'https://batlamedicos.shop/google-callback';
     const tokens = await googleTokenExchange(code, redirectUri);
     if (!tokens.id_token) return res.status(401).json({ message: 'No id_token received from Google.' });
 

@@ -29,9 +29,11 @@ export default function GoogleCallback() {
       return;
     }
 
+    const redirectUri = import.meta.env.VITE_GOOGLE_REDIRECT_URI || `${window.location.origin}/google-callback`;
+
     (async () => {
       try {
-        const res = await googleAuth({ code });
+        const res = await googleAuth({ code, redirectUri });
         setUser(res.data.user);
         toast.success('Welcome!');
         const redirectTo = params.get('state') || '/';
