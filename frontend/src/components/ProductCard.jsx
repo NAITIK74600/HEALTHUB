@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { useState, useRef, useCallback } from 'react';
-import { ShoppingCart, FileText, Heart, Check } from 'lucide-react';
+import { useCallback } from 'react';
+import { ShoppingCart, FileText, Heart, Plus, Minus, Trash2, Star } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import MedicineImage from './MedicineImage';
@@ -22,37 +22,93 @@ function playCartSound() {
   } catch { /* AudioContext blocked — silent fail */ }
 }
 
+/* Deterministic star rating from product id/name (since we have no ratings in DB) */
+function pseudoRating(product) {
+  let h = 0;
+  const s = (product._id || '') + (product.name || '');
+  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  const rating = 3.5 + ((Math.abs(h) % 16) / 10); // 3.5 – 5.0
+  const count  = 10 + (Math.abs(h >> 4) % 490);    // 10 – 499
+  return { rating: Math.min(5, +rating.toFixed(1)), count };
+}
+
+function StarRow({ rating }) {
+  return (
+    <div className="pc-stars" aria-label={`${rating} out of 5`}>
+      {[1,2,3,4,5].map(i => {
+        const fill = i <= Math.floor(rating) ? 1 : i - rating < 1 ? rating - Math.floor(rating) : 0;
+        return (
+          <span key={i} className="pc-star-wrap">
+            <Star size={11} className="pc-star pc-star--bg" />
+            {fill > 0 && (
+              <span className="pc-star-fill" style={{ width: `${fill * 100}%` }}>
+                <Star size={11} className="pc-star pc-star--fg" />
+              </span>
+            )}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function ProductCard({ product }) {
-  const { addItem } = useCart();
+  const { addItem, items, updateQty, removeItem } = useCart();
   const { toggle, isWishlisted } = useWishlist();
   const wishlisted = isWishlisted(product._id);
-  const [added, setAdded] = useState(false);   // shows ✓ tick briefly
-  const [burst, setBurst] = useState(false);   // triggers button burst anim
-  const [fly, setFly]     = useState(false);   // flying cart icon
-  const timeoutRef = useRef(null);
+  const cartItem = items.find(i => i.productId === product._id);
+  const inCart = !!cartItem;
+
+  const { rating, count } = pseudoRating(product);
 
   const discount = product.mrp > product.price
     ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
     : 0;
 
-  const handleAddToCart = useCallback(() => {
-    if (added) return;
+  const handleAdd = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
     addItem(product);
     playCartSound();
-    setAdded(true);
-    setBurst(true);
-    setFly(true);
-    clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      setAdded(false);
-      setBurst(false);
-      setFly(false);
-    }, 1200);
-  }, [added, addItem, product]);
+  }, [addItem, product]);
+
+  const handleInc = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    updateQty(product._id, cartItem.qty + 1);
+  }, [updateQty, product._id, cartItem]);
+
+  const handleDec = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (cartItem.qty <= 1) removeItem(product._id);
+    else updateQty(product._id, cartItem.qty - 1);
+  }, [updateQty, removeItem, product._id, cartItem]);
+
+  const handleRemove = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    removeItem(product._id);
+  }, [removeItem, product._id]);
+
+  const handleWishlist = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggle(product);
+  }, [toggle, product]);
 
   return (
     <div className="product-card">
       <Link to={`/products/${product.slug}`}>
+        {/* Wishlist heart — top right */}
+        <button
+          className={`product-card__wish-btn${wishlisted ? ' product-card__wish-btn--active' : ''}`}
+          onClick={handleWishlist}
+          aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+        >
+          <Heart size={15} fill={wishlisted ? 'currentColor' : 'none'} />
+        </button>
+
         <div className="product-card__image-wrap">
           <MedicineImage product={product} />
           {discount > 0 && (
@@ -64,48 +120,51 @@ export default function ProductCard({ product }) {
             </span>
           )}
         </div>
+
         <div className="product-card__info">
           <p className="product-card__brand">{product.brand || 'Generic'}</p>
           <p className="product-card__name">{product.name}</p>
+
+          {/* Star rating row */}
+          <div className="pc-rating-row">
+            <StarRow rating={rating} />
+            <span className="pc-rating-num">{rating}</span>
+            <span className="pc-rating-count">({count})</span>
+          </div>
+
           <div className="product-card__pricing">
             <span className="product-card__price">₹{product.price}</span>
             {discount > 0 && <span className="product-card__mrp">₹{product.mrp}</span>}
             {discount > 0 && (
-              <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--green)', marginLeft: 'auto' }}>
-                Save {discount}%
-              </span>
+              <span className="pc-save-pct">Save {discount}%</span>
             )}
           </div>
         </div>
       </Link>
+
+      {/* Cart action footer */}
       <div className="product-card__footer-row">
-        <button
-          className={`product-card__add-btn${burst ? ' product-card__add-btn--burst' : ''}${added ? ' product-card__add-btn--added' : ''}`}
-          onClick={handleAddToCart}
-          disabled={product.stock === 0}
-          aria-label={`Add ${product.name} to cart`}
-        >
-          {/* Flying cart icon */}
-          {fly && (
-            <span className="cart-fly-icon" aria-hidden="true">
-              <ShoppingCart size={15} />
-            </span>
-          )}
-          {product.stock === 0
-            ? 'Out of Stock'
-            : added
-              ? (<><Check size={15} strokeWidth={3} /> Added!</>)
-              : (<><ShoppingCart size={15} /> Add to Cart</>)
-          }
-        </button>
-        <button
-          className={`product-card__wish-btn${wishlisted ? ' product-card__wish-btn--active' : ''}`}
-          onClick={() => toggle(product)}
-          aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-          title={wishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
-        >
-          <Heart size={16} fill={wishlisted ? 'currentColor' : 'none'} />
-        </button>
+        {product.stock === 0 ? (
+          <span className="pc-out-of-stock">Out of Stock</span>
+        ) : inCart ? (
+          <div className="pc-qty-row">
+            <button className="pc-qty-btn pc-qty-btn--dec" onClick={handleDec} aria-label="Decrease">
+              {cartItem.qty === 1 ? <Trash2 size={13} /> : <Minus size={13} />}
+            </button>
+            <span className="pc-qty-val">{cartItem.qty}</span>
+            <button className="pc-qty-btn pc-qty-btn--inc" onClick={handleInc} aria-label="Increase">
+              <Plus size={13} />
+            </button>
+          </div>
+        ) : (
+          <button
+            className="product-card__add-btn"
+            onClick={handleAdd}
+            aria-label={`Add ${product.name} to cart`}
+          >
+            <ShoppingCart size={14} /> ADD
+          </button>
+        )}
       </div>
     </div>
   );

@@ -161,13 +161,17 @@ export default function CategoryNav() {
   };
 
   const toggle = (idx, hasChildren, e) => {
-    if (!hasChildren) return;
+    if (!hasChildren) return; // no children → let the Link navigate normally
     e.preventDefault();
     if (activeIdx === idx) {
       setActiveIdx(null);
     } else {
       openAt(idx);
     }
+  };
+
+  const handleChildClick = () => {
+    setActiveIdx(null);
   };
 
   const activeCat = activeIdx !== null ? CATEGORIES[activeIdx] : null;
@@ -216,7 +220,7 @@ export default function CategoryNav() {
               key={child.path || child.slug}
               to={child.path || `/products?category=${child.slug}`}
               className="cat-nav__dropdown-item"
-              onClick={() => setActiveIdx(null)}
+              onClick={handleChildClick}
             >
               {child.label}
             </Link>

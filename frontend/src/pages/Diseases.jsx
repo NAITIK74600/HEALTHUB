@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const DISEASES = [
   // A
@@ -88,7 +88,6 @@ const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
 export default function Diseases() {
   const [activeLetter, setActiveLetter] = useState('A');
-  const navigate = useNavigate();
 
   const filtered = useMemo(
     () => DISEASES.filter(d => d.letter === activeLetter),
@@ -127,10 +126,10 @@ export default function Diseases() {
 
       <div className="diseases-grid">
         {filtered.map(d => (
-          <button
+          <Link
             key={d.name}
             className="disease-card"
-            onClick={() => navigate(`/products?search=${encodeURIComponent(d.search)}`)}
+            to={`/products?search=${encodeURIComponent(d.search)}`}
           >
             <div className="disease-card__img">
               <span className="disease-card__initial">{d.name[0]}</span>
@@ -139,7 +138,7 @@ export default function Diseases() {
               <h3 className="disease-card__name">{d.name}</h3>
               <p className="disease-card__desc">{d.desc}</p>
             </div>
-          </button>
+          </Link>
         ))}
       </div>
     </div>
