@@ -2,9 +2,9 @@ import api from './axios';
 
 export const getProducts = (params) => api.get('/products', { params });
 export const getProductBySlug = (slug) => api.get(`/products/${slug}`);
-export const createProduct = (data) => api.post('/products', data, { headers: { 'Content-Type': 'multipart/form-data' } });
-export const updateProduct = (id, data) => api.put(`/products/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } });
-export const updateProductImages = (id, data) => api.patch(`/products/${id}/images`, data, { headers: { 'Content-Type': 'multipart/form-data' } });
+export const createProduct = (data) => api.post('/products', data);
+export const updateProduct = (id, data) => api.put(`/products/${id}`, data);
+export const updateProductImages = (id, data) => api.patch(`/products/${id}/images`, data);
 export const deleteProduct = (id) => api.delete(`/products/${id}`);
 export const bulkImportProducts = (file, mode = 'append') => {
   const fd = new FormData();

@@ -5,8 +5,6 @@ const slugify = require('../utils/slugify');
 const requireAuth = require('../middleware/requireAuth');
 const requireAdmin = require('../middleware/requireAdmin');
 const auditLogger = require('../middleware/auditLogger');
-const upload = require('../middleware/upload');
-const { uploadBuffer, deleteByPublicId } = require('../utils/cloudinary');
 const { query, execute } = require('../db/mysql');
 
 const router = express.Router();
@@ -65,11 +63,6 @@ const PARENT_GROUPS = {
 function normalizeCategorySlug(input = '') {
   const raw = String(input).trim().toLowerCase();
   return SLUG_ALIASES[raw] || raw;
-}
-
-function extractPublicId(url) {
-  const match = String(url || '').match(/\/upload\/(?:v\d+\/)?(.+?)(?:\.\w{2,5})?$/);
-  return match ? match[1] : null;
 }
 
 function parseImages(value) {
@@ -567,7 +560,7 @@ router.get('/:slug', [param('slug').trim().isLength({ min: 1, max: 220 })], asyn
   } catch (err) { next(err); }
 });
 
-router.post('/', requireAuth, requireAdmin, upload.array('images', 5), auditLogger('CREATE_PRODUCT', 'Product'), [
+router.post('/', requireAuth, requireAdmin, auditLogger('CREATE_PRODUCT', 'Product'), [
   body('name').trim().notEmpty().isLength({ max: 200 }),
   body('category').isInt({ min: 1 }),
   body('brand').optional().trim().isLength({ max: 100 }),
@@ -590,12 +583,6 @@ router.post('/', requireAuth, requireAdmin, upload.array('images', 5), auditLogg
     }
 
     const imageUrls = [];
-    if (req.files?.length) {
-      for (const file of req.files) {
-        const { url } = await uploadBuffer(file.buffer, 'batla-medicos/products');
-        imageUrls.push(url);
-      }
-    }
 
     const result = await execute(
       `INSERT INTO products
@@ -633,7 +620,7 @@ router.post('/', requireAuth, requireAdmin, upload.array('images', 5), auditLogg
   } catch (err) { next(err); }
 });
 
-router.put('/:id', requireAuth, requireAdmin, upload.array('images', 5), [param('id').isInt({ min: 1 })], auditLogger('UPDATE_PRODUCT', 'Product'), async (req, res, next) => {
+router.put('/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })], auditLogger('UPDATE_PRODUCT', 'Product'), async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
@@ -643,33 +630,6 @@ router.put('/:id', requireAuth, requireAdmin, upload.array('images', 5), [param(
 
     const current = rows[0];
     req._auditBefore = mapProduct({ ...current, category_name: null, category_slug: null });
-    let images = parseImages(current.images_json);
-
-    if (req.body.removeImages) {
-      let toRemove = [];
-      try { toRemove = JSON.parse(req.body.removeImages); } catch {}
-      if (Array.isArray(toRemove) && toRemove.length) {
-        for (const imageUrl of toRemove) {
-          const publicId = extractPublicId(imageUrl);
-          if (publicId) await deleteByPublicId(publicId).catch(() => {});
-        }
-        images = images.filter((imageUrl) => !toRemove.includes(imageUrl));
-      }
-    }
-
-    if (req.files?.length) {
-      const uploadedUrls = [];
-      for (const file of req.files) {
-        const { url } = await uploadBuffer(file.buffer, 'batla-medicos/products');
-        uploadedUrls.push(url);
-      }
-      // Keep newly uploaded image(s) first so product cards/details show the latest update.
-      images = [...uploadedUrls, ...images];
-    }
-
-    if (req.body.imageUrl && /^https?:\/\//i.test(String(req.body.imageUrl).trim())) {
-      images.unshift(String(req.body.imageUrl).trim());
-    }
 
     const nextName = req.body.name !== undefined ? String(req.body.name).trim() : current.name;
     let nextSlug = current.slug;
@@ -686,7 +646,7 @@ router.put('/:id', requireAuth, requireAdmin, upload.array('images', 5), [param(
     await execute(
       `UPDATE products SET
         code = ?, name = ?, slug = ?, category_id = ?, brand = ?, description = ?, pack = ?,
-        mrp = ?, price = ?, stock = ?, requires_prescription = ?, images_json = ?, expiry_date = ?,
+        mrp = ?, price = ?, stock = ?, requires_prescription = ?, expiry_date = ?,
         batch_number = ?, salt = ?, side_effects = ?, is_active = ?
        WHERE id = ?`,
       [
@@ -703,7 +663,6 @@ router.put('/:id', requireAuth, requireAdmin, upload.array('images', 5), [param(
         req.body.requiresPrescription !== undefined
           ? (req.body.requiresPrescription === true || req.body.requiresPrescription === 'true' ? 1 : 0)
           : current.requires_prescription,
-        JSON.stringify(images),
         req.body.expiryDate !== undefined ? req.body.expiryDate || null : current.expiry_date,
         req.body.batchNumber !== undefined ? req.body.batchNumber : current.batch_number,
         req.body.salt !== undefined ? req.body.salt : current.salt,
@@ -738,8 +697,9 @@ router.delete('/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })]
   } catch (err) { next(err); }
 });
 
-// ── Dedicated image management (add / remove) ──────────────────────────────
-router.patch('/:id/images', requireAuth, requireAdmin, upload.array('images', 5), [param('id').isInt({ min: 1 })], async (req, res, next) => {
+// ── Dedicated image management (add / remove) — NO Cloudinary dependency ────
+// Uses MySQL JSON_ARRAY_APPEND / direct write to avoid parseImages bugs
+router.patch('/:id/images', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })], async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
@@ -747,32 +707,33 @@ router.patch('/:id/images', requireAuth, requireAdmin, upload.array('images', 5)
     const rows = await query('SELECT id, images_json FROM products WHERE id = ? AND is_deleted = 0 LIMIT 1', [req.params.id]);
     if (!rows.length) return res.status(404).json({ message: 'Product not found.' });
 
-    let images = parseImages(rows[0].images_json);
+    // Read current images safely (handle both string and auto-parsed array)
+    let images = [];
+    const raw = rows[0].images_json;
+    if (Array.isArray(raw)) images = raw;
+    else if (typeof raw === 'string' && raw.trim()) try { images = JSON.parse(raw); } catch { images = []; }
 
     // Remove specified images
     if (req.body.removeImages) {
-      let toRemove = [];
-      try { toRemove = typeof req.body.removeImages === 'string' ? JSON.parse(req.body.removeImages) : req.body.removeImages; } catch {}
+      let toRemove = req.body.removeImages;
+      if (typeof toRemove === 'string') try { toRemove = JSON.parse(toRemove); } catch { toRemove = []; }
       if (Array.isArray(toRemove) && toRemove.length) {
-        for (const imgUrl of toRemove) {
-          const publicId = extractPublicId(imgUrl);
-          if (publicId) await deleteByPublicId(publicId).catch(() => {});
-        }
         images = images.filter(u => !toRemove.includes(u));
       }
     }
 
-    // Upload new files to Cloudinary
-    if (req.files?.length) {
-      for (const file of req.files) {
-        const { url } = await uploadBuffer(file.buffer, 'batla-medicos/products');
-        images.unshift(url);
-      }
-    }
-
-    // Add image by URL
+    // Add image by URL (prepend so it shows first)
     if (req.body.imageUrl && /^https?:\/\//i.test(String(req.body.imageUrl).trim())) {
       images.unshift(String(req.body.imageUrl).trim());
+    }
+
+    // Add multiple image URLs
+    if (req.body.imageUrls) {
+      let urls = req.body.imageUrls;
+      if (typeof urls === 'string') try { urls = JSON.parse(urls); } catch { urls = []; }
+      if (Array.isArray(urls)) {
+        urls.filter(u => /^https?:\/\//i.test(String(u || '').trim())).forEach(u => images.unshift(String(u).trim()));
+      }
     }
 
     await execute('UPDATE products SET images_json = ? WHERE id = ?', [JSON.stringify(images), req.params.id]);

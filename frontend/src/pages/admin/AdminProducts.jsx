@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
-  getAdminProducts, quickUpdateProduct, createProduct, updateProduct,
+  getAdminProducts, quickUpdateProduct, createProduct, updateProduct, updateProductImages,
   deleteProduct, bulkImportProducts, downloadImportTemplate, bulkUpdateProducts, bulkDiscountProducts,
   aiFillProduct, aiFillBulk, getMissingInfoCount, exportProductsExcel,
 } from '../../api/products';
+import { uploadImage } from '../../api/upload';
 import { getCategories } from '../../api/categories';
 import toast from 'react-hot-toast';
 import {
@@ -289,12 +290,24 @@ export default function AdminProducts() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const fd = new FormData();
-      Object.entries(form).forEach(([k, v]) => fd.append(k, v));
-      images.forEach(img => fd.append('images', img));
-      if (removeImages.length > 0) fd.append('removeImages', JSON.stringify(removeImages));
-      if (editing) { await updateProduct(editing, fd); toast.success('Product updated.'); }
-      else         { await createProduct(fd);          toast.success('Product created.'); }
+      // Send product data as JSON (no files — images handled separately)
+      const payload = { ...form };
+      let productId = editing;
+      if (editing) { await updateProduct(editing, payload); toast.success('Product updated.'); }
+      else         { const res = await createProduct(payload); toast.success('Product created.'); productId = res.data._id; }
+
+      // Handle image changes via dedicated image endpoint
+      if (productId) {
+        // Upload new files and add via image endpoint
+        for (const img of images) {
+          const uploadRes = await uploadImage(img);
+          await updateProductImages(productId, { imageUrl: uploadRes.data.url });
+        }
+        // Remove images
+        if (removeImages.length > 0) {
+          await updateProductImages(productId, { removeImages });
+        }
+      }
       setForm(EMPTY); setImages([]); setImgPreviews([]); setExistingImages([]); setRemoveImages([]);
       setEditing(null); setShowForm(false);
       refresh();
@@ -424,10 +437,13 @@ export default function AdminProducts() {
     const file = e.target.files[0]; e.target.value = '';
     if (!file || !uploadingFor) return;
     try {
-      const fd = new FormData(); fd.append('images', file);
-      await updateProduct(uploadingFor, fd);
+      // Step 1: Upload file to get a URL
+      const uploadRes = await uploadImage(file);
+      const imageUrl = uploadRes.data.url;
+      // Step 2: Add URL to product images via dedicated endpoint
+      const { data } = await updateProductImages(uploadingFor, { imageUrl });
+      setProducts(prev => prev.map(p => p._id === uploadingFor ? { ...p, images: data.images || [imageUrl] } : p));
       toast.success('Image uploaded!');
-      refresh();
     } catch (err) { toast.error(err.response?.data?.message || 'Image upload failed.'); }
     finally { setUploadingFor(null); }
   };
@@ -437,10 +453,8 @@ export default function AdminProducts() {
     if (!url.trim()) { toast.error('Enter a valid URL.'); return; }
     if (!/^https?:\/\//i.test(url.trim())) { toast.error('URL must start with http:// or https://'); return; }
     try {
-      const fd = new FormData();
-      fd.append('imageUrl', url.trim());
-      await updateProduct(productId, fd);
-      setProducts(prev => prev.map(p => p._id === productId ? { ...p, images: [url.trim(), ...(p.images || [])] } : p));
+      const { data } = await updateProductImages(productId, { imageUrl: url.trim() });
+      setProducts(prev => prev.map(p => p._id === productId ? { ...p, images: data.images || [url.trim()] } : p));
       toast.success('Image URL added!');
       setUrlModal({ open: false, productId: null, url: '' });
     } catch (err) { toast.error(err.response?.data?.message || 'Failed to add image URL.'); }
