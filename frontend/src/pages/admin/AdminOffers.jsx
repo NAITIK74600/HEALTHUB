@@ -8,7 +8,7 @@ import { Plus, Pencil, Trash2, ExternalLink, Copy, Eye, MousePointerClick, Tag, 
 const LINK_TYPES = [
   { value: 'products',      label: '🛒 All Products',         path: () => '/products' },
   { value: 'category',      label: '📂 Specific Category',    path: (cat) => `/products?category=${cat}` },
-  { value: 'lab',           label: '🧪 Lab Tests',            path: () => '/lab-tests' },
+  { value: 'lab',           label: '🧪 Lab Tests',            path: () => '/lab' },
   { value: 'prescriptions', label: '📋 Upload Prescription',  path: () => '/prescriptions' },
   { value: 'custom',        label: '🔗 Custom URL',           path: (v) => v },
 ];
@@ -16,7 +16,7 @@ const LINK_TYPES = [
 function parseLink(link) {
   if (!link || link === '/' || link === '/products') return { type: 'products', cat: '', custom: '' };
   if (link.startsWith('/products?category=')) return { type: 'category', cat: link.split('=')[1], custom: '' };
-  if (link === '/lab-tests') return { type: 'lab', cat: '', custom: '' };
+  if (link === '/lab') return { type: 'lab', cat: '', custom: '' };
   if (link === '/prescriptions') return { type: 'prescriptions', cat: '', custom: '' };
   return { type: 'custom', cat: '', custom: link };
 }
@@ -24,7 +24,7 @@ function parseLink(link) {
 function buildLink(type, cat, custom) {
   if (type === 'products')      return '/products';
   if (type === 'category')      return cat ? `/products?category=${cat}` : '/products';
-  if (type === 'lab')           return '/lab-tests';
+  if (type === 'lab')           return '/lab';
   if (type === 'prescriptions') return '/prescriptions';
   return custom || '/products';
 }
@@ -186,7 +186,7 @@ export default function AdminOffers() {
     const found = LINK_TYPES.find(t => {
       if (t.value === 'products') return link === '/products' || link === '/';
       if (t.value === 'category') return link.startsWith('/products?category=');
-      if (t.value === 'lab') return link === '/lab-tests';
+      if (t.value === 'lab') return link === '/lab';
       if (t.value === 'prescriptions') return link === '/prescriptions';
       return false;
     });

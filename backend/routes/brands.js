@@ -16,6 +16,7 @@ function mapBrand(row) {
     name:     row.name,
     slug:     row.slug,
     logoUrl:  row.logo_url || null,
+    gradient: row.gradient || '',
     category: row.category,
     ord:      Number(row.ord || 0),
     isActive: Boolean(row.is_active),
@@ -43,7 +44,7 @@ router.get('/', async (req, res, next) => {
     const cat = req.query.category;
     let sql = 'SELECT * FROM brands WHERE is_active = 1';
     const vals = [];
-    if (cat && ['featured', 'ayurvedic', 'general'].includes(cat)) {
+    if (cat && ['featured', 'ayurvedic', 'general', 'personal_care'].includes(cat)) {
       sql += ' AND category = ?';
       vals.push(cat);
     }
@@ -64,7 +65,7 @@ router.get('/admin/all', requireAuth, requireAdmin, async (req, res, next) => {
 // ── Admin: create brand ───────────────────────────────────────────────────────
 router.post('/', requireAuth, requireAdmin, upload.single('logo'), [
   body('name').trim().notEmpty().isLength({ max: 150 }),
-  body('category').isIn(['featured', 'ayurvedic', 'general']),
+  body('category').isIn(['featured', 'ayurvedic', 'general', 'personal_care']),
   body('ord').optional().isInt({ min: 0 }).toInt(),
 ], async (req, res, next) => {
   try {
@@ -87,13 +88,16 @@ router.post('/', requireAuth, requireAdmin, upload.single('logo'), [
       logoUrl = String(req.body.logoUrl).trim();
     }
 
+    const gradient = req.body.gradient ? String(req.body.gradient).trim() : '';
+
     const result = await execute(
-      `INSERT INTO brands (name, slug, logo_url, category, ord, is_active)
-       VALUES (?, ?, ?, ?, ?, 1)`,
+      `INSERT INTO brands (name, slug, logo_url, gradient, category, ord, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, 1)`,
       [
         req.body.name.trim(),
         slug,
         logoUrl,
+        gradient,
         req.body.category,
         Number(req.body.ord || 0),
       ]
@@ -108,7 +112,7 @@ router.post('/', requireAuth, requireAdmin, upload.single('logo'), [
 router.put('/:id', requireAuth, requireAdmin, upload.single('logo'), [
   param('id').isInt({ min: 1 }),
   body('name').optional().trim().isLength({ min: 1, max: 150 }),
-  body('category').optional().isIn(['featured', 'ayurvedic', 'general']),
+  body('category').optional().isIn(['featured', 'ayurvedic', 'general', 'personal_care']),
   body('ord').optional().isInt({ min: 0 }).toInt(),
 ], async (req, res, next) => {
   try {
@@ -145,11 +149,12 @@ router.put('/:id', requireAuth, requireAdmin, upload.single('logo'), [
     }
 
     await execute(
-      `UPDATE brands SET name = ?, slug = ?, logo_url = ?, category = ?, ord = ?, is_active = ? WHERE id = ?`,
+      `UPDATE brands SET name = ?, slug = ?, logo_url = ?, gradient = ?, category = ?, ord = ?, is_active = ? WHERE id = ?`,
       [
         nextName,
         nextSlug,
         logoUrl,
+        req.body.gradient !== undefined ? String(req.body.gradient).trim() : (current.gradient || ''),
         req.body.category !== undefined ? req.body.category : current.category,
         req.body.ord !== undefined ? Number(req.body.ord) : current.ord,
         req.body.isActive !== undefined ? (req.body.isActive === 'true' || req.body.isActive === true ? 1 : 0) : current.is_active,

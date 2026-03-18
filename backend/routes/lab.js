@@ -17,6 +17,7 @@ function mapTest(row) {
     sampleType:     row.sample_type,
     turnaroundTime: row.turnaround_time,
     parameters:     safeJson(row.parameters_json, []),
+    mrp:            row.mrp != null ? Number(row.mrp) : null,
     price:          Number(row.price),
     homeCollection: Boolean(row.home_collection),
     isActive:       Boolean(row.is_active),
@@ -75,7 +76,7 @@ router.get('/tests', async (req, res) => {
     if (search)   { conditions.push('t.name LIKE ?');  params.push(`%${search}%`); }
 
     const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
-    const [[{ total }]] = await query(`SELECT COUNT(*) AS total FROM lab_tests t ${where}`, params);
+    const [{ total }] = await query(`SELECT COUNT(*) AS total FROM lab_tests t ${where}`, params);
     const rows = await query(`SELECT * FROM lab_tests t ${where} ORDER BY t.id ASC LIMIT ? OFFSET ?`, [...params, limit, offset]);
 
     res.json({ tests: rows.map(mapTest), total: Number(total), page, pages: Math.ceil(Number(total) / limit) });
@@ -101,7 +102,7 @@ router.get('/tests/admin', requireAuth, requireAdmin, async (req, res) => {
     if (search) { conditions.push('name LIKE ?'); params.push(`%${search}%`); }
 
     const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
-    const [[{ total }]] = await query(`SELECT COUNT(*) AS total FROM lab_tests ${where}`, params);
+    const [{ total }] = await query(`SELECT COUNT(*) AS total FROM lab_tests ${where}`, params);
     const rows = await query(`SELECT * FROM lab_tests ${where} ORDER BY id ASC LIMIT ? OFFSET ?`, [...params, limit, offset]);
 
     res.json({ tests: rows.map(mapTest), total: Number(total), page, pages: Math.ceil(Number(total) / limit) });
@@ -133,7 +134,7 @@ router.get('/tests/:id', async (req, res) => {
 router.post('/tests', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { name, category = 'other', description = '', sampleType = 'Blood',
-            turnaroundTime = '24 hrs', parameters = [], price = 0,
+            turnaroundTime = '24 hrs', parameters = [], mrp, price = 0,
             homeCollection = true, isActive = true } = req.body;
 
     if (!name || !name.trim()) return res.status(400).json({ message: 'name required' });
@@ -149,10 +150,10 @@ router.post('/tests', requireAuth, requireAdmin, async (req, res) => {
     }
 
     const result = await execute(
-      `INSERT INTO lab_tests (name, slug, category, description, sample_type, turnaround_time, parameters_json, price, home_collection, is_active)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO lab_tests (name, slug, category, description, sample_type, turnaround_time, parameters_json, mrp, price, home_collection, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [name.trim(), slug, category, description, sampleType, turnaroundTime,
-       JSON.stringify(parameters), Number(price), homeCollection ? 1 : 0, isActive ? 1 : 0]
+       JSON.stringify(parameters), mrp != null ? Number(mrp) : null, Number(price), homeCollection ? 1 : 0, isActive ? 1 : 0]
     );
 
     const rows = await query('SELECT * FROM lab_tests WHERE id = ?', [result.insertId]);
@@ -173,7 +174,7 @@ router.put('/tests/:id', requireAuth, requireAdmin, async (req, res) => {
     if (!existing[0]) return res.status(404).json({ message: 'Test not found' });
 
     const { name, category, description, sampleType, turnaroundTime,
-            parameters, price, homeCollection, isActive } = req.body;
+            parameters, mrp, price, homeCollection, isActive } = req.body;
 
     const updates = [];
     const params  = [];
@@ -184,6 +185,7 @@ router.put('/tests/:id', requireAuth, requireAdmin, async (req, res) => {
     if (sampleType !== undefined)     { updates.push('sample_type = ?');     params.push(sampleType); }
     if (turnaroundTime !== undefined) { updates.push('turnaround_time = ?'); params.push(turnaroundTime); }
     if (parameters !== undefined)     { updates.push('parameters_json = ?'); params.push(JSON.stringify(parameters)); }
+    if (mrp !== undefined)            { updates.push('mrp = ?');             params.push(mrp != null ? Number(mrp) : null); }
     if (price !== undefined)          { updates.push('price = ?');           params.push(Number(price)); }
     if (homeCollection !== undefined) { updates.push('home_collection = ?'); params.push(homeCollection ? 1 : 0); }
     if (isActive !== undefined)       { updates.push('is_active = ?');       params.push(isActive ? 1 : 0); }
@@ -327,7 +329,7 @@ router.get('/bookings', requireAuth, requireAdmin, async (req, res) => {
     if (status) { conditions.push('b.status = ?'); params.push(status); }
 
     const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
-    const [[{ total }]] = await query(`SELECT COUNT(*) AS total FROM lab_bookings b ${where}`, params);
+    const [{ total }] = await query(`SELECT COUNT(*) AS total FROM lab_bookings b ${where}`, params);
     const rows = await query(
       `SELECT b.*, u.email AS user_email, u.name AS user_name FROM lab_bookings b
        LEFT JOIN users u ON u.id = b.user_id ${where}

@@ -147,6 +147,7 @@ export default function Home() {
   const [newArrivals, setNewArrivals] = useState([]);
   const [featuredBrands, setFeaturedBrands] = useState([]);
   const [ayurvedaBrands, setAyurvedaBrands] = useState([]);
+  const [personalCareBrands, setPersonalCareBrands] = useState([]);
   const [countdown, setCountdown]   = useState({ h: 0, m: 0, s: 0 });
   const [labTests, setLabTests]       = useState([]);
 
@@ -173,6 +174,7 @@ export default function Home() {
     getProducts({ limit: 8, sort: 'price_asc' }).then(r => setFeatured(r.data.products)).catch(() => {});
     getBrands({ category: 'featured'  }).then(r => setFeaturedBrands(r.data.brands || [])).catch(() => {});
     getBrands({ category: 'ayurvedic' }).then(r => setAyurvedaBrands(r.data.brands || [])).catch(() => {});
+    getBrands({ category: 'personal_care' }).then(r => setPersonalCareBrands(r.data.brands || [])).catch(() => {});
     getLabTests({ limit: 6 }).then(r => setLabTests(r.data.tests || [])).catch(() => {});
   }, []);
 
@@ -252,18 +254,23 @@ export default function Home() {
             <Link to="/products" className="section__link">See all <ChevronRight size={14} /></Link>
           </div>
           <div className="personal-care-grid">
-            {PERSONAL_CARE_CATS.map((cat) => (
-              <Link key={cat.slug + cat.label} to={`/products?category=${cat.slug}`} className="pc-cat-card">
-                <div className="pc-cat-card__bg" style={{ background: cat.gradient }} />
-                <span className="pc-cat-card__label">{cat.label}</span>
-                <img
-                  className="pc-cat-card__img"
-                  src={cat.img}
-                  alt={cat.label}
-                  onError={e => { e.target.style.display = 'none'; }}
-                />
-              </Link>
-            ))}
+            {PERSONAL_CARE_CATS.map((cat) => {
+              const dbBrand = personalCareBrands.find(b => b.slug === cat.slug);
+              const gradient = (dbBrand && dbBrand.gradient) ? dbBrand.gradient : cat.gradient;
+              const imgSrc   = (dbBrand && dbBrand.logoUrl)  ? dbBrand.logoUrl  : cat.img;
+              return (
+                <Link key={cat.slug + cat.label} to={`/products?category=${cat.slug}`} className="pc-cat-card">
+                  <div className="pc-cat-card__bg" style={{ background: gradient }} />
+                  <span className="pc-cat-card__label">{cat.label}</span>
+                  <img
+                    className="pc-cat-card__img"
+                    src={imgSrc}
+                    alt={cat.label}
+                    onError={e => { e.target.style.display = 'none'; }}
+                  />
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>

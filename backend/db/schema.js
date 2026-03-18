@@ -142,7 +142,8 @@ async function ensureCoreSchema() {
       name VARCHAR(150) NOT NULL,
       slug VARCHAR(160) NOT NULL,
       logo_url VARCHAR(500) NULL,
-      category ENUM('featured', 'ayurvedic', 'general') NOT NULL DEFAULT 'general',
+      gradient VARCHAR(200) NOT NULL DEFAULT '',
+      category ENUM('featured', 'ayurvedic', 'general', 'personal_care') NOT NULL DEFAULT 'general',
       ord INT NOT NULL DEFAULT 0,
       is_active TINYINT(1) NOT NULL DEFAULT 1,
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -152,6 +153,11 @@ async function ensureCoreSchema() {
       KEY idx_brands_category_active (category, is_active, ord)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
+
+  // Safe migrations for existing installations
+  await execute(`ALTER TABLE brands MODIFY COLUMN category ENUM('featured','ayurvedic','general','personal_care') NOT NULL DEFAULT 'general'`).catch(() => {});
+  await execute(`ALTER TABLE brands ADD COLUMN IF NOT EXISTS gradient VARCHAR(200) NOT NULL DEFAULT ''`).catch(() => {});
+
 
   await execute(`
     CREATE TABLE IF NOT EXISTS availability_requests (
@@ -217,6 +223,7 @@ async function ensureCoreSchema() {
       sample_type VARCHAR(100) NOT NULL DEFAULT 'Blood',
       turnaround_time VARCHAR(50) NOT NULL DEFAULT '24 hrs',
       parameters_json JSON NULL,
+      mrp DECIMAL(10,2) NULL DEFAULT NULL,
       price DECIMAL(10,2) NOT NULL DEFAULT 0,
       home_collection TINYINT(1) NOT NULL DEFAULT 1,
       is_active TINYINT(1) NOT NULL DEFAULT 1,
@@ -227,6 +234,8 @@ async function ensureCoreSchema() {
       KEY idx_lab_tests_category_active (category, is_active)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
+
+  await execute(`ALTER TABLE lab_tests ADD COLUMN IF NOT EXISTS mrp DECIMAL(10,2) NULL DEFAULT NULL`).catch(() => {});
 
   await execute(`
     CREATE TABLE IF NOT EXISTS lab_bookings (
@@ -261,7 +270,7 @@ async function ensureCoreSchema() {
 }
 
 async function seedDefaultLabTests() {
-  const [[{ cnt }]] = await query('SELECT COUNT(*) AS cnt FROM lab_tests', []);
+  const [{ cnt }] = await query('SELECT COUNT(*) AS cnt FROM lab_tests', []);
   if (Number(cnt) > 0) return; // already seeded
 
   const tests = [
