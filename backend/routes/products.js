@@ -74,6 +74,8 @@ function extractPublicId(url) {
 
 function parseImages(value) {
   if (!value) return [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'object') return [];
   try {
     return JSON.parse(value);
   } catch {
