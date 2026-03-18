@@ -466,12 +466,8 @@ export default function AdminProducts() {
           <button className="btn btn--outline" onClick={handleExportExcel} title="Export products to Excel (.xlsx)">
             <FileSpreadsheet size={16} /> Export Excel
           </button>
-          <button
-            className="btn btn--outline"
-            title="Bulk import via UI is disabled on this server. Use: node scripts/importFromCSV.js"
-            onClick={() => alert('Bulk import via UI is disabled on this server.\n\nTo import products, run on the server:\n  node scripts/importFromCSV.js --file <your-csv>\n\nSee backend/scripts/importFromCSV.js for usage.')}
-          >
-            <Upload size={16} /> Import CSV (Server Script)
+          <button className="btn btn--outline" onClick={() => csvInputRef.current?.click()} disabled={importing}>
+            <Upload size={16} /> {importing ? 'Importing...' : 'Import CSV/Excel'}
           </button>
           <input ref={csvInputRef} type="file" accept=".xlsx,.xls,.csv" style={{ display: 'none' }} onChange={handleExcelImport} />
           <button

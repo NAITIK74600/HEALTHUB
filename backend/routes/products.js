@@ -379,9 +379,162 @@ router.post('/request-availability', [
   } catch (err) { next(err); }
 });
 
-router.post('/bulk-import', requireAuth, requireAdmin, async (req, res) => {
-  res.status(503).json({ message: 'Bulk import is disabled in MySQL runtime. Use scripts/resetMySqlFromExcel.js.' });
-});
+// ── Bulk import via CSV/Excel upload ────────────────────────────────────────
+const { uploadSpreadsheet } = require('../middleware/upload');
+const { parse: parseCsv } = require('csv-parse/sync');
+
+// Column name normaliser (strips non-alphanumeric for fuzzy matching)
+function _headKey(v) { return String(v ?? '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+
+// Find index of first header that matches any alias
+function _col(headers, ...aliases) {
+  const keys = headers.map(_headKey);
+  for (const a of aliases) {
+    const i = keys.indexOf(a);
+    if (i >= 0) return i;
+  }
+  return -1;
+}
+
+// CSV type → category slug
+const _TYPE_SLUG = {
+  allopathy: 'caps-tabs', allopathic: 'caps-tabs',
+  ayurvedic: 'ayurvedic', ayurveda: 'ayurvedic',
+  homeopathy: 'caps-tabs',
+  unani: 'herbal', siddha: 'herbal',
+  surgical: 'surgicals', otc: 'otc',
+  cosmetic: 'cosmetics', cosmetics: 'cosmetics',
+  nutritional: 'nutrition', nutrition: 'nutrition',
+  dental: 'dental', baby: 'baby-products', vaccine: 'vaccines',
+};
+
+router.post(
+  '/bulk-import',
+  requireAuth, requireAdmin,
+  uploadSpreadsheet.single('file'),
+  async (req, res, next) => {
+    try {
+      if (!req.file) return res.status(400).json({ message: 'No file uploaded.' });
+
+      const ext = (req.file.originalname || '').split('.').pop().toLowerCase();
+      const mode = req.body.mode === 'replace' ? 'replace' : 'append'; // default: append
+
+      // ── Parse file buffer → array of row objects ────────────────────────
+      let rows = [];
+      if (ext === 'csv') {
+        rows = parseCsv(req.file.buffer, {
+          columns: true, skip_empty_lines: true,
+          relax_quotes: true, trim: true,
+        });
+      } else {
+        // xlsx / xls
+        const wb = XLSX.read(req.file.buffer, { type: 'buffer' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      }
+
+      if (!rows.length) return res.status(400).json({ message: 'File is empty or could not be parsed.' });
+
+      // ── Detect columns (supports both CSV schema & Excel schema) ─────────
+      const headers = Object.keys(rows[0]);
+      const C = {
+        name:   _col(headers, 'name', 'itemname', 'item', 'productname', 'medicine', 'medicinename'),
+        price:  _col(headers, 'price', 'mrp', 'rate', 'saleprice'),
+        brand:  _col(headers, 'manufacturername', 'manufacturer', 'brand', 'company'),
+        pack:   _col(headers, 'packsizelabel', 'pack', 'packing', 'unit'),
+        salt:   _col(headers, 'saltcomposition', 'salt', 'composition', 'shortcomposition1'),
+        desc:   _col(headers, 'medicinedesc', 'description', 'desc'),
+        se:     _col(headers, 'sideeffects', 'sideeffect'),
+        disc:   _col(headers, 'isdiscontinued', 'discontinued', 'isactive'),
+        type:   _col(headers, 'type', 'itemcategory', 'category'),
+        stock:  _col(headers, 'stock', 'qty', 'quantity'),
+        code:   _col(headers, 'code', 'barcode', 'itemcode'),
+      };
+
+      if (C.name < 0) return res.status(400).json({ message: 'Could not find a "name" column in the uploaded file.' });
+
+      // Helper to get a cell value by column index
+      const cell = (row, idx) => idx >= 0 ? String(row[headers[idx]] ?? '').trim() : '';
+
+      // ── Load category map (slug → id) ───────────────────────────────────
+      const catRows = await query('SELECT id, slug FROM categories WHERE is_deleted = 0');
+      const catMap = {};
+      for (const r of catRows) catMap[r.slug] = r.id;
+      const fallbackCatId = catMap['caps-tabs'] || catRows[0]?.id;
+
+      // ── REPLACE mode: delete existing products ──────────────────────────
+      if (mode === 'replace') {
+        await execute('DELETE FROM products');
+      }
+
+      // ── Insert in batches of 500 ────────────────────────────────────────
+      const BATCH = 500;
+      let inserted = 0, skipped = 0;
+
+      function makeSlug(name, idx) {
+        const base = name.toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '').replace(/[\s_]+/g, '-')
+          .replace(/-+/g, '-').replace(/^-|-$/g, '').substring(0, 200);
+        return `${base}-${idx}`;
+      }
+
+      for (let i = 0; i < rows.length; i += BATCH) {
+        const chunk = rows.slice(i, i + BATCH);
+        const values = [];
+
+        for (let j = 0; j < chunk.length; j++) {
+          const row = chunk[j];
+          const rowIdx = i + j + 1;
+
+          const name = cell(row, C.name).substring(0, 200);
+          if (!name) { skipped++; continue; }
+
+          const priceRaw = parseFloat(cell(row, C.price)) || 0;
+          const discRaw  = cell(row, C.disc).toLowerCase();
+          const isActive = (discRaw === 'true' || discRaw === '1') ? 0 : 1;
+          const typeSlug = _TYPE_SLUG[cell(row, C.type).toLowerCase()] || 'caps-tabs';
+          const catId    = catMap[typeSlug] || fallbackCatId;
+          if (!catId) { skipped++; continue; }
+
+          values.push([
+            cell(row, C.code).substring(0, 50),
+            name,
+            makeSlug(name, rowIdx),
+            catId,
+            cell(row, C.brand).substring(0, 100),
+            cell(row, C.desc) || null,
+            cell(row, C.pack).substring(0, 100),
+            priceRaw,   // mrp
+            priceRaw,   // price
+            parseInt(cell(row, C.stock)) || 0,
+            0,          // requires_prescription
+            null,       // images_json
+            null,       // expiry_date
+            '',         // batch_number
+            cell(row, C.salt).substring(0, 500),
+            cell(row, C.se).substring(0, 1000),
+            isActive,
+            0,          // is_deleted
+          ]);
+        }
+
+        if (values.length) {
+          await query(
+            `INSERT IGNORE INTO products
+              (code,name,slug,category_id,brand,description,pack,
+               mrp,price,stock,requires_prescription,images_json,
+               expiry_date,batch_number,salt,side_effects,is_active,is_deleted)
+             VALUES ?`,
+            [values]
+          );
+          inserted += values.length;
+        }
+      }
+
+      res.json({ mode, inserted, skipped, total: rows.length });
+    } catch (err) { next(err); }
+  }
+);
 
 router.post('/ai-fill', requireAuth, requireAdmin, async (req, res) => {
   res.status(503).json({ message: 'AI fill is disabled in MySQL runtime.' });
