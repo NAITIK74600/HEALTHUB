@@ -72,6 +72,19 @@ const ICONS = {
 const _cache   = new Map(); // productKey → url | null
 const _pending = new Set();
 
+// Concurrency limiter — max 3 simultaneous Wikipedia requests
+let _activeCount = 0;
+const _queue = [];
+function _runNext() {
+  if (_activeCount >= 3 || _queue.length === 0) return;
+  const { fn, resolve } = _queue.shift();
+  _activeCount++;
+  fn().then(v => { _activeCount--; resolve(v); _runNext(); });
+}
+function _throttled(fn) {
+  return new Promise(resolve => { _queue.push({ fn, resolve }); _runNext(); });
+}
+
 async function _fetchExternalImage(product) {
   const key = product._id || product.slug;
   if (!key) return null;
@@ -81,63 +94,46 @@ async function _fetchExternalImage(product) {
 
   const done = url => { _cache.set(key, url ?? null); _pending.delete(key); return url ?? null; };
 
-  const salt      = product.salt?.trim();
-  const brand     = product.brand?.trim();
-  const nameShort = (product.name || '').split(' ').slice(0, 3).join(' ');
+  return _throttled(async () => {
+    const salt      = product.salt?.trim();
+    const nameShort = (product.name || '').split(' ').slice(0, 2).join(' ');
 
-  // 1. Wikipedia by salt (best for medicines like Paracetamol, Amoxicillin)
-  if (salt) {
-    try {
-      const r = await fetch(
-        `https://en.wikipedia.org/w/api.php?action=query&generator=search` +
-        `&gsrsearch=${encodeURIComponent(salt)}&gsrlimit=1&prop=pageimages` +
-        `&pithumbsize=500&format=json&origin=*`,
-        { signal: AbortSignal.timeout(5000) }
-      );
-      if (r.ok) {
-        const d = await r.json();
-        const url = Object.values(d.query?.pages || {})[0]?.thumbnail?.source;
-        if (url) return done(url);
-      }
-    } catch { /* timeout */ }
-  }
+    // Wikipedia by salt (most reliable for Indian pharma — Paracetamol, Amoxicillin, etc.)
+    if (salt) {
+      try {
+        const r = await fetch(
+          `https://en.wikipedia.org/w/api.php?action=query&generator=search` +
+          `&gsrsearch=${encodeURIComponent(salt)}&gsrlimit=1&prop=pageimages` +
+          `&pithumbsize=500&format=json&origin=*`,
+          { signal: AbortSignal.timeout(5000) }
+        );
+        if (r.ok) {
+          const d = await r.json();
+          const url = Object.values(d.query?.pages || {})[0]?.thumbnail?.source;
+          if (url) return done(url);
+        }
+      } catch { /* timeout / offline */ }
+    }
 
-  // 2. Open Food Facts by brand + name (best for FMCG / baby products)
-  const offQ = `${brand || ''} ${nameShort}`.trim();
-  if (offQ) {
-    try {
-      const r = await fetch(
-        `https://world.openfoodfacts.org/cgi/search.pl?search_simple=1&json=1&page_size=3` +
-        `&search_terms=${encodeURIComponent(offQ)}&fields=image_front_url,image_url`,
-        { signal: AbortSignal.timeout(7000) }
-      );
-      if (r.ok) {
-        const d = await r.json();
-        const hit = (d.products || []).find(p => p.image_front_url || p.image_url);
-        if (hit) return done(hit.image_front_url || hit.image_url);
-      }
-    } catch { /* timeout */ }
-  }
+    // Wikipedia by product name (first 2 words)
+    if (nameShort) {
+      try {
+        const r = await fetch(
+          `https://en.wikipedia.org/w/api.php?action=query&generator=search` +
+          `&gsrsearch=${encodeURIComponent(nameShort)}&gsrlimit=1&prop=pageimages` +
+          `&pithumbsize=500&format=json&origin=*`,
+          { signal: AbortSignal.timeout(5000) }
+        );
+        if (r.ok) {
+          const d = await r.json();
+          const url = Object.values(d.query?.pages || {})[0]?.thumbnail?.source;
+          if (url) return done(url);
+        }
+      } catch { /* timeout / offline */ }
+    }
 
-  // 3. Wikipedia by first 2 words of product name
-  if (nameShort) {
-    try {
-      const term = (product.name || '').split(' ').slice(0, 2).join(' ');
-      const r = await fetch(
-        `https://en.wikipedia.org/w/api.php?action=query&generator=search` +
-        `&gsrsearch=${encodeURIComponent(term)}&gsrlimit=1&prop=pageimages` +
-        `&pithumbsize=500&format=json&origin=*`,
-        { signal: AbortSignal.timeout(5000) }
-      );
-      if (r.ok) {
-        const d = await r.json();
-        const url = Object.values(d.query?.pages || {})[0]?.thumbnail?.source;
-        if (url) return done(url);
-      }
-    } catch { /* timeout */ }
-  }
-
-  return done(null);
+    return done(null);
+  });
 }
 
 /* ─── Main component ─────────────────────────────────────────── */
