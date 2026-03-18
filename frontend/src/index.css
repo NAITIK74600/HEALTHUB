@@ -584,17 +584,15 @@ svg { flex-shrink: 0; }
   transform: rotate(180deg);
 }
 
-/* Dropdown panel */
+/* Dropdown panel — position: fixed so it escapes ANY overflow context */
 .cat-nav__dropdown {
-  position: absolute;
-  top: calc(100% + 1px);
-  left: 0;
+  position: fixed;
   min-width: 220px;
   background: #fff;
   border: 1px solid var(--border);
   border-radius: 0 0 var(--r-lg) var(--r-lg);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-  z-index: 200;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.14);
+  z-index: 9999;
   padding: 6px 0;
   animation: catDropIn 0.14s ease;
 }

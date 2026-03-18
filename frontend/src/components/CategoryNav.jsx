@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 
@@ -147,81 +147,102 @@ const CATEGORIES = [
 
 export default function CategoryNav() {
   const [activeIdx, setActiveIdx] = useState(null);
+  const [dropPos, setDropPos] = useState({ left: 0, top: 0 });
   const navRef = useRef(null);
+  const itemRefs = useRef([]);
   const closeTimer = useRef(null);
 
-  // Close dropdown on outside click
+  // Close on outside click or scroll
   useEffect(() => {
-    const handler = (e) => {
-      if (navRef.current && !navRef.current.contains(e.target)) {
-        setActiveIdx(null);
-      }
+    const close = (e) => {
+      if (navRef.current && !navRef.current.contains(e.target)) setActiveIdx(null);
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    const closeOnScroll = () => setActiveIdx(null);
+    document.addEventListener('mousedown', close);
+    window.addEventListener('scroll', closeOnScroll, { passive: true });
+    return () => {
+      document.removeEventListener('mousedown', close);
+      window.removeEventListener('scroll', closeOnScroll);
+    };
   }, []);
 
-  const open = (idx) => {
+  const openAt = useCallback((idx) => {
     clearTimeout(closeTimer.current);
+    const el = itemRefs.current[idx];
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      setDropPos({ left: rect.left, top: rect.bottom }); // fixed positioning
+    }
     setActiveIdx(idx);
-  };
+  }, []);
 
   const scheduleClose = () => {
     closeTimer.current = setTimeout(() => setActiveIdx(null), 150);
   };
 
   const toggle = (idx, hasChildren, e) => {
-    if (!hasChildren) return; // let link navigate normally
+    if (!hasChildren) return;
     e.preventDefault();
-    setActiveIdx(prev => (prev === idx ? null : idx));
+    if (activeIdx === idx) {
+      setActiveIdx(null);
+    } else {
+      openAt(idx);
+    }
   };
 
-  return (
-    <nav className="cat-nav" ref={navRef} aria-label="Category navigation">
-      <div className="cat-nav__scroll">
-        {CATEGORIES.map((cat, idx) => {
-          const hasChildren = cat.children?.length > 0;
-          const isActive = activeIdx === idx;
-          return (
-            <div
-              key={cat.slug}
-              className={`cat-nav__item${isActive ? ' cat-nav__item--active' : ''}`}
-              onMouseEnter={() => open(idx)}
-              onMouseLeave={scheduleClose}
-            >
-              <Link
-                to={`/products?category=${cat.slug}`}
-                className="cat-nav__label"
-                onClick={(e) => toggle(idx, hasChildren, e)}
-              >
-                {cat.label}
-                {hasChildren && (
-                  <ChevronDown size={13} className="cat-nav__chevron" />
-                )}
-              </Link>
+  const activeCat = activeIdx !== null ? CATEGORIES[activeIdx] : null;
 
-              {hasChildren && isActive && (
-                <div
-                  className="cat-nav__dropdown"
-                  onMouseEnter={() => open(idx)}
-                  onMouseLeave={scheduleClose}
+  return (
+    <>
+      <nav className="cat-nav" ref={navRef} aria-label="Category navigation">
+        <div className="cat-nav__scroll">
+          {CATEGORIES.map((cat, idx) => {
+            const hasChildren = cat.children?.length > 0;
+            const isActive = activeIdx === idx;
+            return (
+              <div
+                key={cat.slug}
+                className={`cat-nav__item${isActive ? ' cat-nav__item--active' : ''}`}
+                ref={el => { itemRefs.current[idx] = el; }}
+                onMouseEnter={() => openAt(idx)}
+                onMouseLeave={scheduleClose}
+              >
+                <Link
+                  to={`/products?category=${cat.slug}`}
+                  className="cat-nav__label"
+                  onClick={(e) => toggle(idx, hasChildren, e)}
                 >
-                  {cat.children.map((child) => (
-                    <Link
-                      key={child.slug}
-                      to={`/products?category=${child.slug}`}
-                      className="cat-nav__dropdown-item"
-                      onClick={() => setActiveIdx(null)}
-                    >
-                      {child.label}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </nav>
+                  {cat.label}
+                  {hasChildren && (
+                    <ChevronDown size={13} className="cat-nav__chevron" />
+                  )}
+                </Link>
+              </div>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Dropdown rendered in a portal-style fixed element — escapes ALL overflow clipping */}
+      {activeCat?.children?.length > 0 && (
+        <div
+          className="cat-nav__dropdown"
+          style={{ left: dropPos.left, top: dropPos.top }}
+          onMouseEnter={() => { clearTimeout(closeTimer.current); }}
+          onMouseLeave={scheduleClose}
+        >
+          {activeCat.children.map((child) => (
+            <Link
+              key={child.slug}
+              to={`/products?category=${child.slug}`}
+              className="cat-nav__dropdown-item"
+              onClick={() => setActiveIdx(null)}
+            >
+              {child.label}
+            </Link>
+          ))}
+        </div>
+      )}
+    </>
   );
 }
