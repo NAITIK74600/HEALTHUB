@@ -163,7 +163,8 @@ export default function ProductCatalog() {
   };
 
   const selectedCategory = categories.find(c => c._id === categoryParam || c.slug === categoryParam) || null;
-  const category = selectedCategory?._id || (/^[a-f\d]{24}$/i.test(categoryParam) ? categoryParam : '');
+  // Pass categoryParam (slug or numeric ID) directly — backend resolveCategoryIds handles both DB slugs and parent group slugs
+  const category = categoryParam;
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -190,7 +191,9 @@ export default function ProductCatalog() {
     getTopBrands().then(r => setBrands(r.data.brands || [])).catch(() => {});
   }, []);
 
-  const selectedCatName = selectedCategory?.name;
+  // For parent group slugs (e.g. 'hair-care') that have no DB entry, format slug as readable title
+  const slugToTitle = (slug) => slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const selectedCatName = selectedCategory?.name || (categoryParam ? slugToTitle(categoryParam) : null);
   const hasFilter = !!(search || categoryParam || brand);
 
   return (

@@ -140,10 +140,11 @@ export default function CategoryNav() {
       if (!inNav && !inDrop) setActiveIdx(null);
     };
     const closeOnScroll = () => setActiveIdx(null);
-    document.addEventListener('mousedown', close);
+    // Use 'click' (not 'mousedown') so Link navigation fires first before the dropdown closes
+    document.addEventListener('click', close);
     window.addEventListener('scroll', closeOnScroll, { passive: true });
     return () => {
-      document.removeEventListener('mousedown', close);
+      document.removeEventListener('click', close);
       window.removeEventListener('scroll', closeOnScroll);
     };
   }, []);
@@ -217,6 +218,7 @@ export default function CategoryNav() {
           style={{ left: dropPos.left, top: dropPos.top }}
           onMouseEnter={() => { clearTimeout(closeTimer.current); }}
           onMouseLeave={scheduleClose}
+          onClick={e => e.stopPropagation()}
         >
           {activeCat.children.map((child) => (
             <Link
