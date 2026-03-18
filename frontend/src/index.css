@@ -7803,3 +7803,289 @@ svg { flex-shrink: 0; }
   .chatbot-fab { bottom: 16px; right: 16px; width: 50px; height: 50px; }
   .chatbot-window { right: 0; bottom: 80px; width: 100vw; max-width: 100vw; border-radius: var(--r-xl) var(--r-xl) 0 0; max-height: 75vh; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   HOME PAGE REDESIGN — new sections CSS
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Shared section helpers ── */
+.section { padding: 48px 0; }
+.section--gray { background: #f8f9fb; }
+.section__header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px;
+}
+.section__title {
+  font-size: 1.3rem; font-weight: 700; color: #1a1a1a;
+  display: flex; align-items: center; gap: 10px;
+}
+.section__badge {
+  font-size: .72rem; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+  background: #FEF2F2; color: #C0392B; text-transform: uppercase;
+}
+.section__link {
+  font-size: .82rem; font-weight: 600; color: var(--primary, #C0392B);
+  display: flex; align-items: center; gap: 2px; text-decoration: none;
+  white-space: nowrap;
+}
+.section__link:hover { text-decoration: underline; }
+
+/* ── Trust strip (6-item grid) ── */
+.trust-strip { background: #fff; border-top: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0; padding: 18px 0; }
+.trust-strip__grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+.trust-strip__item {
+  display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+  border-radius: 10px; background: #fafafa;
+  transition: box-shadow .18s;
+}
+.trust-strip__item:hover { box-shadow: 0 2px 10px rgba(0,0,0,.07); }
+.trust-strip__icon {
+  flex-shrink: 0; width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+.trust-strip__title { font-size: .82rem; font-weight: 700; color: #1a1a1a; line-height: 1.2; }
+.trust-strip__desc  { font-size: .7rem; color: #6b7280; line-height: 1.3; }
+
+/* ── Stats counter banner ── */
+.stats-banner {
+  background: linear-gradient(135deg, #C0392B 0%, #1B8843 100%);
+  padding: 36px 0;
+}
+.stats-banner__grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+}
+.stats-banner__item {
+  text-align: center; padding: 16px 8px;
+  border-right: 1px solid rgba(255,255,255,.2);
+}
+.stats-banner__item:last-child { border-right: none; }
+.stats-banner__num  { font-size: 2.1rem; font-weight: 800; color: #fff; line-height: 1.1; }
+.stats-banner__label{ font-size: .82rem; color: rgba(255,255,255,.85); margin-top: 4px; }
+
+/* ── Personal care category cards (colorful gradient tiles) ── */
+.personal-care-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 10px;
+}
+.pc-cat-card {
+  position: relative; border-radius: 14px; overflow: hidden;
+  aspect-ratio: 3/4; display: flex; flex-direction: column;
+  justify-content: flex-end; cursor: pointer; text-decoration: none;
+  transition: transform .22s, box-shadow .22s;
+}
+.pc-cat-card:hover { transform: translateY(-5px) scale(1.03); box-shadow: 0 12px 28px rgba(0,0,0,.18); }
+.pc-cat-card__bg {
+  position: absolute; inset: 0; border-radius: inherit;
+}
+.pc-cat-card__img {
+  position: absolute; bottom: 0; right: 0;
+  width: 70%; height: 75%; object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,.15));
+  transition: transform .3s;
+}
+.pc-cat-card:hover .pc-cat-card__img { transform: scale(1.07) translateY(-4px); }
+.pc-cat-card__label {
+  position: relative; z-index: 1;
+  font-size: .8rem; font-weight: 700; color: #fff;
+  padding: 8px 10px 10px;
+  text-shadow: 0 1px 4px rgba(0,0,0,.3);
+  line-height: 1.2;
+}
+
+/* ── Horizontal scroll row with arrows ── */
+.scroll-section { padding: 40px 0; }
+.scroll-row-wrap {
+  position: relative;
+  display: flex; align-items: center; gap: 6px;
+}
+.scroll-row {
+  display: flex; gap: 14px;
+  overflow-x: auto; scroll-snap-type: x mandatory;
+  -ms-overflow-style: none; scrollbar-width: none;
+  padding: 8px 4px;
+}
+.scroll-row::-webkit-scrollbar { display: none; }
+.scroll-row-btn {
+  flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
+  background: #fff; border: 1.5px solid #e5e7eb;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: #374151; box-shadow: 0 2px 6px rgba(0,0,0,.08);
+  transition: background .18s, box-shadow .18s, transform .15s;
+  z-index: 1;
+}
+.scroll-row-btn:hover { background: #C0392B; color: #fff; border-color: #C0392B; transform: scale(1.08); }
+
+/* ── Circular brand cards (featured brands) ── */
+.brand-circle-card {
+  flex: 0 0 90px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  text-decoration: none; scroll-snap-align: start;
+  transition: transform .2s;
+}
+.brand-circle-card:hover { transform: translateY(-4px); }
+.brand-circle-card__ring {
+  width: 84px; height: 84px; border-radius: 50%;
+  background: #fff; border: 2px solid #f0f0f0;
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  transition: box-shadow .2s, border-color .2s;
+}
+.brand-circle-card:hover .brand-circle-card__ring { border-color: #C0392B; box-shadow: 0 4px 18px rgba(192,57,43,.15); }
+.brand-circle-card__img { width: 60px; height: 46px; object-fit: contain; }
+.brand-circle-card__fb { font-size: .9rem; font-weight: 700; color: #C0392B; }
+.brand-circle-card__name {
+  font-size: .7rem; color: #4b5563; text-align: center; line-height: 1.3;
+  max-width: 86px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ── Category tiles grid (Shop by Category) ── */
+.category-grid-v2 {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 12px;
+}
+.cat-tile {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 14px 8px; border-radius: 12px; background: #fff;
+  border: 1.5px solid #f0f0f0; text-decoration: none;
+  cursor: pointer; transition: transform .2s, box-shadow .2s, border-color .2s;
+  text-align: center;
+}
+.cat-tile:hover { transform: translateY(-4px); box-shadow: 0 6px 18px rgba(0,0,0,.10); border-color: #C0392B; }
+.cat-tile__icon {
+  width: 52px; height: 52px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.cat-tile__name { font-size: .68rem; font-weight: 600; color: #374151; line-height: 1.3; }
+
+/* ── Lab Test cards ── */
+.lab-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+}
+.lab-card {
+  display: flex; align-items: center; gap: 14px; padding: 16px 14px;
+  border-radius: 12px; background: #fff; border: 1.5px solid #f0f0f0;
+  text-decoration: none; cursor: pointer;
+  transition: box-shadow .2s, border-color .2s, transform .2s;
+}
+.lab-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.10); border-color: #dde1e9; transform: translateY(-3px); }
+.lab-card__icon {
+  flex-shrink: 0; width: 46px; height: 46px; border-radius: 10px;
+  background: #f9fafb; display: flex; align-items: center; justify-content: center;
+}
+.lab-card__body { flex: 1; }
+.lab-card__title { font-size: .88rem; font-weight: 700; color: #1a1a1a; }
+.lab-card__desc  { font-size: .72rem; color: #6b7280; margin-top: 2px; }
+.lab-card__discount {
+  flex-shrink: 0; display: flex; flex-direction: column; align-items: center;
+  background: #FEF2F2; border-radius: 8px; padding: 6px 10px; color: #C0392B;
+}
+.lab-card__discount span { font-size: 1.05rem; font-weight: 800; line-height: 1; }
+.lab-card__discount small { font-size: .62rem; text-transform: uppercase; font-weight: 600; }
+
+/* ── Ayurveda brand cards (colored bg) ── */
+.brand-ayur-card {
+  flex: 0 0 110px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  text-decoration: none; scroll-snap-align: start;
+  transition: transform .2s;
+}
+.brand-ayur-card:hover { transform: translateY(-4px); }
+.brand-ayur-card__box {
+  width: 100px; height: 80px; border-radius: 14px;
+  background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+  border: 1.5px solid #A5D6A7;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  transition: box-shadow .2s, border-color .2s;
+}
+.brand-ayur-card:hover .brand-ayur-card__box { box-shadow: 0 4px 16px rgba(27,136,67,.18); border-color: #1B8843; }
+.brand-ayur-card__img { width: 74px; height: 54px; object-fit: contain; }
+.brand-ayur-card__fb { font-size: .9rem; font-weight: 700; color: #1B8843; }
+.brand-ayur-card__name {
+  font-size: .7rem; color: #166534; text-align: center; line-height: 1.3;
+  max-width: 106px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-weight: 600;
+}
+
+/* ── WhatsApp CTA Banner ── */
+.wa-cta-banner { background: #075E54; padding: 36px 0; }
+.wa-cta-banner__inner {
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  flex-wrap: wrap;
+}
+.wa-cta-banner__left { display: flex; align-items: center; gap: 18px; }
+.wa-cta-banner__icon {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.wa-cta-banner h3 { font-size: 1.15rem; font-weight: 700; color: #fff; margin-bottom: 4px; }
+.wa-cta-banner p  { font-size: .82rem; color: rgba(255,255,255,.8); }
+.btn--whatsapp {
+  background: #25D366; color: #fff; border: none;
+  display: flex; align-items: center; gap: 8px; border-radius: 8px;
+  padding: 12px 22px; font-weight: 700; font-size: .92rem; cursor: pointer;
+  white-space: nowrap; text-decoration: none;
+  transition: background .18s, transform .15s;
+}
+.btn--whatsapp:hover { background: #1EBE5B; transform: scale(1.03); }
+
+/* ── Map section ── */
+.map-section { padding: 48px 0; background: #fff; }
+.map-wrapper { display: flex; justify-content: center; }
+.map-card {
+  display: flex; align-items: flex-start; gap: 20px;
+  background: #fff; border: 1.5px solid #e5e7eb; border-radius: 16px;
+  padding: 28px 32px; max-width: 560px; width: 100%;
+  box-shadow: 0 4px 20px rgba(0,0,0,.07);
+}
+.map-card__pin {
+  width: 50px; height: 50px; border-radius: 50%;
+  background: #FEF2F2; color: #C0392B;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.map-card__content h3 { font-size: 1.05rem; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; }
+.map-card__content p  { font-size: .82rem; color: #6b7280; line-height: 1.5; margin-bottom: 16px; }
+.map-card__actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ── Responsive: home sections ── */
+@media (max-width: 1100px) {
+  .personal-care-grid { grid-template-columns: repeat(4, 1fr); }
+  .category-grid-v2 { grid-template-columns: repeat(6, 1fr); }
+  .trust-strip__grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+  .personal-care-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .category-grid-v2 { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .trust-strip__grid { grid-template-columns: repeat(2, 1fr); }
+  .stats-banner__grid { grid-template-columns: repeat(2, 1fr); }
+  .lab-grid { grid-template-columns: 1fr 1fr; }
+  .brand-circle-card__ring { width: 70px; height: 70px; }
+  .brand-circle-card { flex: 0 0 76px; }
+}
+@media (max-width: 480px) {
+  .personal-care-grid { grid-template-columns: repeat(2, 1fr); }
+  .category-grid-v2 { grid-template-columns: repeat(3, 1fr); }
+  .lab-grid { grid-template-columns: 1fr; }
+  .trust-strip__grid { grid-template-columns: repeat(2, 1fr); }
+  .stats-banner__grid { grid-template-columns: repeat(2, 1fr); }
+  .wa-cta-banner__inner { flex-direction: column; text-align: center; }
+  .wa-cta-banner__left { flex-direction: column; text-align: center; }
+  .map-card { flex-direction: column; }
+}
+
+/* ── Fade-in-up scroll animation ── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.section, .scroll-section, .trust-strip, .stats-banner {
+  animation: fadeInUp 0.45s ease both;
+}
