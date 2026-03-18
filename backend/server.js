@@ -44,7 +44,7 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       imgSrc:     ["'self'", 'data:', 'blob:', 'https:', 'http:'],  // allow all image sources for product images
-      scriptSrc:  ["'self'", "'unsafe-inline'", 'https://checkout.razorpay.com', 'https://accounts.google.com', 'https://apis.google.com', 'https://www.gstatic.com'],
+      scriptSrc:  ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://checkout.razorpay.com', 'https://accounts.google.com', 'https://apis.google.com', 'https://www.gstatic.com'],
       styleSrc:   ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://accounts.google.com'],
       connectSrc: ["'self'", 'https://batlamedicos.shop', 'https://www.batlamedicos.shop',
                    'https://en.wikipedia.org', 'https://world.openfoodfacts.org',
