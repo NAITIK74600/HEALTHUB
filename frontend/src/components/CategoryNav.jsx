@@ -128,13 +128,16 @@ export default function CategoryNav() {
   const [activeIdx, setActiveIdx] = useState(null);
   const [dropPos, setDropPos] = useState({ left: 0, top: 0 });
   const navRef = useRef(null);
+  const dropdownRef = useRef(null);
   const itemRefs = useRef([]);
   const closeTimer = useRef(null);
 
   // Close on outside click or scroll
   useEffect(() => {
     const close = (e) => {
-      if (navRef.current && !navRef.current.contains(e.target)) setActiveIdx(null);
+      const inNav = navRef.current && navRef.current.contains(e.target);
+      const inDrop = dropdownRef.current && dropdownRef.current.contains(e.target);
+      if (!inNav && !inDrop) setActiveIdx(null);
     };
     const closeOnScroll = () => setActiveIdx(null);
     document.addEventListener('mousedown', close);
@@ -210,6 +213,7 @@ export default function CategoryNav() {
       {activeCat?.children?.length > 0 && (
         <div
           className="cat-nav__dropdown"
+          ref={dropdownRef}
           style={{ left: dropPos.left, top: dropPos.top }}
           onMouseEnter={() => { clearTimeout(closeTimer.current); }}
           onMouseLeave={scheduleClose}
