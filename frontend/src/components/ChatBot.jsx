@@ -5,10 +5,12 @@ import api from '../api/axios';
 const WELCOME = "Namaste! 👋 I'm MedBot, your Batla Medicos assistant.\n\nAsk me about medicines, health tips, lab tests, or anything about our store!";
 
 const QUICK_REPLIES = [
-  'What medicines do you sell?',
-  'Do you offer home delivery?',
-  'What are your store timings?',
+  'Store timings & location',
+  'Home delivery available?',
   'How to book a lab test?',
+  'Payment options',
+  'How to order online?',
+  'What medicines do you sell?',
 ];
 
 export default function ChatBot() {
