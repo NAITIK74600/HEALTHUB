@@ -144,28 +144,30 @@ app.get('/health', (req, res) => {
 // ── Serve React frontend (production build) ────────────────────────────
 const DIST = path.join(__dirname, '..', 'frontend', 'dist');
 const fs = require('fs');
-if (fs.existsSync(DIST)) {
-  app.use(express.static(DIST, {
-    maxAge: '1h',
-    etag: true,
-    setHeaders: (res, filePath) => {
-      if (filePath.endsWith('.html')) {
-        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-        res.setHeader('Pragma', 'no-cache');
-        res.setHeader('Expires', '0');
-      }
-    },
-  }));
-  // React Router: any non-API route serves index.html (Express 5 wildcard syntax)
-  app.get(/(.*)/, (req, res) => {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-    res.sendFile(path.join(DIST, 'index.html'));
-  });
-} else {
-  app.use((req, res) => res.status(404).json({ message: 'Route not found.' }));
-}
+// Always register static + SPA fallback; check dist existence at request time
+// so Passenger doesn't need a restart after the first build
+app.use(express.static(DIST, {
+  maxAge: '1h',
+  etag: true,
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  },
+}));
+// React Router: any non-API route serves index.html
+app.get(/(.*)/, (req, res) => {
+  const indexPath = path.join(DIST, 'index.html');
+  if (!fs.existsSync(indexPath)) {
+    return res.status(503).json({ message: 'Frontend not built. Run: npm run build inside frontend/' });
+  }
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.sendFile(indexPath);
+});
 
 // ── Global error handler — never expose stack traces in production ────────────
 // eslint-disable-next-line no-unused-vars
