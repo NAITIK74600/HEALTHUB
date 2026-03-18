@@ -537,17 +537,21 @@ svg { flex-shrink: 0; }
   position: sticky;
   top: var(--nav-h, 64px);
   z-index: 90;
+  /* overflow-x clip on the outer nav so the scroll works but dropdowns can escape below */
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: none;
 }
+.cat-nav::-webkit-scrollbar { display: none; }
 .cat-nav__scroll {
   display: flex;
   align-items: stretch;
-  overflow-x: auto;
-  scrollbar-width: none;
+  /* No overflow here — parent handles it */
+  min-width: max-content;
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 16px;
 }
-.cat-nav__scroll::-webkit-scrollbar { display: none; }
 
 .cat-nav__item {
   position: relative;
