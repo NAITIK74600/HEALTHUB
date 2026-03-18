@@ -425,9 +425,9 @@ export default function AdminProducts() {
     if (!file || !uploadingFor) return;
     try {
       const fd = new FormData(); fd.append('images', file);
-      const { data } = await updateProduct(uploadingFor, fd);
-      setProducts(prev => prev.map(p => p._id === uploadingFor ? { ...p, images: data.images } : p));
+      await updateProduct(uploadingFor, fd);
       toast.success('Image uploaded!');
+      refresh();
     } catch { toast.error('Image upload failed.'); }
     finally { setUploadingFor(null); }
   };
@@ -439,8 +439,8 @@ export default function AdminProducts() {
     try {
       const fd = new FormData();
       fd.append('imageUrl', url.trim());
-      const { data } = await updateProduct(productId, fd);
-      setProducts(prev => prev.map(p => p._id === productId ? { ...p, images: data.images } : p));
+      await updateProduct(productId, fd);
+      setProducts(prev => prev.map(p => p._id === productId ? { ...p, images: [url.trim(), ...(p.images || [])] } : p));
       toast.success('Image URL added!');
       setUrlModal({ open: false, productId: null, url: '' });
     } catch { toast.error('Failed to add image URL.'); }
