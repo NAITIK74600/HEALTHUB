@@ -668,7 +668,7 @@ router.put('/:id', requireAuth, requireAdmin, upload.array('images', 5), [param(
     }
 
     if (req.body.imageUrl && /^https?:\/\//i.test(String(req.body.imageUrl).trim())) {
-      images.push(String(req.body.imageUrl).trim());
+      images.unshift(String(req.body.imageUrl).trim());
     }
 
     const nextName = req.body.name !== undefined ? String(req.body.name).trim() : current.name;
