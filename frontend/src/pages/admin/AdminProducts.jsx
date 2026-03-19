@@ -291,26 +291,31 @@ export default function AdminProducts() {
     e.preventDefault();
     try {
       // Send product data as JSON (no files — images handled separately)
-      const payload = { ...form };
+      const formPayload = { ...form };
       let productId = editing;
-      if (editing) { await updateProduct(editing, payload); toast.success('Product updated.'); }
-      else         { const res = await createProduct(payload); toast.success('Product created.'); productId = res.data._id; }
+      if (editing) { await updateProduct(editing, formPayload); toast.success('Product updated.'); }
+      else         { const res = await createProduct(formPayload); toast.success('Product created.'); productId = res.data._id; }
 
       // Handle image changes via dedicated image endpoint
-      if (productId) {
+      if (productId && (images.length > 0 || removeImages.length > 0)) {
         const uploadedUrls = [];
         for (const img of images) {
-          const uploadRes = await uploadImage(img);
-          if (uploadRes?.data?.url) uploadedUrls.push(uploadRes.data.url);
+          try {
+            const uploadRes = await uploadImage(img);
+            if (uploadRes?.data?.url) uploadedUrls.push(uploadRes.data.url);
+          } catch (uploadErr) {
+            console.error('Image upload failed:', uploadErr);
+            toast.error('Failed to upload an image.');
+          }
         }
 
-        const payload = {};
-        if (uploadedUrls.length > 0) payload.imageUrls = uploadedUrls;
-        if (removeImages.length > 0) payload.removeImages = removeImages;
-        if (editing && uploadedUrls.length > 0) payload.mode = 'replace';
+        const imgPayload = {};
+        if (uploadedUrls.length > 0) imgPayload.imageUrls = uploadedUrls;
+        if (removeImages.length > 0) imgPayload.removeImages = removeImages;
+        if (editing && uploadedUrls.length > 0) imgPayload.mode = 'replace';
 
-        if (Object.keys(payload).length > 0) {
-          await updateProductImages(productId, payload);
+        if (Object.keys(imgPayload).length > 0) {
+          await updateProductImages(productId, imgPayload);
         }
       }
       setForm(EMPTY); setImages([]); setImgPreviews([]); setExistingImages([]); setRemoveImages([]);
