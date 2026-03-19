@@ -8216,7 +8216,7 @@ svg { flex-shrink: 0; }
   opacity: 0;
   will-change: transform, opacity;
 }
-.anim--visible { animation-fill-mode: both; animation-duration: 0.6s; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+.anim-section.anim--visible { animation-fill-mode: both; animation-duration: 0.6s; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
 
 /* Fade Up */
 .anim--fade-up { transform: translateY(40px); }
