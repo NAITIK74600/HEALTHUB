@@ -22,6 +22,11 @@ const geocodeRoutes      = require('./routes/geocode');
 const couponRoutes       = require('./routes/coupons');
 const deliveryRoutes     = require('./routes/delivery');
 const labRoutes          = require('./routes/lab');
+const orderRoutes        = require('./routes/orders');
+const offerRoutes        = require('./routes/offers');
+const reviewRoutes       = require('./routes/reviews');
+const notificationRoutes = require('./routes/notifications');
+const prescriptionRoutes = require('./routes/prescriptions');
 
 const app = express();
 
@@ -117,16 +122,16 @@ if (process.env.NODE_ENV === 'production') {
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use('/api/auth',          authRoutes);
 app.use('/api/products',     productRoutes);
-app.use('/api/orders',       unsupportedRoute('Orders are temporarily unavailable during MySQL migration.'));
+app.use('/api/orders',       orderRoutes);
 app.use('/api/upload',       uploadRoutes);
-app.use('/api/offers',       unsupportedRoute('Offers are temporarily unavailable during MySQL migration.'));
+app.use('/api/offers',       offerRoutes);
 app.use('/api/categories',   categoryRoutes);
 app.use('/api/brands',        brandRoutes);
 app.use('/api/chat',          chatRoutes);
 app.use('/api/admin',        adminRoutes);
-app.use('/api/reviews',      unsupportedRoute('Reviews are temporarily unavailable during MySQL migration.'));
-app.use('/api/notifications',  unsupportedRoute('Notifications are temporarily unavailable during MySQL migration.'));
-app.use('/api/prescriptions',  unsupportedRoute('Prescriptions are temporarily unavailable during MySQL migration.'));
+app.use('/api/reviews',      reviewRoutes);
+app.use('/api/notifications',  notificationRoutes);
+app.use('/api/prescriptions',  prescriptionRoutes);
 app.use('/api/lab',            labRoutes);
 app.use('/api/geocode',        geocodeRoutes);
 app.use('/api/delivery',       deliveryRoutes);
@@ -138,7 +143,7 @@ app.get('/health', (req, res) => {
   const key = getGeminiKey();
   res.json({
     status: 'ok',
-    version: '2026-03-19a',
+    version: '2026-03-19b',
     db: process.env.MYSQL_DATABASE ? 'mysql' : 'missing-mysql-config',
     gemini: key ? 'configured' : 'NOT configured',
     keyLen: key ? key.length : 0,

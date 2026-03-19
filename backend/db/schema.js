@@ -266,6 +266,103 @@ async function ensureCoreSchema() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
 
+  await execute(`
+    CREATE TABLE IF NOT EXISTS notifications (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      user_id BIGINT UNSIGNED NULL,
+      type VARCHAR(50) NOT NULL DEFAULT 'info',
+      title VARCHAR(200) NOT NULL DEFAULT '',
+      message TEXT NULL,
+      is_read TINYINT(1) NOT NULL DEFAULT 0,
+      is_admin TINYINT(1) NOT NULL DEFAULT 0,
+      link VARCHAR(500) NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      KEY idx_notifications_user (user_id),
+      KEY idx_notifications_admin (is_admin, is_read, created_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await execute(`
+    CREATE TABLE IF NOT EXISTS reviews (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      product_id BIGINT UNSIGNED NOT NULL,
+      user_id BIGINT UNSIGNED NOT NULL,
+      rating TINYINT NOT NULL DEFAULT 5,
+      comment TEXT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      KEY idx_reviews_product (product_id),
+      KEY idx_reviews_user (user_id),
+      CONSTRAINT fk_reviews_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+      CONSTRAINT fk_reviews_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await execute(`
+    CREATE TABLE IF NOT EXISTS order_items (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      order_id BIGINT UNSIGNED NOT NULL,
+      product_id BIGINT UNSIGNED NULL,
+      name VARCHAR(200) NOT NULL DEFAULT '',
+      price DECIMAL(12,2) NOT NULL DEFAULT 0,
+      qty INT NOT NULL DEFAULT 1,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      KEY idx_order_items_order (order_id),
+      CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  // Ensure orders table has needed columns
+  await execute(`ALTER TABLE orders ADD COLUMN razorpay_order_id VARCHAR(100) NULL`).catch(() => {});
+  await execute(`ALTER TABLE orders ADD COLUMN razorpay_payment_id VARCHAR(100) NULL`).catch(() => {});
+  await execute(`ALTER TABLE orders ADD COLUMN address_json JSON NULL`).catch(() => {});
+  await execute(`ALTER TABLE orders ADD COLUMN coupon_code VARCHAR(50) NULL`).catch(() => {});
+  await execute(`ALTER TABLE orders ADD COLUMN discount DECIMAL(10,2) NOT NULL DEFAULT 0`).catch(() => {});
+  await execute(`ALTER TABLE orders ADD COLUMN delivery_charge DECIMAL(10,2) NOT NULL DEFAULT 0`).catch(() => {});
+  await execute(`ALTER TABLE orders ADD COLUMN notes TEXT NULL`).catch(() => {});
+  await execute(`ALTER TABLE orders ADD COLUMN delivery_otp VARCHAR(10) NULL`).catch(() => {});
+  await execute(`ALTER TABLE orders ADD COLUMN delivery_boy_id BIGINT UNSIGNED NULL`).catch(() => {});
+  await execute(`ALTER TABLE orders ADD COLUMN prescription_url VARCHAR(500) NULL`).catch(() => {});
+
+  await execute(`
+    CREATE TABLE IF NOT EXISTS offers (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      title VARCHAR(200) NOT NULL,
+      description TEXT NULL,
+      image_url VARCHAR(500) NULL,
+      link VARCHAR(500) NULL,
+      badge VARCHAR(50) NULL,
+      is_active TINYINT(1) NOT NULL DEFAULT 1,
+      ord INT NOT NULL DEFAULT 0,
+      start_date DATETIME NULL,
+      end_date DATETIME NULL,
+      clicks INT NOT NULL DEFAULT 0,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      KEY idx_offers_active (is_active, ord)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await execute(`
+    CREATE TABLE IF NOT EXISTS prescriptions (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      user_id BIGINT UNSIGNED NOT NULL,
+      image_url VARCHAR(500) NOT NULL,
+      status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+      admin_notes TEXT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      KEY idx_prescriptions_user (user_id),
+      KEY idx_prescriptions_status (status),
+      CONSTRAINT fk_prescriptions_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
   await seedDefaultLabTests();
   await ensureSuperAdmin();
   initialized = true;
