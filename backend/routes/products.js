@@ -561,6 +561,62 @@ router.get('/:slug', [param('slug').trim().isLength({ min: 1, max: 220 })], asyn
   } catch (err) { next(err); }
 });
 
+// ── Related products ────────────────────────────────────────────────────────
+router.get('/:id/related', [param('id').isInt({ min: 1 })], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+
+    const productId = Number(req.params.id);
+    const rows = await query('SELECT brand, category_id FROM products WHERE id = ? AND is_deleted = 0 LIMIT 1', [productId]);
+    if (!rows.length) return res.status(404).json({ message: 'Product not found.' });
+
+    const { brand, category_id } = rows[0];
+    const promises = [];
+
+    // Brand-related (same brand, different product)
+    if (brand) {
+      promises.push(
+        query(
+          `SELECT p.*, c.id AS category_id, c.name AS category_name, c.slug AS category_slug
+           FROM products p LEFT JOIN categories c ON c.id = p.category_id
+           WHERE p.brand = ? AND p.id <> ? AND p.is_deleted = 0 AND p.is_active = 1
+           ORDER BY RAND() LIMIT 12`,
+          [brand, productId]
+        )
+      );
+    } else {
+      promises.push(Promise.resolve([]));
+    }
+
+    // Category-related (same category, different product)
+    if (category_id) {
+      promises.push(
+        query(
+          `SELECT p.*, c.id AS category_id, c.name AS category_name, c.slug AS category_slug
+           FROM products p LEFT JOIN categories c ON c.id = p.category_id
+           WHERE p.category_id = ? AND p.id <> ? AND p.is_deleted = 0 AND p.is_active = 1
+           ORDER BY RAND() LIMIT 12`,
+          [category_id, productId]
+        )
+      );
+    } else {
+      promises.push(Promise.resolve([]));
+    }
+
+    const [brandRows, categoryRows] = await Promise.all(promises);
+
+    // Deduplicate: remove from category list any that appear in brand list
+    const brandIds = new Set(brandRows.map(r => r.id));
+    const dedupedCategory = categoryRows.filter(r => !brandIds.has(r.id));
+
+    res.json({
+      brandRelated: brandRows.map(mapProduct),
+      categoryRelated: dedupedCategory.map(mapProduct),
+    });
+  } catch (err) { next(err); }
+});
+
 router.post('/', requireAuth, requireAdmin, auditLogger('CREATE_PRODUCT', 'Product'), [
   body('name').trim().notEmpty().isLength({ max: 200 }),
   body('category').isInt({ min: 1 }),

@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { ShoppingCart, FileText, Heart, Star } from 'lucide-react';
-import { getProductBySlug, getProducts } from '../api/products';
+import { getProductBySlug, getRelatedProducts } from '../api/products';
 import { getProductReviews, submitReview } from '../api/reviews';
 import MedicineImage from '../components/MedicineImage';
 import { useCart } from '../context/CartContext';
@@ -41,7 +41,7 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [mainImg, setMainImg] = useState(0);
   const [qty, setQty] = useState(1);
-  const [related, setRelated] = useState([]);
+  const [related, setRelated] = useState({ brandRelated: [], categoryRelated: [] });
 
   // Reviews state
   const [reviews, setReviews] = useState([]);
@@ -61,9 +61,9 @@ export default function ProductDetail() {
     getProductBySlug(slug)
       .then(r => {
         setProduct(r.data);
-        // Fetch related
-        getProducts({ category: r.data.category?._id, limit: 4 })
-          .then(res => setRelated(res.data.products.filter(p => p._id !== r.data._id).slice(0, 4)))
+        // Fetch related by brand & category
+        getRelatedProducts(r.data._id)
+          .then(res => setRelated(res.data))
           .catch(() => {});
       })
       .catch(() => setProduct(null))
@@ -220,11 +220,19 @@ export default function ProductDetail() {
         </div>
 
         {/* Related Products */}
-        {related.length > 0 && (
+        {related.brandRelated.length > 0 && (
           <section className="product-detail__related">
-            <h2>Related Products</h2>
-            <div className="product-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
-              {related.map(p => <ProductCard key={p._id} product={p} />)}
+            <h2>More from {product.brand}</h2>
+            <div className="related-scroll">
+              {related.brandRelated.map(p => <ProductCard key={p._id} product={p} />)}
+            </div>
+          </section>
+        )}
+        {related.categoryRelated.length > 0 && (
+          <section className="product-detail__related">
+            <h2>Similar Products</h2>
+            <div className="related-scroll">
+              {related.categoryRelated.map(p => <ProductCard key={p._id} product={p} />)}
             </div>
           </section>
         )}

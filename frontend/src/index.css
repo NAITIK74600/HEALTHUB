@@ -3474,6 +3474,25 @@ svg { flex-shrink: 0; }
 /* Related products section */
 .product-detail__related { margin-top: 48px; }
 .product-detail__related h2 { font-size: 1.3rem; color: var(--gray-800); margin-bottom: 20px; }
+.related-scroll {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+}
+.related-scroll > * {
+  scroll-snap-align: start;
+  flex: 0 0 200px;
+  min-width: 200px;
+}
+.related-scroll::-webkit-scrollbar { height: 6px; }
+.related-scroll::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 3px; }
+@media (max-width: 600px) {
+  .related-scroll > * { flex: 0 0 160px; min-width: 160px; }
+}
 
 /* Wishlist button on product detail */
 .product-detail__wish-btn {
