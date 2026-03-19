@@ -203,7 +203,6 @@ export default function ProductDetail() {
   return (
     <main>
       <div className="product-detail container">
-        <div className="product-detail__layout">
           {/* Images — Auto-sliding carousel like 1mg */}
           <div className="pd-gallery">
             <div
@@ -332,7 +331,6 @@ export default function ProductDetail() {
               </button>
             </div>
           </div>
-        </div>
 
         {/* Related Products */}
         {related.brandRelated.length > 0 && (
