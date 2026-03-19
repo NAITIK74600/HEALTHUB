@@ -71,6 +71,7 @@ export default function ProductCatalog() {
   const [loading, setLoading]     = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [brands, setBrands] = useState([]);
+  const sidebarRef = useRef(null);
   const [requestName, setRequestName] = useState('');
   const [requestPhone, setRequestPhone] = useState('');
   const [requestEmail, setRequestEmail] = useState('');
@@ -194,6 +195,19 @@ export default function ProductCatalog() {
     getTopBrands().then(r => setBrands(r.data.brands || [])).catch(() => {});
   }, []);
 
+  // Keep the active category/brand button visible inside the (scrollable) sidebar.
+  useEffect(() => {
+    const root = sidebarRef.current;
+    if (!root) return;
+    const active = root.querySelector('.catalog-sidebar__item--active');
+    if (!active) return;
+    try {
+      active.scrollIntoView({ block: 'nearest' });
+    } catch {
+      // ignore
+    }
+  }, [categoryParam, brand, sidebarOpen]);
+
   // For parent group slugs (e.g. 'hair-care') that have no DB entry, format slug as readable title
   const slugToTitle = (slug) => slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   const selectedCatName = selectedCategory?.name || (categoryParam ? slugToTitle(categoryParam) : null);
@@ -282,7 +296,7 @@ export default function ProductCatalog() {
           />
 
           {/* Sidebar */}
-          <aside className="catalog-sidebar">
+          <aside className="catalog-sidebar" ref={sidebarRef}>
             <div className="catalog-sidebar__header">
               <LayoutGrid size={16} />
               <span>Categories</span>

@@ -14,7 +14,14 @@ function statusBadge(status) {
 }
 
 function fmt(d) {
-  return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  try {
+    if (!d) return '';
+    const dt = new Date(d);
+    if (Number.isNaN(dt.getTime())) return '';
+    return dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  } catch {
+    return '';
+  }
 }
 
 export default function Prescriptions() {
@@ -25,11 +32,21 @@ export default function Prescriptions() {
   const [form, setForm]         = useState({ notes: '', doctorName: '', patientName: '' });
   const [file, setFile]         = useState(null);
   const [dragOver, setDragOver] = useState(false);
+  const [lastUploadedId, setLastUploadedId] = useState(null);
   const fileRef = useRef(null);
 
   const load = () => {
+    setLoading(true);
     getMyPrescriptions()
-      .then(r => setPrescriptions(r.data.prescriptions))
+      .then(r => {
+        const data = r.data;
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.prescriptions)
+            ? data.prescriptions
+            : [];
+        setPrescriptions(list.filter(Boolean));
+      })
       .catch(() => toast.error('Failed to load prescriptions.'))
       .finally(() => setLoading(false));
   };
@@ -55,14 +72,15 @@ export default function Prescriptions() {
     setUploading(true);
     try {
       const fd = new FormData();
-      fd.append('prescription', file);
+      fd.append('file', file);
       fd.append('notes',       form.notes);
       fd.append('doctorName',  form.doctorName);
       fd.append('patientName', form.patientName);
-      await uploadPrescription(fd);
+      const res = await uploadPrescription(fd);
       toast.success('Prescription uploaded! Under review.');
       setFile(null);
       setForm({ notes: '', doctorName: '', patientName: '' });
+      setLastUploadedId(res?.data?._id || null);
       load();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Upload failed.');
@@ -139,6 +157,12 @@ export default function Prescriptions() {
           <button type="submit" className="btn btn--primary" disabled={uploading || !file}>
             {uploading ? 'Uploading…' : 'Upload Prescription'}
           </button>
+
+          {lastUploadedId && !uploading && (
+            <div style={{ marginTop: 10, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <Link to="/" className="btn btn--outline">Continue Shopping</Link>
+            </div>
+          )}
         </form>
       </section>
 

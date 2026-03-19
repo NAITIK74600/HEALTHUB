@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { getAllPrescriptions, updatePrescriptionStatus } from '../../api/prescriptions';
+import { createOrderFromPrescription, getAllPrescriptions, updatePrescriptionStatus } from '../../api/prescriptions';
+import { getAdminProducts } from '../../api/products';
 import toast from 'react-hot-toast';
-import { CheckCircle, XCircle, Clock, Eye, Filter, X } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Eye, Filter, X, Plus, Trash2 } from 'lucide-react';
 
 function fmt(d) {
   return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -20,6 +21,15 @@ export default function AdminPrescriptions() {
   const [reviewing, setReviewing] = useState(null);   // prescription being reviewed
   const [adminNote, setAdminNote] = useState('');
   const [saving, setSaving] = useState(false);
+
+  // Create order modal
+  const [orderRx, setOrderRx] = useState(null);
+  const [orderItems, setOrderItems] = useState([]); // [{ _id, name, price, qty }]
+  const [addr, setAddr] = useState({ phone: '', line1: '', line2: '', city: '', pincode: '' });
+  const [search, setSearch] = useState('');
+  const [results, setResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [placing, setPlacing] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -53,6 +63,94 @@ export default function AdminPrescriptions() {
       toast.error('Failed to update.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const openCreateOrder = (rx) => {
+    setOrderRx(rx);
+    setOrderItems([]);
+    setResults([]);
+    setSearch('');
+    setAddr({
+      phone: rx?.user?.phone || '',
+      line1: '',
+      line2: '',
+      city: '',
+      pincode: '',
+    });
+  };
+
+  const closeCreateOrder = () => {
+    setOrderRx(null);
+    setOrderItems([]);
+    setResults([]);
+    setSearch('');
+    setAddr({ phone: '', line1: '', line2: '', city: '', pincode: '' });
+  };
+
+  const runSearch = async () => {
+    const q = search.trim();
+    if (q.length < 2) { toast.error('Type at least 2 letters to search.'); return; }
+    setSearching(true);
+    try {
+      const { data } = await getAdminProducts({ page: 1, limit: 10, search: q });
+      setResults(Array.isArray(data?.products) ? data.products : []);
+    } catch {
+      toast.error('Product search failed.');
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const addItem = (p) => {
+    if (!p?._id) return;
+    setOrderItems((prev) => {
+      const idx = prev.findIndex((x) => x._id === p._id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = { ...next[idx], qty: Math.min(99, Number(next[idx].qty || 1) + 1) };
+        return next;
+      }
+      return [...prev, { _id: p._id, name: p.name, price: Number(p.price || 0), qty: 1 }];
+    });
+  };
+
+  const removeItem = (id) => setOrderItems((prev) => prev.filter((x) => x._id !== id));
+
+  const updateQty = (id, qty) => {
+    const n = Number(qty);
+    if (!Number.isFinite(n)) return;
+    setOrderItems((prev) => prev.map((x) => x._id === id ? { ...x, qty: Math.max(1, Math.min(99, n)) } : x));
+  };
+
+  const placeOrder = async () => {
+    if (!orderRx) return;
+    if (!orderItems.length) { toast.error('Add at least one product.'); return; }
+    if (!/^\d{10}$/.test(String(addr.phone || '').trim())) { toast.error('10-digit phone required.'); return; }
+    if (String(addr.line1 || '').trim().length < 5) { toast.error('Address line1 required.'); return; }
+    if (String(addr.city || '').trim().length < 2) { toast.error('City required.'); return; }
+    if (!/^\d{6}$/.test(String(addr.pincode || '').trim())) { toast.error('6-digit pincode required.'); return; }
+
+    setPlacing(true);
+    try {
+      const payload = {
+        items: orderItems.map((i) => ({ productId: i._id, qty: Number(i.qty || 1) })),
+        address: {
+          phone: String(addr.phone || '').trim(),
+          line1: String(addr.line1 || '').trim(),
+          line2: String(addr.line2 || '').trim(),
+          city: String(addr.city || '').trim(),
+          pincode: String(addr.pincode || '').trim(),
+        },
+      };
+      const { data } = await createOrderFromPrescription(orderRx._id, payload);
+      toast.success(`Order created (#${data?.orderId || ''}).`);
+      closeCreateOrder();
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to create order.');
+    } finally {
+      setPlacing(false);
     }
   };
 
@@ -115,6 +213,16 @@ export default function AdminPrescriptions() {
                     Review
                   </button>
                 )}
+
+                {rx.status === 'approved' && (
+                  <button
+                    className="btn btn--outline btn--sm admin-rx-card__review-btn"
+                    style={{ marginTop: 8 }}
+                    onClick={() => openCreateOrder(rx)}
+                  >
+                    Create Order
+                  </button>
+                )}
               </div>
             );
           })}
@@ -171,6 +279,111 @@ export default function AdminPrescriptions() {
             ) : (
               <img src={preview.imageUrl} alt="Prescription" style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain', borderRadius: 12 }} />
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Create Order Modal */}
+      {orderRx && (
+        <div className="modal-overlay" onClick={closeCreateOrder}>
+          <div className="modal" style={{ maxWidth: 720 }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal__head">
+              <h3>Create Order from Prescription</h3>
+              <button className="icon-btn" onClick={closeCreateOrder}><X size={18} /></button>
+            </div>
+
+            <div style={{ marginBottom: 10 }}>
+              <p style={{ margin: 0 }}><strong>Customer:</strong> {orderRx.user?.name} ({orderRx.user?.email})</p>
+              <p style={{ margin: 0, color: 'var(--clr-muted)' }}>
+                Prescription ID: {orderRx._id}
+              </p>
+            </div>
+
+            <div className="form-group" style={{ display: 'flex', gap: 10 }}>
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search products (name/brand/salt)…"
+                style={{ flex: 1 }}
+              />
+              <button className="btn btn--outline" type="button" disabled={searching} onClick={runSearch}>
+                {searching ? 'Searching…' : 'Search'}
+              </button>
+            </div>
+
+            {results.length > 0 && (
+              <div style={{ maxHeight: 200, overflow: 'auto', border: '1px solid var(--clr-border)', borderRadius: 10, padding: 10, marginBottom: 12 }}>
+                {results.map((p) => (
+                  <div key={p._id} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '8px 0', borderBottom: '1px dashed var(--clr-border)' }}>
+                    <div>
+                      <div style={{ fontWeight: 600 }}>{p.name}</div>
+                      <div style={{ fontSize: 12, color: 'var(--clr-muted)' }}>₹{Number(p.price || 0)}</div>
+                    </div>
+                    <button className="btn btn--primary btn--sm" type="button" onClick={() => addItem(p)}>
+                      <Plus size={14} /> Add
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <h4 style={{ margin: '6px 0 10px' }}>Selected items</h4>
+            {orderItems.length === 0 ? (
+              <div style={{ padding: '10px 0', color: 'var(--clr-muted)' }}>No items selected yet.</div>
+            ) : (
+              <div style={{ display: 'grid', gap: 8, marginBottom: 14 }}>
+                {orderItems.map((i) => (
+                  <div key={i._id} style={{ display: 'flex', gap: 10, alignItems: 'center', justifyContent: 'space-between', border: '1px solid var(--clr-border)', borderRadius: 10, padding: 10 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600 }}>{i.name}</div>
+                      <div style={{ fontSize: 12, color: 'var(--clr-muted)' }}>₹{Number(i.price || 0)}</div>
+                    </div>
+                    <input
+                      type="number"
+                      min={1}
+                      max={99}
+                      value={i.qty}
+                      onChange={(e) => updateQty(i._id, e.target.value)}
+                      style={{ width: 80 }}
+                    />
+                    <button className="btn btn--danger btn--sm" type="button" onClick={() => removeItem(i._id)}>
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <h4 style={{ margin: '6px 0 10px' }}>Delivery address</h4>
+            <div className="family-form__grid" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+              <div className="form-group">
+                <label>Phone *</label>
+                <input value={addr.phone} onChange={(e) => setAddr((a) => ({ ...a, phone: e.target.value }))} placeholder="10-digit phone" maxLength={10} />
+              </div>
+              <div className="form-group">
+                <label>Pincode *</label>
+                <input value={addr.pincode} onChange={(e) => setAddr((a) => ({ ...a, pincode: e.target.value }))} placeholder="110025" maxLength={6} />
+              </div>
+              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                <label>Address line 1 *</label>
+                <input value={addr.line1} onChange={(e) => setAddr((a) => ({ ...a, line1: e.target.value }))} placeholder="House no, street, area" />
+              </div>
+              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                <label>Address line 2</label>
+                <input value={addr.line2} onChange={(e) => setAddr((a) => ({ ...a, line2: e.target.value }))} placeholder="Landmark, etc." />
+              </div>
+              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                <label>City *</label>
+                <input value={addr.city} onChange={(e) => setAddr((a) => ({ ...a, city: e.target.value }))} placeholder="New Delhi" />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+              <button className="btn btn--outline" type="button" onClick={closeCreateOrder}>Cancel</button>
+              <button className="btn btn--primary" type="button" disabled={placing} onClick={placeOrder}>
+                {placing ? 'Creating…' : 'Create Order'}
+              </button>
+            </div>
           </div>
         </div>
       )}

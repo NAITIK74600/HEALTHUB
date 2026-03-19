@@ -363,6 +363,11 @@ async function ensureCoreSchema() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
 
+  // Safe migrations for prescriptions metadata
+  await execute(`ALTER TABLE prescriptions ADD COLUMN patient_name VARCHAR(100) NULL`).catch(() => {});
+  await execute(`ALTER TABLE prescriptions ADD COLUMN doctor_name VARCHAR(100) NULL`).catch(() => {});
+  await execute(`ALTER TABLE prescriptions ADD COLUMN notes TEXT NULL`).catch(() => {});
+
   await seedDefaultLabTests();
   await ensureSuperAdmin();
   initialized = true;

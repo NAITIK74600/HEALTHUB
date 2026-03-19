@@ -12,6 +12,11 @@ const router = express.Router();
 
 const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
 
+const uploadPrescriptionFile = upload.fields([
+  { name: 'file', maxCount: 1 },
+  { name: 'prescription', maxCount: 1 },
+]);
+
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
@@ -29,25 +34,50 @@ function saveFile(buffer, subfolder, originalName) {
 function mapPrescription(row) {
   return {
     _id: String(row.id),
-    user: row.user_id ? { _id: String(row.user_id), name: row.user_name || '', email: row.user_email || '' } : null,
+    user: row.user_id ? { _id: String(row.user_id), name: row.user_name || '', email: row.user_email || '', phone: row.user_phone || '' } : null,
     imageUrl: row.image_url,
     status: row.status,
+    patientName: row.patient_name || '',
+    doctorName: row.doctor_name || '',
+    notes: row.notes || '',
+    adminNote: row.admin_notes || '',
+    // Back-compat (some older clients used adminNotes)
     adminNotes: row.admin_notes || '',
+    usedInOrders: String(row.used_order_ids || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
 }
 
 // POST /api/prescriptions — upload a prescription
-router.post('/', requireAuth, upload.single('file'), async (req, res, next) => {
+router.post('/', requireAuth, uploadPrescriptionFile, async (req, res, next) => {
   try {
-    if (!req.file) return res.status(422).json({ message: 'No file uploaded.' });
-    const url = saveFile(req.file.buffer, 'prescriptions', req.file.originalname);
+    const f = req.files?.file?.[0] || req.files?.prescription?.[0] || req.file;
+    if (!f) return res.status(422).json({ message: 'No file uploaded.' });
+
+    const patientName = String(req.body.patientName || '').trim().slice(0, 100);
+    const doctorName = String(req.body.doctorName || '').trim().slice(0, 100);
+    const notes = String(req.body.notes || '').trim().slice(0, 2000);
+
+    const url = saveFile(f.buffer, 'prescriptions', f.originalname);
     const result = await execute(
-      'INSERT INTO prescriptions (user_id, image_url) VALUES (?, ?)',
-      [req.user.id, url]
+      'INSERT INTO prescriptions (user_id, image_url, patient_name, doctor_name, notes) VALUES (?, ?, ?, ?, ?)',
+      [req.user.id, url, patientName || null, doctorName || null, notes || null]
     );
-    res.status(201).json({ _id: String(result.insertId), imageUrl: url, status: 'pending' });
+
+    res.status(201).json({
+      _id: String(result.insertId),
+      imageUrl: url,
+      status: 'pending',
+      patientName,
+      doctorName,
+      notes,
+      adminNote: '',
+      usedInOrders: [],
+    });
   } catch (err) { next(err); }
 });
 
@@ -55,10 +85,24 @@ router.post('/', requireAuth, upload.single('file'), async (req, res, next) => {
 router.get('/my', requireAuth, async (req, res, next) => {
   try {
     const rows = await query(
-      'SELECT * FROM prescriptions WHERE user_id = ? ORDER BY created_at DESC',
+      `SELECT p.*,
+        (
+          SELECT GROUP_CONCAT(o.id)
+          FROM orders o
+          WHERE o.prescription_url = p.image_url AND o.user_id = p.user_id AND o.is_deleted = 0
+        ) AS used_order_ids
+       FROM prescriptions p
+       WHERE p.user_id = ?
+       ORDER BY p.created_at DESC`,
       [req.user.id]
     );
-    res.json(rows.map(r => mapPrescription({ ...r, user_name: req.user.name, user_email: req.user.email })));
+    const prescriptions = rows.map(r => mapPrescription({
+      ...r,
+      user_name: req.user.name,
+      user_email: req.user.email,
+      user_phone: req.user.phone,
+    }));
+    res.json({ prescriptions });
   } catch (err) { next(err); }
 });
 
@@ -83,9 +127,16 @@ router.get('/', requireAuth, requireAdmin, [
 
     const [rows, countRows] = await Promise.all([
       query(
-        `SELECT p.*, u.name AS user_name, u.email AS user_email
-         FROM prescriptions p LEFT JOIN users u ON u.id = p.user_id
-         ${whereSql} ORDER BY p.created_at DESC LIMIT ? OFFSET ?`,
+        `SELECT p.*, u.name AS user_name, u.email AS user_email, u.phone AS user_phone,
+          (
+            SELECT GROUP_CONCAT(o.id)
+            FROM orders o
+            WHERE o.prescription_url = p.image_url AND o.user_id = p.user_id AND o.is_deleted = 0
+          ) AS used_order_ids
+         FROM prescriptions p
+         LEFT JOIN users u ON u.id = p.user_id
+         ${whereSql}
+         ORDER BY p.created_at DESC LIMIT ? OFFSET ?`,
         [...vals, limit, offset]
       ),
       query(`SELECT COUNT(*) AS total FROM prescriptions p ${whereSql}`, vals),
@@ -105,17 +156,122 @@ router.patch('/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })],
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
-    const { status, adminNotes } = req.body;
+
+    const status = req.body.status;
+    const adminNote = req.body.adminNote !== undefined
+      ? req.body.adminNote
+      : req.body.adminNotes;
+
     const sets = [];
     const vals = [];
     if (status) { sets.push('status = ?'); vals.push(status); }
-    if (adminNotes !== undefined) { sets.push('admin_notes = ?'); vals.push(adminNotes); }
+    if (adminNote !== undefined) { sets.push('admin_notes = ?'); vals.push(adminNote); }
     if (!sets.length) return res.status(422).json({ message: 'Nothing to update.' });
     vals.push(req.params.id);
     await execute(`UPDATE prescriptions SET ${sets.join(', ')} WHERE id = ?`, vals);
     res.json({ message: 'Prescription updated.' });
   } catch (err) { next(err); }
 });
+
+// POST /api/prescriptions/:id/create-order — admin places an order for the user, tied to this prescription
+router.post(
+  '/:id/create-order',
+  requireAuth,
+  requireAdmin,
+  [
+    param('id').isInt({ min: 1 }),
+  ],
+  async (req, res, next) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+
+      const rxRows = await query(
+        `SELECT p.*, u.name AS user_name, u.email AS user_email, u.phone AS user_phone
+         FROM prescriptions p
+         LEFT JOIN users u ON u.id = p.user_id
+         WHERE p.id = ? LIMIT 1`,
+        [req.params.id]
+      );
+      if (!rxRows.length) return res.status(404).json({ message: 'Prescription not found.' });
+      const rx = rxRows[0];
+      if (rx.status !== 'approved') {
+        return res.status(422).json({ message: 'Prescription must be approved before creating an order.' });
+      }
+
+      const items = Array.isArray(req.body.items) ? req.body.items : [];
+      if (!items.length) return res.status(422).json({ message: 'At least one item is required.' });
+
+      const address = req.body.address;
+      if (!address || typeof address !== 'object') return res.status(422).json({ message: 'Address is required.' });
+      const line1 = String(address.line1 || '').trim();
+      const line2 = String(address.line2 || '').trim();
+      const city = String(address.city || '').trim();
+      const pincode = String(address.pincode || '').trim();
+      const phone = String(address.phone || '').trim();
+      if (line1.length < 5) return res.status(422).json({ message: 'Address line1 is required.' });
+      if (city.length < 2) return res.status(422).json({ message: 'City is required.' });
+      if (!/^\d{6}$/.test(pincode)) return res.status(422).json({ message: '6-digit pincode is required.' });
+      if (!/^\d{10}$/.test(phone)) return res.status(422).json({ message: '10-digit phone is required.' });
+
+      // Fetch product details and compute totals
+      let total = 0;
+      const orderItems = [];
+
+      for (const item of items) {
+        const productId = Number(item.productId || item.product || item._id);
+        const qty = Number(item.qty || 1);
+        if (!Number.isFinite(productId) || productId <= 0) {
+          return res.status(422).json({ message: 'Invalid productId in items.' });
+        }
+        if (!Number.isFinite(qty) || qty < 1 || qty > 99) {
+          return res.status(422).json({ message: 'Invalid qty in items.' });
+        }
+
+        const prodRows = await query(
+          'SELECT id, name, price, is_deleted, is_active FROM products WHERE id = ? LIMIT 1',
+          [productId]
+        );
+        const p = prodRows[0];
+        if (!p || Number(p.is_deleted) === 1 || Number(p.is_active) === 0) {
+          return res.status(404).json({ message: 'Product not found or inactive.' });
+        }
+
+        const price = Number(p.price || 0);
+        total += price * qty;
+        orderItems.push({ product_id: p.id, name: String(p.name || '').slice(0, 200), price, qty });
+      }
+
+      const otp = String(Math.floor(1000 + Math.random() * 9000));
+      const addressPayload = { line1, line2, city, pincode, phone };
+
+      const result = await execute(
+        `INSERT INTO orders (user_id, total, status, payment_status, address_json, notes, prescription_url, delivery_otp)
+         VALUES (?, ?, 'placed', 'cod', ?, ?, ?, ?)`,
+        [
+          rx.user_id,
+          total,
+          JSON.stringify(addressPayload),
+          `Created by admin from prescription #${rx.id}`,
+          rx.image_url,
+          otp,
+        ]
+      );
+      const orderId = result.insertId;
+
+      for (const item of orderItems) {
+        await execute(
+          'INSERT INTO order_items (order_id, product_id, name, price, qty) VALUES (?, ?, ?, ?, ?)',
+          [orderId, item.product_id, item.name, item.price, item.qty]
+        );
+      }
+
+      res.status(201).json({ orderId: String(orderId) });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 // DELETE /api/prescriptions/:id
 router.delete('/:id', requireAuth, [param('id').isInt({ min: 1 })], async (req, res, next) => {
