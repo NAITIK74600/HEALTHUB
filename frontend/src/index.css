@@ -2471,7 +2471,7 @@ svg { flex-shrink: 0; }
 /* ================================================================
    ADMIN LAYOUT  — HCI: Clear information architecture
    ================================================================ */
-.admin-layout { display: flex; min-height: calc(100vh - var(--nav-h)); }
+.admin-layout { display: flex; min-height: 100vh; }
 
 .admin-sidebar {
   width: 240px;
@@ -2483,8 +2483,8 @@ svg { flex-shrink: 0; }
   gap: 2px;
   padding: 16px 10px;
   position: sticky;
-  top: var(--nav-h);
-  height: calc(100vh - var(--nav-h));
+  top: 0;
+  height: 100vh;
   overflow-y: auto;
 }
 .admin-sidebar__header {
