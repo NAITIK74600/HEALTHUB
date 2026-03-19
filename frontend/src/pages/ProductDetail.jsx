@@ -41,6 +41,7 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [mainImg, setMainImg] = useState(0);
   const [qty, setQty] = useState(1);
+  const [cartAdded, setCartAdded] = useState(false);
   const [related, setRelated] = useState({ brandRelated: [], categoryRelated: [] });
 
   // "You may also like" — recommendation feed
@@ -317,17 +318,21 @@ export default function ProductDetail() {
 
             <div className="product-detail__cart-row">
               <div className="qty-control">
-                <button onClick={() => setQty(q => Math.max(1, q - 1))}>−</button>
-                <span>{qty}</span>
-                <button onClick={() => setQty(q => Math.min(product.stock, q + 1))}>+</button>
+                <button className="qty-btn" onClick={() => setQty(q => Math.max(1, q - 1))}>−</button>
+                <span className="qty-display">{qty}</span>
+                <button className="qty-btn" onClick={() => setQty(q => Math.min(product.stock, q + 1))}>+</button>
               </div>
               <button
-                className="btn btn--primary"
+                className={`btn btn--primary pd-add-cart${cartAdded ? ' pd-add-cart--added' : ''}`}
                 disabled={product.stock === 0}
-                onClick={() => addItem(product, qty)}
+                onClick={() => {
+                  addItem(product, qty);
+                  setCartAdded(true);
+                  setTimeout(() => setCartAdded(false), 1200);
+                }}
                 style={{ flex: 1 }}
               >
-                <ShoppingCart size={18} /> Add to Cart
+                <ShoppingCart size={18} /> {cartAdded ? 'Added ✓' : 'Add to Cart'}
               </button>
             </div>
           </div>

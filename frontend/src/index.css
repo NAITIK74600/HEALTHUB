@@ -2268,6 +2268,21 @@ svg { flex-shrink: 0; }
 }
 .qty-btn:hover { background: var(--gray-100); border-color: var(--primary); color: var(--primary); }
 .qty-display { font-size: 18px; font-weight: 700; min-width: 30px; text-align: center; }
+.product-detail__cart-row { display: flex; align-items: center; gap: 16px; }
+.pd-add-cart {
+  transition: background .25s, transform .15s;
+}
+.pd-add-cart:active { transform: scale(0.96); }
+.pd-add-cart--added {
+  background: #16a34a !important;
+  border-color: #16a34a !important;
+  animation: cartPop .35s ease;
+}
+@keyframes cartPop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
 
 /* ================================================================
    CHECKOUT
