@@ -453,7 +453,12 @@ export default function AdminProducts() {
       const { data } = await updateProductImages(uploadingFor, { imageUrl });
       setProducts(prev => prev.map(p => p._id === uploadingFor ? { ...p, images: data.images || [imageUrl] } : p));
       toast.success('Image uploaded!');
-    } catch (err) { toast.error(err.response?.data?.message || 'Image upload failed.'); }
+    } catch (err) {
+      const status = err.response?.status || 'network';
+      const msg = err.response?.data?.message || err.message;
+      console.error('Image upload error:', status, err.response?.data || err.message);
+      toast.error(`Image upload failed (${status}): ${msg}`);
+    }
     finally { setUploadingFor(null); }
   };
 
@@ -466,7 +471,12 @@ export default function AdminProducts() {
       setProducts(prev => prev.map(p => p._id === productId ? { ...p, images: data.images || [url.trim()] } : p));
       toast.success('Image URL added!');
       setUrlModal({ open: false, productId: null, url: '' });
-    } catch (err) { toast.error(err.response?.data?.message || 'Failed to add image URL.'); }
+    } catch (err) {
+      const status = err.response?.status || 'network';
+      const msg = err.response?.data?.message || err.message;
+      console.error('Add image URL error:', status, err.response?.data || err.message);
+      toast.error(`Failed to add image (${status}): ${msg}`);
+    }
   };
 
   const allSelected  = products.length > 0 && selectedIds.size === products.length;

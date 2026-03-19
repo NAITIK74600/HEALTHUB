@@ -700,6 +700,7 @@ router.delete('/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })]
 // ── Dedicated image management (add / remove) ────────────────────────────────
 // Uses a unique path to avoid cPanel/Passenger routing issues
 router.post('/update-images/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })], async (req, res, next) => {
+  console.log('[update-images] id=%s body=%j', req.params.id, req.body);
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });

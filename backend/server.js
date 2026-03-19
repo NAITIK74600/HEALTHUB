@@ -138,6 +138,7 @@ app.get('/health', (req, res) => {
   const key = getGeminiKey();
   res.json({
     status: 'ok',
+    version: '2026-03-19a',
     db: process.env.MYSQL_DATABASE ? 'mysql' : 'missing-mysql-config',
     gemini: key ? 'configured' : 'NOT configured',
     keyLen: key ? key.length : 0,
