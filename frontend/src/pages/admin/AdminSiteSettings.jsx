@@ -4,11 +4,15 @@ import { toast } from 'react-hot-toast';
 
 const ANIMATION_OPTIONS = [
   { value: 'fadeUp',     label: 'Fade Up',       desc: 'Elements fade in from below'      },
+  { value: 'fadeDown',   label: 'Fade Down',     desc: 'Elements fade in from above'      },
   { value: 'fadeIn',     label: 'Fade In',        desc: 'Simple opacity fade'              },
   { value: 'slideLeft',  label: 'Slide Left',     desc: 'Slide in from the left'           },
   { value: 'slideRight', label: 'Slide Right',    desc: 'Slide in from the right'          },
+  { value: 'slideUp',    label: 'Slide Up',      desc: 'Slide in from below'              },
+  { value: 'slideDown',  label: 'Slide Down',    desc: 'Slide in from above'              },
   { value: 'zoomIn',     label: 'Zoom In',        desc: 'Scale up from smaller'            },
   { value: 'flipUp',     label: 'Flip Up',        desc: '3D flip perspective effect'       },
+  { value: 'rotateIn',   label: 'Rotate In',     desc: 'Rotate + scale into place'        },
   { value: 'bounceIn',   label: 'Bounce In',      desc: 'Bouncy spring entrance'           },
   { value: 'glowIn',     label: 'Glow In',        desc: 'Fade with subtle glow'            },
   { value: 'none',       label: 'No Animation',   desc: 'Sections appear instantly'        },
@@ -155,7 +159,7 @@ export default function AdminSiteSettings() {
           <h3 style={{ margin: '0 0 12px', fontSize: '1rem' }}>Preview: {ANIMATION_OPTIONS.find(a => a.value === previewAnim)?.label}</h3>
           <div
             key={Date.now()}
-            className={`anim-preview-box anim--${previewAnim === 'none' ? 'fade-in' : previewAnim.replace(/([A-Z])/g, '-$1').toLowerCase()} anim--visible`}
+            className={`anim-preview-box anim-section anim--${previewAnim === 'none' ? 'fade-in' : previewAnim.replace(/([A-Z])/g, '-$1').toLowerCase()} anim--visible`}
           >
             <Sparkles size={24} /> This is how the animation looks
           </div>

@@ -4,7 +4,7 @@ import { useInView, getStaggerDelay } from '../hooks/useAnimations';
  * AnimatedSection — wraps content with scroll-triggered animation.
  * 
  * Props:
- *   animation: 'fadeUp' | 'fadeIn' | 'slideLeft' | 'slideRight' | 'zoomIn' | 'flipUp' | 'bounceIn' | 'none'
+ *   animation: 'fadeUp' | 'fadeDown' | 'fadeIn' | 'slideLeft' | 'slideRight' | 'slideUp' | 'slideDown' | 'zoomIn' | 'flipUp' | 'rotateIn' | 'bounceIn' | 'glowIn' | 'none'
  *   delay: extra delay in seconds (default: 0)
  *   stagger: if true, children get staggered delays
  *   className: additional class names
@@ -12,11 +12,15 @@ import { useInView, getStaggerDelay } from '../hooks/useAnimations';
  */
 const ANIMATION_CLASSES = {
   fadeUp: 'anim--fade-up',
+  fadeDown: 'anim--fade-down',
   fadeIn: 'anim--fade-in',
   slideLeft: 'anim--slide-left',
   slideRight: 'anim--slide-right',
+  slideUp: 'anim--slide-up',
+  slideDown: 'anim--slide-down',
   zoomIn: 'anim--zoom-in',
   flipUp: 'anim--flip-up',
+  rotateIn: 'anim--rotate-in',
   bounceIn: 'anim--bounce-in',
   glowIn: 'anim--glow-in',
   none: '',
