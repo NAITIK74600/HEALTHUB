@@ -13,7 +13,7 @@ import {
   FileSpreadsheet, CheckCircle, AlertTriangle, Search, Package, Percent, Zap, Sparkles,
 } from 'lucide-react';
 
-const EMPTY = { name: '', category: '', brand: '', salt: '', description: '', mrp: '', price: '', stock: '', requiresPrescription: false };
+const EMPTY = { name: '', category: '', brand: '', company: '', salt: '', description: '', mrp: '', price: '', stock: '', requiresPrescription: false };
 
 const STOCK_OPTS = [
   { value: 'all', label: 'All Stock' },
@@ -421,7 +421,7 @@ export default function AdminProducts() {
   /* ── Edit helpers ── */
   const startEdit = (p) => {
     setEditing(p._id);
-    setForm({ name: p.name, category: p.category?._id || '', brand: p.brand || '', salt: p.salt || '', description: p.description || '', mrp: p.mrp, price: p.price, stock: p.stock, requiresPrescription: p.requiresPrescription });
+    setForm({ name: p.name, category: p.category?._id || '', brand: p.brand || '', company: p.company || '', salt: p.salt || '', description: p.description || '', mrp: p.mrp, price: p.price, stock: p.stock, requiresPrescription: p.requiresPrescription });
     setImages([]); setImgPreviews([]); setExistingImages(p.images || []); setRemoveImages([]);
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -780,6 +780,12 @@ export default function AdminProducts() {
             <div className="form-group">
               <label>Brand</label>
               <input value={form.brand} onChange={e => setForm(f => ({ ...f, brand: e.target.value }))} maxLength={100} />
+            </div>
+          </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label>Company / Manufacturer</label>
+              <input value={form.company} onChange={e => setForm(f => ({ ...f, company: e.target.value }))} maxLength={150} placeholder="e.g. Sun Pharma, Cipla Ltd" />
             </div>
           </div>
           <div className="form-group">

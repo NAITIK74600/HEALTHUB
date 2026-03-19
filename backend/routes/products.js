@@ -88,6 +88,7 @@ function mapProduct(row) {
       slug: row.category_slug,
     } : null,
     brand: row.brand || '',
+    company: row.company || '',
     description: row.description || '',
     pack: row.pack || '',
     mrp: Number(row.mrp || 0),
@@ -152,8 +153,8 @@ function buildProductWhere({ admin = false, params = {}, categoryIds = [] } = {}
   }
 
   if (params.search) {
-    where.push('(p.name LIKE ? OR p.brand LIKE ? OR p.description LIKE ? OR p.salt LIKE ?)');
-    values.push(`%${params.search}%`, `%${params.search}%`, `%${params.search}%`, `%${params.search}%`);
+    where.push('(p.name LIKE ? OR p.brand LIKE ? OR p.company LIKE ? OR p.description LIKE ? OR p.salt LIKE ?)');
+    values.push(`%${params.search}%`, `%${params.search}%`, `%${params.search}%`, `%${params.search}%`, `%${params.search}%`);
   }
 
   if (admin) {
@@ -564,6 +565,7 @@ router.post('/', requireAuth, requireAdmin, auditLogger('CREATE_PRODUCT', 'Produ
   body('name').trim().notEmpty().isLength({ max: 200 }),
   body('category').isInt({ min: 1 }),
   body('brand').optional().trim().isLength({ max: 100 }),
+  body('company').optional().trim().isLength({ max: 150 }),
   body('description').optional().trim().isLength({ max: 2000 }),
   body('salt').optional().trim().isLength({ max: 500 }),
   body('mrp').isFloat({ min: 0 }),
@@ -586,15 +588,16 @@ router.post('/', requireAuth, requireAdmin, auditLogger('CREATE_PRODUCT', 'Produ
 
     const result = await execute(
       `INSERT INTO products
-        (code, name, slug, category_id, brand, description, pack, mrp, price, stock, requires_prescription,
+        (code, name, slug, category_id, brand, company, description, pack, mrp, price, stock, requires_prescription,
          images_json, expiry_date, batch_number, salt, side_effects, is_active, is_deleted)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0)`,
       [
         req.body.code || '',
         req.body.name.trim(),
         slug,
         Number(req.body.category),
         req.body.brand || '',
+        req.body.company || '',
         req.body.description || '',
         req.body.pack || '',
         Number(req.body.mrp),
@@ -645,7 +648,7 @@ router.put('/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })], a
 
     await execute(
       `UPDATE products SET
-        code = ?, name = ?, slug = ?, category_id = ?, brand = ?, description = ?, pack = ?,
+        code = ?, name = ?, slug = ?, category_id = ?, brand = ?, company = ?, description = ?, pack = ?,
         mrp = ?, price = ?, stock = ?, requires_prescription = ?, expiry_date = ?,
         batch_number = ?, salt = ?, side_effects = ?, is_active = ?
        WHERE id = ?`,
@@ -655,6 +658,7 @@ router.put('/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })], a
         nextSlug,
         req.body.category !== undefined ? Number(req.body.category) : current.category_id,
         req.body.brand !== undefined ? req.body.brand : current.brand,
+        req.body.company !== undefined ? req.body.company : (current.company || ''),
         req.body.description !== undefined ? req.body.description : current.description,
         req.body.pack !== undefined ? req.body.pack : current.pack,
         req.body.mrp !== undefined ? Number(req.body.mrp) : Number(current.mrp),

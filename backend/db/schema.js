@@ -32,6 +32,7 @@ async function ensureCoreSchema() {
       slug VARCHAR(220) NOT NULL,
       category_id BIGINT UNSIGNED NOT NULL,
       brand VARCHAR(100) NOT NULL DEFAULT '',
+      company VARCHAR(150) NOT NULL DEFAULT '',
       description TEXT NULL,
       pack VARCHAR(100) NOT NULL DEFAULT '',
       mrp DECIMAL(12,2) NOT NULL DEFAULT 0,
@@ -157,6 +158,7 @@ async function ensureCoreSchema() {
   // Safe migrations for existing installations
   await execute(`ALTER TABLE brands MODIFY COLUMN category ENUM('featured','ayurvedic','general','personal_care') NOT NULL DEFAULT 'general'`).catch(() => {});
   await execute(`ALTER TABLE brands ADD COLUMN IF NOT EXISTS gradient VARCHAR(200) NOT NULL DEFAULT ''`).catch(() => {});
+  await execute(`ALTER TABLE products ADD COLUMN IF NOT EXISTS company VARCHAR(150) NOT NULL DEFAULT '' AFTER brand`).catch(() => {});
 
 
   await execute(`

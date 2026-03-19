@@ -146,6 +146,7 @@ export default function ProductDetail() {
               <div>
                 <h1>{product.name}</h1>
                 {product.brand && <p className="product-detail__brand">{product.brand}</p>}
+                {product.company && <p className="product-detail__company" style={{ fontSize: '0.82rem', color: '#6b7280', marginTop: 2 }}>by {product.company}</p>}
               </div>
               <button
                 className={`product-detail__wish-btn${wishlisted ? ' active' : ''}`}
