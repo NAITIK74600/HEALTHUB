@@ -8166,14 +8166,15 @@ svg { flex-shrink: 0; }
 /* ── Personal care category cards (colorful gradient tiles) ── */
 .personal-care-grid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
 }
 .pc-cat-card {
-  position: relative; border-radius: 14px; overflow: hidden;
-  aspect-ratio: 3/4; display: flex; flex-direction: column;
+  position: relative; border-radius: 16px; overflow: hidden;
+  aspect-ratio: 4/3; display: flex; flex-direction: column;
   justify-content: flex-end; cursor: pointer; text-decoration: none;
   transition: transform .22s, box-shadow .22s;
+  min-height: 140px;
 }
 .pc-cat-card:hover { transform: translateY(-5px) scale(1.03); box-shadow: 0 12px 28px rgba(0,0,0,.18); }
 .pc-cat-card__bg {
@@ -8181,7 +8182,7 @@ svg { flex-shrink: 0; }
 }
 .pc-cat-card__img {
   position: absolute; bottom: 0; right: 0;
-  width: 70%; height: 75%; object-fit: contain;
+  width: 55%; height: 80%; object-fit: contain;
   pointer-events: none;
   filter: drop-shadow(0 4px 8px rgba(0,0,0,.15));
   transition: transform .3s;
@@ -8189,8 +8190,8 @@ svg { flex-shrink: 0; }
 .pc-cat-card:hover .pc-cat-card__img { transform: scale(1.07) translateY(-4px); }
 .pc-cat-card__label {
   position: relative; z-index: 1;
-  font-size: .8rem; font-weight: 700; color: #fff;
-  padding: 8px 10px 10px;
+  font-size: .88rem; font-weight: 700; color: #fff;
+  padding: 10px 14px 12px;
   text-shadow: 0 1px 4px rgba(0,0,0,.3);
   line-height: 1.2;
 }
@@ -8354,12 +8355,12 @@ svg { flex-shrink: 0; }
 
 /* ── Responsive: home sections ── */
 @media (max-width: 1100px) {
-  .personal-care-grid { grid-template-columns: repeat(4, 1fr); }
+  .personal-care-grid { grid-template-columns: repeat(4, 1fr); gap: 12px; }
   .category-grid-v2 { grid-template-columns: repeat(6, 1fr); }
   .trust-strip__grid { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 768px) {
-  .personal-care-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .personal-care-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .category-grid-v2 { grid-template-columns: repeat(4, 1fr); gap: 8px; }
   .trust-strip__grid { grid-template-columns: repeat(2, 1fr); }
   .stats-banner__grid { grid-template-columns: repeat(2, 1fr); }
@@ -8368,7 +8369,7 @@ svg { flex-shrink: 0; }
   .brand-circle-card { flex: 0 0 76px; }
 }
 @media (max-width: 480px) {
-  .personal-care-grid { grid-template-columns: repeat(2, 1fr); }
+  .personal-care-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .category-grid-v2 { grid-template-columns: repeat(3, 1fr); }
   .lab-grid { grid-template-columns: 1fr; }
   .trust-strip__grid { grid-template-columns: repeat(2, 1fr); }
