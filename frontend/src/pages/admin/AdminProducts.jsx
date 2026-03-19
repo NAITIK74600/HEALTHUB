@@ -298,14 +298,19 @@ export default function AdminProducts() {
 
       // Handle image changes via dedicated image endpoint
       if (productId) {
-        // Upload new files and add via image endpoint
+        const uploadedUrls = [];
         for (const img of images) {
           const uploadRes = await uploadImage(img);
-          await updateProductImages(productId, { imageUrl: uploadRes.data.url });
+          if (uploadRes?.data?.url) uploadedUrls.push(uploadRes.data.url);
         }
-        // Remove images
-        if (removeImages.length > 0) {
-          await updateProductImages(productId, { removeImages });
+
+        const payload = {};
+        if (uploadedUrls.length > 0) payload.imageUrls = uploadedUrls;
+        if (removeImages.length > 0) payload.removeImages = removeImages;
+        if (editing && uploadedUrls.length > 0) payload.mode = 'replace';
+
+        if (Object.keys(payload).length > 0) {
+          await updateProductImages(productId, payload);
         }
       }
       setForm(EMPTY); setImages([]); setImgPreviews([]); setExistingImages([]); setRemoveImages([]);
@@ -429,6 +434,10 @@ export default function AdminProducts() {
 
   const handleNewImages = (files) => {
     const arr = Array.from(files).slice(0, 5);
+    if (editing && existingImages.length > 0) {
+      setRemoveImages(existingImages);
+      setExistingImages([]);
+    }
     setImages(arr);
     setImgPreviews(arr.map(f => URL.createObjectURL(f)));
   };

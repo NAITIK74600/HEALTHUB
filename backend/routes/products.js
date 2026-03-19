@@ -697,9 +697,9 @@ router.delete('/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })]
   } catch (err) { next(err); }
 });
 
-// ── Dedicated image management (add / remove) — NO Cloudinary dependency ────
-// Uses POST instead of PATCH to avoid Apache/Passenger blocking non-standard methods
-router.post('/:id/images', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })], async (req, res, next) => {
+// ── Dedicated image management (add / remove) ────────────────────────────────
+// Uses a unique path to avoid cPanel/Passenger routing issues
+router.post('/update-images/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })], async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
@@ -712,14 +712,21 @@ router.post('/:id/images', requireAuth, requireAdmin, [param('id').isInt({ min: 
     const raw = rows[0].images_json;
     if (Array.isArray(raw)) images = raw;
     else if (typeof raw === 'string' && raw.trim()) try { images = JSON.parse(raw); } catch { images = []; }
+    const currentImages = [...images];
+
+    const replaceMode = req.body.mode === 'replace' || req.body.replace === true || req.body.clearExisting === true;
+    if (replaceMode) images = [];
 
     // Remove specified images
+    let removeList = [];
     if (req.body.removeImages) {
       let toRemove = req.body.removeImages;
       if (typeof toRemove === 'string') try { toRemove = JSON.parse(toRemove); } catch { toRemove = []; }
-      if (Array.isArray(toRemove) && toRemove.length) {
-        images = images.filter(u => !toRemove.includes(u));
-      }
+      if (Array.isArray(toRemove) && toRemove.length) removeList = toRemove;
+    }
+    if (replaceMode && currentImages.length) removeList = [...new Set([...removeList, ...currentImages])];
+    if (removeList.length) {
+      images = images.filter(u => !removeList.includes(u));
     }
 
     // Add image by URL (prepend so it shows first)
@@ -735,6 +742,8 @@ router.post('/:id/images', requireAuth, requireAdmin, [param('id').isInt({ min: 
         urls.filter(u => /^https?:\/\//i.test(String(u || '').trim())).forEach(u => images.unshift(String(u).trim()));
       }
     }
+
+    images = [...new Set(images.map(u => String(u).trim()).filter(Boolean))].slice(0, 5);
 
     await execute('UPDATE products SET images_json = ? WHERE id = ?', [JSON.stringify(images), req.params.id]);
     res.json({ images });

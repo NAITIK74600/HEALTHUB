@@ -1,6 +1,6 @@
 const multer = require('multer');
 
-const ALLOWED_IMG_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+const ALLOWED_IMG_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
 // Memory storage — file buffer kept in memory for further processing

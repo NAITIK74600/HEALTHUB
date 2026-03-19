@@ -26,7 +26,7 @@ const uploadBuffer = (buffer, folder, options = {}) =>
     stream.end(buffer);
   });
 
-const deleteByPublicId = (publicId) =>
-  cloudinary.uploader.destroy(publicId);
+const deleteByPublicId = (publicId, options = {}) =>
+  cloudinary.uploader.destroy(publicId, options);
 
 module.exports = { uploadBuffer, deleteByPublicId };
