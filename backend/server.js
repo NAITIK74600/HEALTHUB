@@ -177,8 +177,12 @@ app.get(/(.*)/, (req, res) => {
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   const status = err.status || 500;
-  const message = process.env.NODE_ENV === 'production' ? 'Internal server error.' : err.message;
+  console.error('[ERROR]', req.method, req.originalUrl, err.message);
   if (process.env.NODE_ENV !== 'production') console.error(err);
+  // Show real message to admins, generic to everyone else
+  const message = (req.user?.role === 'admin' || req.user?.role === 'superadmin')
+    ? err.message
+    : (process.env.NODE_ENV === 'production' ? 'Internal server error.' : err.message);
   res.status(status).json({ message });
 });
 

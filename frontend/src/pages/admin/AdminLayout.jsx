@@ -1,6 +1,6 @@
 import { useState, useEffect, Component } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Percent, Shield, LogOut, ExternalLink, ChevronLeft, ChevronRight, Bell, FileText, FlaskConical, Menu, X, Truck, Ticket, Star, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Percent, Shield, LogOut, ExternalLink, ChevronLeft, ChevronRight, Bell, FileText, FlaskConical, Menu, X, Truck, Ticket, Star, Sparkles, FolderOpen } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import NotificationBell from '../../components/NotificationBell';
 
@@ -37,6 +37,7 @@ const NAV = [
   { to: '/admin/delivery',       label: 'Delivery',       icon: Truck },
   { to: '/admin/coupons',        label: 'Coupons',        icon: Ticket },
   { to: '/admin/brands',         label: 'Brands',         icon: Star },
+  { to: '/admin/categories',     label: 'Categories',     icon: FolderOpen },
   { to: '/admin/site-settings',  label: 'Site Settings',  icon: Sparkles },
   { to: '/admin/notifications',  label: 'Notifications',  icon: Bell },
   { to: '/admin/admins',         label: 'Admins',         icon: Shield, superAdminOnly: true },
