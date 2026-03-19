@@ -6,6 +6,7 @@ const requireAuth = require('../middleware/requireAuth');
 const requireAdmin = require('../middleware/requireAdmin');
 const auditLogger = require('../middleware/auditLogger');
 const { query, execute } = require('../db/mysql');
+const { geminiAutoFill } = require('../utils/gemini');
 
 const router = express.Router();
 
@@ -547,16 +548,70 @@ router.post(
   }
 );
 
-router.post('/ai-fill', requireAuth, requireAdmin, async (req, res) => {
-  res.status(503).json({ message: 'AI fill is disabled in MySQL runtime.' });
+// ── AI Fill Routes ──────────────────────────────────────────────────────────
+router.post('/ai-fill', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const productId = req.body.productId;
+    if (!productId) return res.status(400).json({ message: 'Missing productId' });
+
+    const pRow = await query('SELECT p.id, p.name, p.brand, c.name as category FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.id = ?', [productId]);
+    if (!pRow.length) return res.status(404).json({ message: 'Product not found' });
+    const p = pRow[0];
+
+    const { salt, description } = await geminiAutoFill(p.name, p.brand, p.category);
+    
+    await execute('UPDATE products SET salt = ?, description = ? WHERE id = ?', [salt, description, productId]);
+    
+    res.json({ success: true, salt, description });
+  } catch (err) {
+    if (err.message.includes('GEMINI_API_KEY')) return res.status(503).json({ message: 'Gemini API Key missing.' });
+    if (err.message.includes('429')) return res.status(429).json({ message: 'AI quota exceeded. Try later.' });
+    next(err);
+  }
 });
 
-router.post('/ai-fill-bulk', requireAuth, requireAdmin, async (req, res) => {
-  res.status(503).json({ message: 'AI bulk fill is disabled in MySQL runtime.' });
+router.post('/ai-fill-bulk', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const ids = req.body.productIds; // Array of IDs
+    if (!Array.isArray(ids) || !ids.length) return res.status(400).json({ message: 'Missing productIds array' });
+
+    // Limit batch size to prevent timeouts
+    const batch = ids.slice(0, 50); 
+    const results = [];
+
+    // Process sequentially to be gentle on rate limits, or small parallel batches
+    for (const id of batch) {
+      try {
+        const pRow = await query('SELECT p.id, p.name, p.brand, c.name as category FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.id = ?', [id]);
+        if (!pRow.length) {
+          results.push({ _id: id, success: false, error: 'Not found' });
+          continue;
+        }
+        const p = pRow[0];
+        const { salt, description } = await geminiAutoFill(p.name, p.brand, p.category);
+        await execute('UPDATE products SET salt = ?, description = ? WHERE id = ?', [salt, description, id]);
+        results.push({ _id: id, success: true, salt, description });
+        
+        // Brief delay between calls to respect rate limits
+        await new Promise(r => setTimeout(r, 1000)); 
+      } catch (err) {
+        results.push({ _id: id, success: false, error: err.message });
+      }
+    }
+
+    res.json({ results });
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.get('/ai-test-models', requireAuth, requireAdmin, async (req, res) => {
-  res.status(503).json({ message: 'AI model testing is disabled in MySQL runtime.' });
+  try {
+     const { salt, description } = await geminiAutoFill('Dolo 650', 'Micro Labs', 'Medicine');
+     res.json({ success: true, salt, description, message: 'AI models working correctly.' });
+  } catch (err) {
+     res.status(500).json({ message: err.message });
+  }
 });
 
 router.get('/:slug', [param('slug').trim().isLength({ min: 1, max: 220 })], async (req, res, next) => {

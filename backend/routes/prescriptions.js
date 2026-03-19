@@ -32,6 +32,11 @@ function saveFile(buffer, subfolder, originalName) {
 }
 
 function mapPrescription(row) {
+  let address = null;
+  try {
+    if (row.address_json) address = typeof row.address_json === 'string' ? JSON.parse(row.address_json) : row.address_json;
+  } catch (e) { /* ignore */ }
+
   return {
     _id: String(row.id),
     user: row.user_id ? { _id: String(row.user_id), name: row.user_name || '', email: row.user_email || '', phone: row.user_phone || '' } : null,
@@ -40,6 +45,7 @@ function mapPrescription(row) {
     patientName: row.patient_name || '',
     doctorName: row.doctor_name || '',
     notes: row.notes || '',
+    address,
     adminNote: row.admin_notes || '',
     // Back-compat (some older clients used adminNotes)
     adminNotes: row.admin_notes || '',
@@ -61,11 +67,24 @@ router.post('/', requireAuth, uploadPrescriptionFile, async (req, res, next) => 
     const patientName = String(req.body.patientName || '').trim().slice(0, 100);
     const doctorName = String(req.body.doctorName || '').trim().slice(0, 100);
     const notes = String(req.body.notes || '').trim().slice(0, 2000);
+    
+    let addressJson = null;
+    if (req.body.address) {
+      try {
+        // If it comes as a stringified JSON
+        const parsed = JSON.parse(req.body.address);
+        if (typeof parsed === 'object' && parsed !== null) {
+            addressJson = JSON.stringify(parsed);
+        }
+      } catch (e) {
+         // ignore invalid json
+      }
+    }
 
     const url = saveFile(f.buffer, 'prescriptions', f.originalname);
     const result = await execute(
-      'INSERT INTO prescriptions (user_id, image_url, patient_name, doctor_name, notes) VALUES (?, ?, ?, ?, ?)',
-      [req.user.id, url, patientName || null, doctorName || null, notes || null]
+      'INSERT INTO prescriptions (user_id, image_url, patient_name, doctor_name, notes, address_json) VALUES (?, ?, ?, ?, ?, ?)',
+      [req.user.id, url, patientName || null, doctorName || null, notes || null, addressJson]
     );
 
     res.status(201).json({
@@ -75,6 +94,7 @@ router.post('/', requireAuth, uploadPrescriptionFile, async (req, res, next) => 
       patientName,
       doctorName,
       notes,
+      address: addressJson ? JSON.parse(addressJson) : null,
       adminNote: '',
       usedInOrders: [],
     });
@@ -85,7 +105,7 @@ router.post('/', requireAuth, uploadPrescriptionFile, async (req, res, next) => 
 router.get('/my', requireAuth, async (req, res, next) => {
   try {
     const rows = await query(
-      `SELECT p.*,
+      `SELECT p.id, p.user_id, p.image_url, p.status, p.patient_name, p.doctor_name, p.notes, p.admin_notes, p.created_at, p.updated_at, p.address_json,
         (
           SELECT GROUP_CONCAT(o.id)
           FROM orders o
@@ -127,7 +147,8 @@ router.get('/', requireAuth, requireAdmin, [
 
     const [rows, countRows] = await Promise.all([
       query(
-        `SELECT p.*, u.name AS user_name, u.email AS user_email, u.phone AS user_phone,
+        `SELECT p.id, p.user_id, p.image_url, p.status, p.patient_name, p.doctor_name, p.notes, p.admin_notes, p.created_at, p.updated_at, p.address_json,
+          u.name AS user_name, u.email AS user_email, u.phone AS user_phone,
           (
             SELECT GROUP_CONCAT(o.id)
             FROM orders o
@@ -187,7 +208,7 @@ router.post(
       if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
 
       const rxRows = await query(
-        `SELECT p.*, u.name AS user_name, u.email AS user_email, u.phone AS user_phone
+        `SELECT p.*, p.address_json, u.name AS user_name, u.email AS user_email, u.phone AS user_phone
          FROM prescriptions p
          LEFT JOIN users u ON u.id = p.user_id
          WHERE p.id = ? LIMIT 1`,
@@ -195,6 +216,15 @@ router.post(
       );
       if (!rxRows.length) return res.status(404).json({ message: 'Prescription not found.' });
       const rx = rxRows[0];
+      
+      // If address is not provided in body, try to use prescription address
+      let address = req.body.address;
+      if (!address && rx.address_json) {
+         try {
+             address = typeof rx.address_json === 'string' ? JSON.parse(rx.address_json) : rx.address_json;
+         } catch(e) {}
+      }
+
       if (rx.status !== 'approved') {
         return res.status(422).json({ message: 'Prescription must be approved before creating an order.' });
       }
@@ -202,8 +232,7 @@ router.post(
       const items = Array.isArray(req.body.items) ? req.body.items : [];
       if (!items.length) return res.status(422).json({ message: 'At least one item is required.' });
 
-      const address = req.body.address;
-      if (!address || typeof address !== 'object') return res.status(422).json({ message: 'Address is required.' });
+      if (!address || typeof address !== 'object') return res.status(422).json({ message: 'Address is required (either in request or in prescription).' });
       const line1 = String(address.line1 || '').trim();
       const line2 = String(address.line2 || '').trim();
       const city = String(address.city || '').trim();
