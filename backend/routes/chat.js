@@ -262,11 +262,8 @@ Store details:
 - Services: Medicines, OTC products, lab tests, home delivery
 - Website: batlamedicos.shop`;
 
-const GEMINI_MODELS = [
-  'gemini-2.0-flash',
-  'gemini-2.0-flash-lite',
-  'gemini-1.5-flash',
-];
+// Use the shared model list (configurable via GEMINI_MODEL in backend/.env)
+const { getGeminiModels } = require('../utils/gemini');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ROUTE
@@ -298,7 +295,7 @@ router.post('/', chatLimit, async (req, res) => {
         : [];
 
       let lastError;
-      for (const modelName of GEMINI_MODELS) {
+      for (const modelName of getGeminiModels()) {
         try {
           const model = genAI.getGenerativeModel({
             model: modelName,

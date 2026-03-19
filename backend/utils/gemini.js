@@ -6,34 +6,51 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * Reads GEMINI_API_KEY from process.env first, then directly from backend/.env file.
+ * Reads config from process.env first, then directly from backend/.env file.
  * This bypasses dotenv issues with cPanel Passenger.
  */
-let _cachedKey = null;
-function getGeminiKey() {
-  if (_cachedKey) return _cachedKey;
-  // 1. Try process.env
-  if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.length > 10) {
-    _cachedKey = process.env.GEMINI_API_KEY;
-    return _cachedKey;
+const _cachedEnv = new Map();
+
+function escapeRegex(str) {
+  return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function getEnvVar(name) {
+  if (_cachedEnv.has(name)) return _cachedEnv.get(name);
+
+  const fromProcess = process.env[name];
+  if (typeof fromProcess === 'string' && fromProcess.trim()) {
+    const v = fromProcess.trim();
+    _cachedEnv.set(name, v);
+    return v;
   }
-  // 2. Read directly from .env file
+
   const envPaths = [
-    path.join(__dirname, '..', '.env'),          // backend/.env
+    path.join(__dirname, '..', '.env'),           // backend/.env
     path.join(__dirname, '..', '..', '.env'),     // root .env
   ];
+
+  const re = new RegExp(`^${escapeRegex(name)}=(.+)$`, 'm');
   for (const envPath of envPaths) {
     try {
       const content = fs.readFileSync(envPath, 'utf8');
-      const match = content.match(/^GEMINI_API_KEY=(.+)$/m);
-      if (match && match[1].trim().length > 10) {
-        _cachedKey = match[1].trim();
-        process.env.GEMINI_API_KEY = _cachedKey; // also set for other code
-        return _cachedKey;
+      const match = content.match(re);
+      if (match && match[1].trim()) {
+        const v = match[1].trim();
+        _cachedEnv.set(name, v);
+        process.env[name] = v;
+        return v;
       }
     } catch {}
   }
+
+  _cachedEnv.set(name, null);
   return null;
+}
+
+function getGeminiKey() {
+  const key = getEnvVar('GEMINI_API_KEY');
+  return (typeof key === 'string' && key.length > 10) ? key : null;
 }
 
 function buildPrompt(name, brand, category) {
@@ -67,13 +84,24 @@ function parseGeminiResponse(text) {
   };
 }
 
-// Models to try in order — if one fails (quota/unavailable), next is used
-const GEMINI_MODELS = [
+// Models to try in order — if one fails (quota/unavailable), next is used.
+// You can override the preferred model by setting GEMINI_MODEL in backend/.env.
+const FALLBACK_GEMINI_MODELS = [
+  'gemini-3.1-flash-lite',
   'gemini-2.5-flash-preview-04-17',
   'gemini-2.0-flash',
   'gemini-2.0-flash-lite',
   'gemini-1.5-flash',
 ];
+
+function getGeminiModels() {
+  const preferred = getEnvVar('GEMINI_MODEL') || 'gemini-3.1-flash-lite';
+  const list = [preferred, ...FALLBACK_GEMINI_MODELS];
+  return [...new Set(list.map((m) => String(m || '').trim()).filter(Boolean))];
+}
+
+// Backwards-compatible export (resolved at module load)
+const GEMINI_MODELS = getGeminiModels();
 
 /**
  * Calls Gemini to fill salt+description for one product.
@@ -89,7 +117,7 @@ async function geminiAutoFill(name, brand, category) {
   const prompt = buildPrompt(name, brand, category);
 
   let lastError;
-  for (const modelName of GEMINI_MODELS) {
+  for (const modelName of getGeminiModels()) {
     try {
       const model = genAI.getGenerativeModel({ model: modelName });
       const result = await model.generateContent(prompt);
@@ -152,7 +180,7 @@ async function testAllModels() {
   const testPrompt = 'Reply with exactly: {"salt":"Paracetamol 500mg","description":"Fever and pain relief."}';
 
   const results = [];
-  for (const modelName of GEMINI_MODELS) {
+  for (const modelName of getGeminiModels()) {
     try {
       const model = genAI.getGenerativeModel({ model: modelName });
       const result = await model.generateContent(testPrompt);
@@ -165,4 +193,14 @@ async function testAllModels() {
   return results;
 }
 
-module.exports = { buildPrompt, parseGeminiResponse, geminiAutoFill, autoFillProductIfEmpty, testAllModels, getGeminiKey, GEMINI_MODELS };
+module.exports = {
+  buildPrompt,
+  parseGeminiResponse,
+  geminiAutoFill,
+  autoFillProductIfEmpty,
+  testAllModels,
+  getGeminiKey,
+  getGeminiModels,
+  GEMINI_MODELS,
+  FALLBACK_GEMINI_MODELS,
+};
