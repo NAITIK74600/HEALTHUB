@@ -65,12 +65,27 @@ function normalizeCategorySlug(input = '') {
   return SLUG_ALIASES[raw] || raw;
 }
 
+function isCloudinaryUrl(url) {
+  return typeof url === 'string' && /(^|\/\/)res\.cloudinary\.com\b|cloudinary\.com\b/i.test(url);
+}
+
 function parseImages(value) {
   if (!value) return [];
-  if (Array.isArray(value)) return value;
+  if (Array.isArray(value)) {
+    return value
+      .filter((u) => typeof u === 'string')
+      .map((u) => u.trim())
+      .filter((u) => u && !isCloudinaryUrl(u));
+  }
   if (typeof value === 'object') return [];
   try {
-    return JSON.parse(value);
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed)
+      ? parsed
+          .filter((u) => typeof u === 'string')
+          .map((u) => u.trim())
+          .filter((u) => u && !isCloudinaryUrl(u))
+      : [];
   } catch {
     return [];
   }
@@ -773,6 +788,8 @@ router.post('/update-images/:id', requireAuth, requireAdmin, [param('id').isInt(
     const raw = rows[0].images_json;
     if (Array.isArray(raw)) images = raw;
     else if (typeof raw === 'string' && raw.trim()) try { images = JSON.parse(raw); } catch { images = []; }
+    // Normalize & drop Cloudinary links
+    images = Array.isArray(images) ? images.filter((u) => typeof u === 'string').map((u) => u.trim()).filter((u) => u && !isCloudinaryUrl(u)) : [];
     const currentImages = [...images];
 
     const replaceMode = req.body.mode === 'replace' || req.body.replace === true || req.body.clearExisting === true;
@@ -791,7 +808,7 @@ router.post('/update-images/:id', requireAuth, requireAdmin, [param('id').isInt(
     }
 
     // Add image by URL (prepend so it shows first)
-    const isValidImageUrl = (u) => /^https?:\/\//i.test(u) || u.startsWith('/uploads/');
+    const isValidImageUrl = (u) => (/^https?:\/\//i.test(u) || u.startsWith('/uploads/')) && !isCloudinaryUrl(u);
     if (req.body.imageUrl && isValidImageUrl(String(req.body.imageUrl).trim())) {
       images.unshift(String(req.body.imageUrl).trim());
     }
@@ -805,7 +822,7 @@ router.post('/update-images/:id', requireAuth, requireAdmin, [param('id').isInt(
       }
     }
 
-    images = [...new Set(images.map(u => String(u).trim()).filter(Boolean))].slice(0, 5);
+    images = [...new Set(images.map(u => String(u).trim()).filter(Boolean).filter((u) => !isCloudinaryUrl(u)))].slice(0, 5);
 
     await execute('UPDATE products SET images_json = ? WHERE id = ?', [JSON.stringify(images), req.params.id]);
     res.json({ images });

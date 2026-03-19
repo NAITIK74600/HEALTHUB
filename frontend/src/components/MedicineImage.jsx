@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+﻿import { useState } from 'react';
 
 /* ─── Category themes ────────────────────────────────────────── */
 const THEMES = {
@@ -16,6 +16,10 @@ function getTheme(category) {
 }
 function getSlug(category) {
   return typeof category === 'object' ? category?.slug || 'default' : 'default';
+}
+
+function isCloudinaryUrl(url) {
+  return typeof url === 'string' && /(^|\/\/)res\.cloudinary\.com\b|cloudinary\.com\b/i.test(url);
 }
 
 /* ─── SVG Icons per category ─────────────────────────────────── */
@@ -68,94 +72,17 @@ const ICONS = {
   surgical:        CrossIcon,
 };
 
-/* ─── Module-level external image cache ──────────────────────── */
-const _cache   = new Map(); // productKey → url | null
-const _pending = new Set();
-
-// Concurrency limiter — max 3 simultaneous Wikipedia requests
-let _activeCount = 0;
-const _queue = [];
-function _runNext() {
-  if (_activeCount >= 3 || _queue.length === 0) return;
-  const { fn, resolve } = _queue.shift();
-  _activeCount++;
-  fn().then(v => { _activeCount--; resolve(v); _runNext(); });
-}
-function _throttled(fn) {
-  return new Promise(resolve => { _queue.push({ fn, resolve }); _runNext(); });
-}
-
-async function _fetchExternalImage(product) {
-  const key = product._id || product.slug;
-  if (!key) return null;
-  if (_cache.has(key)) return _cache.get(key);
-  if (_pending.has(key)) return null;
-  _pending.add(key);
-
-  const done = url => { _cache.set(key, url ?? null); _pending.delete(key); return url ?? null; };
-
-  return _throttled(async () => {
-    const salt      = product.salt?.trim();
-    const nameShort = (product.name || '').split(' ').slice(0, 2).join(' ');
-
-    // Wikipedia by salt (most reliable for Indian pharma — Paracetamol, Amoxicillin, etc.)
-    if (salt) {
-      try {
-        const r = await fetch(
-          `https://en.wikipedia.org/w/api.php?action=query&generator=search` +
-          `&gsrsearch=${encodeURIComponent(salt)}&gsrlimit=1&prop=pageimages` +
-          `&pithumbsize=500&format=json&origin=*`,
-          { signal: AbortSignal.timeout(5000) }
-        );
-        if (r.ok) {
-          const d = await r.json();
-          const url = Object.values(d.query?.pages || {})[0]?.thumbnail?.source;
-          if (url) return done(url);
-        }
-      } catch { /* timeout / offline */ }
-    }
-
-    // Wikipedia by product name (first 2 words)
-    if (nameShort) {
-      try {
-        const r = await fetch(
-          `https://en.wikipedia.org/w/api.php?action=query&generator=search` +
-          `&gsrsearch=${encodeURIComponent(nameShort)}&gsrlimit=1&prop=pageimages` +
-          `&pithumbsize=500&format=json&origin=*`,
-          { signal: AbortSignal.timeout(5000) }
-        );
-        if (r.ok) {
-          const d = await r.json();
-          const url = Object.values(d.query?.pages || {})[0]?.thumbnail?.source;
-          if (url) return done(url);
-        }
-      } catch { /* timeout / offline */ }
-    }
-
-    return done(null);
-  });
-}
-
 /* ─── Main component ─────────────────────────────────────────── */
 export default function MedicineImage({ product, alt, className = '', idx = 0, style = {} }) {
   const [storedErr, setStoredErr] = useState(false);
 
-  const key = product?._id || product?.slug;
-  const [externalUrl, setExternalUrl] = useState(() =>
-    key ? (_cache.get(key) ?? null) : null
-  );
+  const storedSrcRaw = product?.images?.[idx];
+  const storedSrc =
+    typeof storedSrcRaw === 'string' && storedSrcRaw.trim() && !isCloudinaryUrl(storedSrcRaw)
+      ? storedSrcRaw
+      : null;
 
-  const storedSrc = product?.images?.[idx];
-
-  useEffect(() => {
-    // Run when: no stored image, OR stored image failed to load
-    if (storedSrc && !storedErr) return;
-    if (!product || !key) return;
-    if (_cache.has(key)) { setExternalUrl(_cache.get(key)); return; }
-    _fetchExternalImage(product).then(url => { if (url) setExternalUrl(url); });
-  }, [key, storedSrc, storedErr]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // 1. Stored image (Cloudinary / 1mg CDN URL)
+  // 1. Stored image (local upload)
   if (storedSrc && !storedErr) {
     return (
       <img
@@ -170,22 +97,7 @@ export default function MedicineImage({ product, alt, className = '', idx = 0, s
     );
   }
 
-  // 2. External image fetched from Wikipedia / Open Food Facts
-  if (externalUrl) {
-    return (
-      <img
-        src={externalUrl}
-        alt={alt || product?.name || 'Medicine'}
-        className={className}
-        style={style}
-        loading="lazy"
-        referrerPolicy="no-referrer"
-        onError={() => { _cache.set(key, null); setExternalUrl(null); }}
-      />
-    );
-  }
-
-  // 3. SVG category placeholder
+  // 2. SVG category placeholder
   const slug     = getSlug(product?.category);
   const theme    = getTheme(product?.category);
   const Icon     = ICONS[slug] || PillIcon;
