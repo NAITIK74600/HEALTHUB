@@ -71,12 +71,14 @@ export default function AdminPrescriptions() {
     setOrderItems([]);
     setResults([]);
     setSearch('');
+    // Prefill from prescription address if available, else user profile
+    const pAddr = rx.address || {};
     setAddr({
-      phone: rx?.user?.phone || '',
-      line1: '',
-      line2: '',
-      city: '',
-      pincode: '',
+      phone:   pAddr.phone || rx.user?.phone || '',
+      line1:   pAddr.line1 || '',
+      line2:   pAddr.line2 || '',
+      city:    pAddr.city  || 'New Delhi',
+      pincode: pAddr.pincode || '',
     });
   };
 
@@ -204,6 +206,12 @@ export default function AdminPrescriptions() {
                     <small>{rx.user?.email}</small></p>
                   {rx.patientName && <p><strong>Patient:</strong> {rx.patientName}</p>}
                   {rx.doctorName  && <p><strong>Doctor:</strong> {rx.doctorName}</p>}
+                  {rx.address && (
+                    <p style={{ fontSize: '0.85em', marginTop: 4, color: 'var(--clr-muted)' }}>
+                      <strong>Address:</strong><br/>
+                      {rx.address.line1}, {rx.address.city} {rx.address.pincode}
+                    </p>
+                  )}
                   {rx.notes && <p className="admin-rx-card__notes">{rx.notes}</p>}
                   {rx.adminNote && <p className="admin-rx-card__admin-note"><strong>Note:</strong> {rx.adminNote}</p>}
                   <p className="admin-rx-card__date">{fmt(rx.createdAt)}</p>
