@@ -581,7 +581,7 @@ router.get('/:id/related', [param('id').isInt({ min: 1 })], async (req, res, nex
           `SELECT p.*, c.id AS category_id, c.name AS category_name, c.slug AS category_slug
            FROM products p LEFT JOIN categories c ON c.id = p.category_id
            WHERE p.brand = ? AND p.id <> ? AND p.is_deleted = 0 AND p.is_active = 1
-           ORDER BY RAND() LIMIT 12`,
+           ORDER BY RAND() LIMIT 20`,
           [brand, productId]
         )
       );
@@ -596,7 +596,7 @@ router.get('/:id/related', [param('id').isInt({ min: 1 })], async (req, res, nex
           `SELECT p.*, c.id AS category_id, c.name AS category_name, c.slug AS category_slug
            FROM products p LEFT JOIN categories c ON c.id = p.category_id
            WHERE p.category_id = ? AND p.id <> ? AND p.is_deleted = 0 AND p.is_active = 1
-           ORDER BY RAND() LIMIT 12`,
+           ORDER BY RAND() LIMIT 20`,
           [category_id, productId]
         )
       );

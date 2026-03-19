@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import { ShoppingCart, FileText, Heart, Star } from 'lucide-react';
-import { getProductBySlug, getRelatedProducts } from '../api/products';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { ShoppingCart, FileText, Heart, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getProductBySlug, getRelatedProducts, getProducts } from '../api/products';
 import { getProductReviews, submitReview } from '../api/reviews';
 import MedicineImage from '../components/MedicineImage';
 import { useCart } from '../context/CartContext';
@@ -43,6 +43,19 @@ export default function ProductDetail() {
   const [qty, setQty] = useState(1);
   const [related, setRelated] = useState({ brandRelated: [], categoryRelated: [] });
 
+  // "You may also like" — recommendation feed
+  const [recommended, setRecommended] = useState([]);
+  const [recPage, setRecPage] = useState(1);
+  const [recLoading, setRecLoading] = useState(false);
+  const [recHasMore, setRecHasMore] = useState(true);
+  const recSentinel = useRef(null);
+
+  // Image carousel
+  const [autoPlay, setAutoPlay] = useState(true);
+  const touchStartX = useRef(0);
+  const touchDeltaX = useRef(0);
+  const carouselRef = useRef(null);
+
   // Reviews state
   const [reviews, setReviews] = useState([]);
   const [reviewMeta, setReviewMeta] = useState({ avgRating: 0, ratingCount: 0, total: 0 });
@@ -58,10 +71,12 @@ export default function ProductDetail() {
     setQty(1);
     setMyRating(0);
     setMyComment('');
+    setRecommended([]);
+    setRecPage(1);
+    setRecHasMore(true);
     getProductBySlug(slug)
       .then(r => {
         setProduct(r.data);
-        // Fetch related by brand & category
         getRelatedProducts(r.data._id)
           .then(res => setRelated(res.data))
           .catch(() => {});
@@ -69,6 +84,79 @@ export default function ProductDetail() {
       .catch(() => setProduct(null))
       .finally(() => setLoading(false));
   }, [slug]);
+
+  // Auto-slide images
+  const images = product?.images || [];
+  const imgCount = Math.max(images.length, 1);
+
+  useEffect(() => {
+    if (!autoPlay || imgCount <= 1) return;
+    const timer = setInterval(() => {
+      setMainImg(prev => (prev + 1) % imgCount);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [autoPlay, imgCount]);
+
+  // Touch/swipe handlers
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchDeltaX.current = 0;
+    setAutoPlay(false);
+  };
+  const handleTouchMove = (e) => {
+    touchDeltaX.current = e.touches[0].clientX - touchStartX.current;
+  };
+  const handleTouchEnd = () => {
+    if (Math.abs(touchDeltaX.current) > 40) {
+      if (touchDeltaX.current < 0) setMainImg(prev => (prev + 1) % imgCount);
+      else setMainImg(prev => (prev - 1 + imgCount) % imgCount);
+    }
+    setTimeout(() => setAutoPlay(true), 5000);
+  };
+
+  const goImg = (dir) => {
+    setAutoPlay(false);
+    setMainImg(prev => (prev + dir + imgCount) % imgCount);
+    setTimeout(() => setAutoPlay(true), 5000);
+  };
+
+  // Load "You may also like" recommendations — infinite scroll
+  const loadMoreRecs = useCallback(async () => {
+    if (recLoading || !recHasMore || !product) return;
+    setRecLoading(true);
+    try {
+      const categorySlug = product.category?.slug || '';
+      const { data } = await getProducts({
+        category: categorySlug,
+        limit: 12,
+        page: recPage,
+        sort: 'newest',
+      });
+      const newProducts = (data.products || []).filter(p => p._id !== product._id);
+      setRecommended(prev => {
+        const ids = new Set(prev.map(p => p._id));
+        return [...prev, ...newProducts.filter(p => !ids.has(p._id))];
+      });
+      if (!data.products?.length || recPage >= (data.pages || 1)) setRecHasMore(false);
+      else setRecPage(p => p + 1);
+    } catch { setRecHasMore(false); }
+    finally { setRecLoading(false); }
+  }, [recLoading, recHasMore, product, recPage]);
+
+  // Intersection observer for infinite scroll
+  useEffect(() => {
+    if (!recSentinel.current) return;
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) loadMoreRecs();
+    }, { rootMargin: '200px' });
+    obs.observe(recSentinel.current);
+    return () => obs.disconnect();
+  }, [loadMoreRecs]);
+
+  // Initial load of recommendations
+  useEffect(() => {
+    if (product && recommended.length === 0 && recHasMore) loadMoreRecs();
+  }, [product]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!product) return;
@@ -116,27 +204,54 @@ export default function ProductDetail() {
     <main>
       <div className="product-detail container">
         <div className="product-detail__layout">
-          {/* Images */}
-          <div className="product-detail__images">
-            <div className="product-detail__main-img">
-              <MedicineImage
-                product={product}
-                idx={mainImg}
-                className="product-detail__img-el"
-              />
-            </div>
-            {product.images?.length > 1 && (
-              <div className="product-detail__thumbnails">
-                {product.images.map((url, i) => (
-                  <img
-                    key={i}
-                    src={url}
-                    alt={`${product.name} ${i + 1}`}
-                    className={i === mainImg ? 'active' : ''}
-                    onClick={() => setMainImg(i)}
-                  />
-                ))}
+          {/* Images — Auto-sliding carousel like 1mg */}
+          <div className="pd-gallery">
+            <div
+              className="pd-gallery__carousel"
+              ref={carouselRef}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              <div className="pd-gallery__track" style={{ transform: `translateX(-${mainImg * 100}%)` }}>
+                {images.length > 0
+                  ? images.map((url, i) => (
+                      <div className="pd-gallery__slide" key={i}>
+                        <img src={url} alt={`${product.name} ${i + 1}`} className="pd-gallery__img" />
+                      </div>
+                    ))
+                  : <div className="pd-gallery__slide">
+                      <MedicineImage product={product} className="pd-gallery__img" />
+                    </div>
+                }
               </div>
+              {imgCount > 1 && (
+                <>
+                  <button className="pd-gallery__arrow pd-gallery__arrow--left" onClick={() => goImg(-1)} aria-label="Previous image"><ChevronLeft size={20} /></button>
+                  <button className="pd-gallery__arrow pd-gallery__arrow--right" onClick={() => goImg(1)} aria-label="Next image"><ChevronRight size={20} /></button>
+                  <div className="pd-gallery__counter">{mainImg + 1} / {imgCount}</div>
+                </>
+              )}
+            </div>
+            {imgCount > 1 && (
+              <>
+                <div className="pd-gallery__dots">
+                  {images.map((_, i) => (
+                    <button key={i} className={`pd-gallery__dot${i === mainImg ? ' active' : ''}`} onClick={() => { setMainImg(i); setAutoPlay(false); setTimeout(() => setAutoPlay(true), 5000); }} aria-label={`Image ${i + 1}`} />
+                  ))}
+                </div>
+                <div className="pd-gallery__thumbs">
+                  {images.map((url, i) => (
+                    <img
+                      key={i}
+                      src={url}
+                      alt={`${product.name} thumb ${i + 1}`}
+                      className={`pd-gallery__thumb${i === mainImg ? ' active' : ''}`}
+                      onClick={() => { setMainImg(i); setAutoPlay(false); setTimeout(() => setAutoPlay(true), 5000); }}
+                    />
+                  ))}
+                </div>
+              </>
             )}
           </div>
 
@@ -234,6 +349,18 @@ export default function ProductDetail() {
             <div className="related-scroll">
               {related.categoryRelated.map(p => <ProductCard key={p._id} product={p} />)}
             </div>
+          </section>
+        )}
+
+        {/* You May Also Like — infinite scroll recommendations */}
+        {recommended.length > 0 && (
+          <section className="product-detail__related product-detail__recs">
+            <h2>You May Also Like</h2>
+            <div className="recs-grid">
+              {recommended.map(p => <ProductCard key={p._id} product={p} />)}
+            </div>
+            <div ref={recSentinel} style={{ height: 1 }} />
+            {recLoading && <p style={{ textAlign: 'center', padding: '16px 0', color: 'var(--gray-400)' }}>Loading more...</p>}
           </section>
         )}
 
