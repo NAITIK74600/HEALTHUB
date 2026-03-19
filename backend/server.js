@@ -150,6 +150,10 @@ app.get('/health', (req, res) => {
   });
 });
 
+// ── Serve uploaded files ───────────────────────────────────────────────────
+const UPLOADS = path.join(__dirname, 'uploads');
+app.use('/uploads', express.static(UPLOADS, { maxAge: '7d' }));
+
 // ── Serve React frontend (production build) ────────────────────────────
 const DIST = path.join(__dirname, '..', 'frontend', 'dist');
 const fs = require('fs');

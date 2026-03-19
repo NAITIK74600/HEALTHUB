@@ -1,14 +1,38 @@
 'use strict';
 
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
+const crypto = require('crypto');
 const { body, param, validationResult } = require('express-validator');
 const requireAuth   = require('../middleware/requireAuth');
 const requireAdmin  = require('../middleware/requireAdmin');
 const upload        = require('../middleware/upload');
-const { uploadBuffer, deleteByPublicId } = require('../utils/cloudinary');
 const { query, execute } = require('../db/mysql');
 
 const router = express.Router();
+
+const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
+
+function ensureDir(dir) {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+}
+
+function saveFile(buffer, subfolder, originalName) {
+  const dir = path.join(UPLOADS_DIR, subfolder);
+  ensureDir(dir);
+  const ext = path.extname(originalName || '.jpg').toLowerCase();
+  const name = crypto.randomBytes(16).toString('hex') + ext;
+  const filePath = path.join(dir, name);
+  fs.writeFileSync(filePath, buffer);
+  return `/uploads/${subfolder}/${name}`;
+}
+
+function deleteLocalFile(urlPath) {
+  if (!urlPath || !urlPath.startsWith('/uploads/')) return;
+  const filePath = path.join(__dirname, '..', urlPath);
+  try { fs.unlinkSync(filePath); } catch { /* ignore */ }
+}
 
 function mapBrand(row) {
   return {
@@ -33,10 +57,7 @@ function slugify(str) {
     .replace(/^-|-$/g, '');
 }
 
-function extractPublicId(url) {
-  const match = String(url || '').match(/\/upload\/(?:v\d+\/)?(.+?)(?:\.\w{2,5})?$/);
-  return match ? match[1] : null;
-}
+
 
 // ── Public: get all active brands (optionally filtered by category) ──────────
 router.get('/', async (req, res, next) => {
@@ -82,8 +103,7 @@ router.post('/', requireAuth, requireAdmin, upload.single('logo'), [
 
     let logoUrl = null;
     if (req.file) {
-      const { url } = await uploadBuffer(req.file.buffer, 'batla-medicos/brands');
-      logoUrl = url;
+      logoUrl = saveFile(req.file.buffer, 'brands', req.file.originalname);
     } else if (req.body.logoUrl && /^https?:\/\//i.test(String(req.body.logoUrl))) {
       logoUrl = String(req.body.logoUrl).trim();
     }
@@ -126,12 +146,11 @@ router.put('/:id', requireAuth, requireAdmin, upload.single('logo'), [
     let logoUrl = current.logo_url;
 
     if (req.body.removeLogo === 'true' || req.body.removeLogo === true) {
-      if (logoUrl) { const pid = extractPublicId(logoUrl); if (pid) await deleteByPublicId(pid).catch(() => {}); }
+      deleteLocalFile(logoUrl);
       logoUrl = null;
     } else if (req.file) {
-      if (logoUrl) { const pid = extractPublicId(logoUrl); if (pid) await deleteByPublicId(pid).catch(() => {}); }
-      const { url } = await uploadBuffer(req.file.buffer, 'batla-medicos/brands');
-      logoUrl = url;
+      deleteLocalFile(logoUrl);
+      logoUrl = saveFile(req.file.buffer, 'brands', req.file.originalname);
     } else if (req.body.logoUrl && /^https?:\/\//i.test(String(req.body.logoUrl))) {
       logoUrl = String(req.body.logoUrl).trim();
     }
@@ -176,8 +195,7 @@ router.delete('/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })]
     const rows = await query('SELECT * FROM brands WHERE id = ? LIMIT 1', [req.params.id]);
     if (!rows.length) return res.status(404).json({ message: 'Brand not found.' });
 
-    const logoUrl = rows[0].logo_url;
-    if (logoUrl) { const pid = extractPublicId(logoUrl); if (pid) await deleteByPublicId(pid).catch(() => {}); }
+    deleteLocalFile(rows[0].logo_url);
 
     await execute('DELETE FROM brands WHERE id = ?', [req.params.id]);
     res.json({ message: 'Brand deleted.' });

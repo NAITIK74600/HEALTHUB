@@ -1,10 +1,30 @@
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
+const crypto = require('crypto');
 const { query: queryValidator, param, validationResult } = require('express-validator');
 const requireAuth = require('../middleware/requireAuth');
 const requireAdmin = require('../middleware/requireAdmin');
 const upload = require('../middleware/upload');
-const { uploadBuffer } = require('../utils/cloudinary');
 const { query, execute } = require('../db/mysql');
+
+const router = express.Router();
+
+const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
+
+function ensureDir(dir) {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+}
+
+function saveFile(buffer, subfolder, originalName) {
+  const dir = path.join(UPLOADS_DIR, subfolder);
+  ensureDir(dir);
+  const ext = path.extname(originalName || '.jpg').toLowerCase();
+  const name = crypto.randomBytes(16).toString('hex') + ext;
+  const filePath = path.join(dir, name);
+  fs.writeFileSync(filePath, buffer);
+  return `/uploads/${subfolder}/${name}`;
+}
 
 const router = express.Router();
 
@@ -24,10 +44,7 @@ function mapPrescription(row) {
 router.post('/', requireAuth, upload.single('file'), async (req, res, next) => {
   try {
     if (!req.file) return res.status(422).json({ message: 'No file uploaded.' });
-    const { url } = await uploadBuffer(req.file.buffer, 'batla-medicos/prescriptions', {
-      resource_type: 'auto',
-      allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'pdf'],
-    });
+    const url = saveFile(req.file.buffer, 'prescriptions', req.file.originalname);
     const result = await execute(
       'INSERT INTO prescriptions (user_id, image_url) VALUES (?, ?)',
       [req.user.id, url]
