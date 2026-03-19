@@ -33,7 +33,7 @@ router.get('/', async (req, res, next) => {
        ORDER BY ord ASC, created_at DESC`,
       []
     );
-    res.json(rows.map(mapOffer));
+    res.json({ offers: rows.map(mapOffer) });
   } catch (err) { next(err); }
 });
 
@@ -41,7 +41,7 @@ router.get('/', async (req, res, next) => {
 router.get('/all', requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const rows = await query('SELECT * FROM offers ORDER BY ord ASC, created_at DESC', []);
-    res.json(rows.map(mapOffer));
+    res.json({ offers: rows.map(mapOffer) });
   } catch (err) { next(err); }
 });
 

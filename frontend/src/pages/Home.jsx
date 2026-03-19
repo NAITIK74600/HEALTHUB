@@ -205,10 +205,10 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    getActiveOffers().then(r => setOffers(r.data.offers)).catch(() => {});
-    getCategories().then(r => setCategories(r.data.categories)).catch(() => {});
-    getProducts({ limit: 8, sort: 'newest' }).then(r => setNewArrivals(r.data.products)).catch(() => {});
-    getProducts({ limit: 8, sort: 'price_asc' }).then(r => setFeatured(r.data.products)).catch(() => {});
+    getActiveOffers().then(r => setOffers(r.data.offers || [])).catch(() => {});
+    getCategories().then(r => setCategories(r.data.categories || [])).catch(() => {});
+    getProducts({ limit: 8, sort: 'newest' }).then(r => setNewArrivals(r.data.products || [])).catch(() => {});
+    getProducts({ limit: 8, sort: 'price_asc' }).then(r => setFeatured(r.data.products || [])).catch(() => {});
     getBrands({ category: 'featured'  }).then(r => setFeaturedBrands(r.data.brands || [])).catch(() => {});
     getBrands({ category: 'ayurvedic' }).then(r => setAyurvedaBrands(r.data.brands || [])).catch(() => {});
     getBrands({ category: 'personal_care' }).then(r => setPersonalCareBrands(r.data.brands || [])).catch(() => {});
