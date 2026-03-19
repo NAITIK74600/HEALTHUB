@@ -791,7 +791,8 @@ router.post('/update-images/:id', requireAuth, requireAdmin, [param('id').isInt(
     }
 
     // Add image by URL (prepend so it shows first)
-    if (req.body.imageUrl && /^https?:\/\//i.test(String(req.body.imageUrl).trim())) {
+    const isValidImageUrl = (u) => /^https?:\/\//i.test(u) || u.startsWith('/uploads/');
+    if (req.body.imageUrl && isValidImageUrl(String(req.body.imageUrl).trim())) {
       images.unshift(String(req.body.imageUrl).trim());
     }
 
@@ -800,7 +801,7 @@ router.post('/update-images/:id', requireAuth, requireAdmin, [param('id').isInt(
       let urls = req.body.imageUrls;
       if (typeof urls === 'string') try { urls = JSON.parse(urls); } catch { urls = []; }
       if (Array.isArray(urls)) {
-        urls.filter(u => /^https?:\/\//i.test(String(u || '').trim())).forEach(u => images.unshift(String(u).trim()));
+        urls.filter(u => isValidImageUrl(String(u || '').trim())).forEach(u => images.unshift(String(u).trim()));
       }
     }
 
