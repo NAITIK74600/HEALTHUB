@@ -1780,9 +1780,11 @@ svg { flex-shrink: 0; }
   border: 1px solid var(--border);
   border-radius: var(--r-xl);
   position: sticky;
-  top: calc(var(--nav-h) + 10px);
-  height: calc(100dvh - var(--nav-h) - 20px);
-  max-height: calc(100vh - var(--nav-h) - 20px);
+  /* Top = Navbar (64px) + CatNav (~46px) + Gap (12px) */
+  top: 122px;
+  /* Height = Viewport - Top spacing - Bottom spacing */
+  height: calc(100vh - 142px);
+  max-height: calc(100vh - 142px);
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
