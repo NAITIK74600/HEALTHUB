@@ -3915,8 +3915,8 @@ svg { flex-shrink: 0; }
 
 /* ── Product Detail Image Carousel (1mg-style) ── */
 .pd-gallery {
-  position: sticky;
-  top: 90px;
+  position: relative;
+  overflow: hidden;
 }
 .pd-gallery__carousel {
   position: relative;
@@ -4022,7 +4022,7 @@ svg { flex-shrink: 0; }
   border-color: var(--primary);
 }
 @media (max-width: 768px) {
-  .pd-gallery { position: static; }
+  .pd-gallery { }
   .pd-gallery__carousel { max-height: 320px; border-radius: 12px; }
   .pd-gallery__slide { padding: 12px; }
   .pd-gallery__arrow { width: 30px; height: 30px; }
