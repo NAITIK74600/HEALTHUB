@@ -1,10 +1,32 @@
-import { StrictMode } from 'react'
+import { StrictMode, Component } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 
+class ErrorBoundary extends Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  componentDidCatch(error, info) { console.error('React crashed:', error, info); }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ padding: 40, fontFamily: 'sans-serif', textAlign: 'center' }}>
+          <h1 style={{ color: '#C0392B' }}>Something went wrong</h1>
+          <pre style={{ textAlign: 'left', background: '#f5f5f5', padding: 16, borderRadius: 8, overflow: 'auto', maxWidth: 600, margin: '20px auto' }}>
+            {this.state.error.message}
+          </pre>
+          <button onClick={() => window.location.reload()} style={{ padding: '10px 24px', fontSize: 16, cursor: 'pointer' }}>Reload</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </StrictMode>,
 )
