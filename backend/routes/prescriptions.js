@@ -26,8 +26,6 @@ function saveFile(buffer, subfolder, originalName) {
   return `/uploads/${subfolder}/${name}`;
 }
 
-const router = express.Router();
-
 function mapPrescription(row) {
   return {
     _id: String(row.id),
