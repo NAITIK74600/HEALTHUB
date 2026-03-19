@@ -856,42 +856,55 @@ router.patch('/:id/quick-update', requireAuth, requireAdmin, [param('id').isInt(
 router.patch('/bulk-update', requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const { ids, update = {}, applyToAll = false, filterParams = {} } = req.body;
-    let targetIds = [];
-
-    if (applyToAll) {
-      const categoryIds = await resolveCategoryIds(filterParams.category);
-      const { whereSql, values } = buildProductWhere({ admin: true, params: filterParams, categoryIds });
-      const rows = await query(`SELECT p.id FROM products p ${whereSql}`, values);
-      targetIds = rows.map((row) => row.id);
-    } else {
-      targetIds = Array.isArray(ids) ? ids.map((id) => Number(id)).filter(Boolean) : [];
-    }
-
-    if (!targetIds.length) return res.json({ message: 'Bulk update complete.', modified: 0 });
+    let modified = 0;
 
     const setParts = [];
     const values = [];
 
     if (update.stock !== undefined) {
-      setParts.push('stock = ?');
+      setParts.push('p.stock = ?');
       values.push(Math.max(0, Number(update.stock)));
     }
     if (update.isActive !== undefined) {
-      setParts.push('is_active = ?');
+      setParts.push('p.is_active = ?');
       values.push(update.isActive ? 1 : 0);
     }
     if (update.isDeleted !== undefined) {
-      setParts.push('is_deleted = ?');
+      setParts.push('p.is_deleted = ?');
       values.push(update.isDeleted ? 1 : 0);
       if (update.isDeleted) {
-        setParts.push('is_active = 0');
+        setParts.push('p.is_active = 0');
       }
     }
     if (!setParts.length) return res.status(400).json({ message: 'Nothing to update.' });
 
-    const placeholders = targetIds.map(() => '?').join(', ');
-    const result = await execute(`UPDATE products SET ${setParts.join(', ')} WHERE id IN (${placeholders})`, [...values, ...targetIds]);
-    res.json({ message: 'Bulk update complete.', modified: result.affectedRows || 0 });
+    if (applyToAll) {
+      const categoryIds = await resolveCategoryIds(filterParams.category);
+      const { whereSql, values: whereValues } = buildProductWhere({ admin: true, params: filterParams, categoryIds });
+      // Direct update using the same WHERE clause
+      const result = await execute(
+        `UPDATE products p SET ${setParts.join(', ')} ${whereSql}`,
+        [...values, ...whereValues]
+      );
+      modified = result.affectedRows || 0;
+    } else {
+      const targetIds = Array.isArray(ids) ? ids.map((id) => Number(id)).filter(Boolean) : [];
+      if (!targetIds.length) return res.json({ message: 'Bulk update complete.', modified: 0 });
+
+      // Process in chunks to avoid max_allowed_packet or timeout
+      const CHUNK_SIZE = 1000;
+      for (let i = 0; i < targetIds.length; i += CHUNK_SIZE) {
+        const chunk = targetIds.slice(i, i + CHUNK_SIZE);
+        const placeholders = chunk.map(() => '?').join(', ');
+        const result = await execute(
+          `UPDATE products p SET ${setParts.join(', ')} WHERE p.id IN (${placeholders})`,
+          [...values, ...chunk]
+        );
+        modified += (result.affectedRows || 0);
+      }
+    }
+
+    res.json({ message: 'Bulk update complete.', modified });
   } catch (err) { next(err); }
 });
 
@@ -903,24 +916,36 @@ router.patch('/bulk-discount', requireAuth, requireAdmin, async (req, res, next)
       return res.status(422).json({ message: 'discountPct must be a number between 0 and 100.' });
     }
 
-    let targetIds = [];
+    const multiplier = ((100 - pct) / 100).toFixed(6);
+    let modified = 0;
+
     if (applyToAll) {
       const categoryIds = await resolveCategoryIds(filterParams.category);
       const { whereSql, values } = buildProductWhere({ admin: true, params: filterParams, categoryIds });
-      const rows = await query(`SELECT p.id FROM products p ${whereSql}`, values);
-      targetIds = rows.map((row) => row.id);
+      // Direct update using the same WHERE clause
+      const result = await execute(
+        `UPDATE products p SET p.price = ROUND(p.mrp * ?, 2) ${whereSql}`,
+        [multiplier, ...values]
+      );
+      modified = result.affectedRows || 0;
     } else {
-      targetIds = Array.isArray(ids) ? ids.map((id) => Number(id)).filter(Boolean) : [];
+      const targetIds = Array.isArray(ids) ? ids.map((id) => Number(id)).filter(Boolean) : [];
+      if (!targetIds.length) return res.json({ message: 'Discount applied. 0 products updated.', modified: 0 });
+
+      // Process in chunks
+      const CHUNK_SIZE = 1000;
+      for (let i = 0; i < targetIds.length; i += CHUNK_SIZE) {
+        const chunk = targetIds.slice(i, i + CHUNK_SIZE);
+        const placeholders = chunk.map(() => '?').join(', ');
+        const result = await execute(
+          `UPDATE products p SET p.price = ROUND(p.mrp * ?, 2) WHERE p.id IN (${placeholders})`,
+          [multiplier, ...chunk]
+        );
+        modified += (result.affectedRows || 0);
+      }
     }
 
-    if (!targetIds.length) return res.json({ message: 'Discount applied. 0 products updated.', modified: 0 });
-    const placeholders = targetIds.map(() => '?').join(', ');
-    const multiplier = ((100 - pct) / 100).toFixed(6);
-    const result = await execute(
-      `UPDATE products SET price = ROUND(mrp * ?, 2) WHERE id IN (${placeholders})`,
-      [multiplier, ...targetIds]
-    );
-    res.json({ message: `Discount applied. ${result.affectedRows || 0} products updated.`, modified: result.affectedRows || 0 });
+    res.json({ message: `Discount applied. ${modified} products updated.`, modified });
   } catch (err) { next(err); }
 });
 
