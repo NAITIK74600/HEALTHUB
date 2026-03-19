@@ -339,16 +339,15 @@ export default function Home() {
               const dbBrand = personalCareBrands.find(b => b.slug === cat.slug);
               const gradient = (dbBrand && dbBrand.gradient) ? dbBrand.gradient : cat.gradient;
               const imgSrc   = (dbBrand && dbBrand.logoUrl)  ? dbBrand.logoUrl  : cat.img;
+              const hasImage = !!imgSrc;
               return (
                 <Link key={cat.slug + cat.label} to={`/products?category=${cat.slug}`} className="pc-cat-card ripple-btn" onClick={ripple} style={{ animationDelay: `${idx * 0.07}s` }}>
-                  <div className="pc-cat-card__bg" style={{ background: gradient }} />
+                  {hasImage ? (
+                    <div className="pc-cat-card__bg" style={{ backgroundImage: `url(${imgSrc})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+                  ) : (
+                    <div className="pc-cat-card__bg" style={{ background: gradient }} />
+                  )}
                   <span className="pc-cat-card__label">{cat.label}</span>
-                  <img
-                    className="pc-cat-card__img"
-                    src={imgSrc}
-                    alt={cat.label}
-                    onError={e => { e.target.style.display = 'none'; }}
-                  />
                 </Link>
               );
             })}
