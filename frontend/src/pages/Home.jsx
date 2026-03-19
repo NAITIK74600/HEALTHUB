@@ -1,8 +1,8 @@
-﻿import { useEffect, useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+﻿import { useEffect, useState, useRef, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Truck, MapPin, ShieldCheck, Clock, ChevronRight, ChevronLeft,
-  Navigation, ExternalLink,
+  Navigation, ExternalLink, Search,
   Stethoscope, Pill, Leaf, Sparkles, Baby, Scissors, Hospital, Star, Heart, Syringe,
   Droplets, Droplet, FlaskConical, Wind, Thermometer, ShoppingBag, Box,
   TestTube, Package, GlassWater, Gem, LayoutGrid, Activity,
@@ -15,6 +15,9 @@ import { getBrands } from '../api/brands';
 import { getLabTests } from '../api/lab';
 import ProductCard from '../components/ProductCard';
 import OfferBanner from '../components/OfferBanner';
+import AnimatedSection from '../components/AnimatedSection';
+import { useRipple } from '../hooks/useAnimations';
+import { getAnimationSetting } from '../pages/admin/AdminSiteSettings';
 
 const CATEGORY_ICONS = {
   'caps-tabs':        { icon: <Pill size={28} />,         bg: '#FEF2F2', color: '#C0392B' },
@@ -141,6 +144,8 @@ function Counter({ target, suffix = '' }) {
 }
 
 export default function Home() {
+  const navigate = useNavigate();
+  const ripple = useRipple();
   const [offers, setOffers]         = useState([]);
   const [categories, setCategories] = useState([]);
   const [featured, setFeatured]     = useState([]);
@@ -150,6 +155,38 @@ export default function Home() {
   const [personalCareBrands, setPersonalCareBrands] = useState([]);
   const [countdown, setCountdown]   = useState({ h: 0, m: 0, s: 0 });
   const [labTests, setLabTests]       = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [showResults, setShowResults] = useState(false);
+  const searchTimeout = useRef(null);
+  const searchRef = useRef(null);
+
+  // Live search with debounce
+  const handleSearch = useCallback((q) => {
+    setSearchQuery(q);
+    clearTimeout(searchTimeout.current);
+    if (!q.trim()) { setSearchResults([]); setShowResults(false); return; }
+    searchTimeout.current = setTimeout(() => {
+      getProducts({ search: q.trim(), limit: 6 })
+        .then(r => { setSearchResults(r.data.products || []); setShowResults(true); })
+        .catch(() => {});
+    }, 300);
+  }, []);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      setShowResults(false);
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
+  // Close search dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e) => { if (searchRef.current && !searchRef.current.contains(e.target)) setShowResults(false); };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   useEffect(() => {
     const tick = () => {
@@ -217,21 +254,65 @@ export default function Home() {
             <h1>Your Trusted<br /><span className="red">Neighbourhood</span><br />Pharmacy</h1>
             <p>Allopathic · Ayurvedic · Cosmetics · Baby Products · Surgical</p>
             <div className="hero__actions">
-              <Link to="/products" className="btn btn--primary btn--lg">Shop Now <ChevronRight size={18} /></Link>
-              <Link to="/prescriptions" className="btn btn--ghost btn--lg">
+              <Link to="/products" className="btn btn--primary btn--lg ripple-btn" onClick={ripple}>Shop Now <ChevronRight size={18} /></Link>
+              <Link to="/prescriptions" className="btn btn--ghost btn--lg ripple-btn" onClick={ripple}>
                 <FileText size={18} /> Upload Prescription
               </Link>
+            </div>
+            {/* ── Hero Search Bar ── */}
+            <div className="hero-search" ref={searchRef}>
+              <form className="hero-search__form" onSubmit={handleSearchSubmit}>
+                <Search size={18} className="hero-search__icon" />
+                <input
+                  type="text"
+                  className="hero-search__input"
+                  placeholder="Search medicines, health products, brands..."
+                  value={searchQuery}
+                  onChange={e => handleSearch(e.target.value)}
+                  onFocus={() => searchResults.length > 0 && setShowResults(true)}
+                />
+                {searchQuery && (
+                  <button type="button" className="hero-search__clear" onClick={() => { setSearchQuery(''); setSearchResults([]); setShowResults(false); }}>✕</button>
+                )}
+                <button type="submit" className="hero-search__btn ripple-btn" onClick={ripple}>Search</button>
+              </form>
+              {showResults && searchResults.length > 0 && (
+                <div className="hero-search__dropdown">
+                  {searchResults.map(p => (
+                    <Link
+                      key={p._id}
+                      to={`/products/${p.slug}`}
+                      className="hero-search__result"
+                      onClick={() => setShowResults(false)}
+                    >
+                      {p.images?.[0] && <img src={p.images[0]} alt="" className="hero-search__thumb" />}
+                      <div className="hero-search__info">
+                        <span className="hero-search__name">{p.name}</span>
+                        <span className="hero-search__price">₹{p.price} {p.mrp > p.price && <s>₹{p.mrp}</s>}</span>
+                      </div>
+                    </Link>
+                  ))}
+                  <Link to={`/products?search=${encodeURIComponent(searchQuery)}`} className="hero-search__all" onClick={() => setShowResults(false)}>
+                    View all results <ChevronRight size={14} />
+                  </Link>
+                </div>
+              )}
+              {showResults && searchResults.length === 0 && searchQuery.trim() && (
+                <div className="hero-search__dropdown">
+                  <div className="hero-search__empty">No products found for "{searchQuery}"</div>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </section>
 
       {/* ══════════════════════════ TRUST STRIP ══════════════════════════ */}
-      <section className="trust-strip">
+      <AnimatedSection animation={getAnimationSetting('trustStrip')} as="section" className="trust-strip">
         <div className="container">
           <div className="trust-strip__grid">
             {TRUST_FEATURES.map((f, i) => (
-              <div key={i} className="trust-strip__item">
+              <div key={i} className="trust-strip__item ripple-btn" onClick={ripple} style={{ animationDelay: `${i * 0.06}s` }}>
                 <div className="trust-strip__icon" style={{ background: f.bg, color: f.color }}>{f.icon}</div>
                 <div>
                   <div className="trust-strip__title">{f.title}</div>
@@ -241,25 +322,25 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </AnimatedSection>
 
       {/* ══════════════════════════ OFFER BANNER ═════════════════════════ */}
       {offers.length > 0 && <OfferBanner offers={offers} />}
 
       {/* ═══════════════════ PERSONAL CARE CATEGORIES ═══════════════════ */}
-      <section className="section">
+      <AnimatedSection animation={getAnimationSetting('personalCare')} as="section" className="section">
         <div className="container">
           <div className="section__header">
             <h2 className="section__title">Personal care</h2>
             <Link to="/products" className="section__link">See all <ChevronRight size={14} /></Link>
           </div>
           <div className="personal-care-grid">
-            {PERSONAL_CARE_CATS.map((cat) => {
+            {PERSONAL_CARE_CATS.map((cat, idx) => {
               const dbBrand = personalCareBrands.find(b => b.slug === cat.slug);
               const gradient = (dbBrand && dbBrand.gradient) ? dbBrand.gradient : cat.gradient;
               const imgSrc   = (dbBrand && dbBrand.logoUrl)  ? dbBrand.logoUrl  : cat.img;
               return (
-                <Link key={cat.slug + cat.label} to={`/products?category=${cat.slug}`} className="pc-cat-card">
+                <Link key={cat.slug + cat.label} to={`/products?category=${cat.slug}`} className="pc-cat-card ripple-btn" onClick={ripple} style={{ animationDelay: `${idx * 0.07}s` }}>
                   <div className="pc-cat-card__bg" style={{ background: gradient }} />
                   <span className="pc-cat-card__label">{cat.label}</span>
                   <img
@@ -273,13 +354,14 @@ export default function Home() {
             })}
           </div>
         </div>
-      </section>
+      </AnimatedSection>
 
       {/* ═══════════════════ FEATURED BRANDS CAROUSEL ═══════════════════ */}
       {featuredBrands.length > 0 && (
+        <AnimatedSection animation={getAnimationSetting('featuredBrands')}>
         <ScrollRow title="Featured brands" link="/products" accent="">
           {featuredBrands.map(b => (
-            <Link key={b._id} to={`/products?brand=${encodeURIComponent(b.name)}`} className="brand-circle-card" title={b.name}>
+            <Link key={b._id} to={`/products?brand=${encodeURIComponent(b.name)}`} className="brand-circle-card ripple-btn" onClick={ripple} title={b.name}>
               <div className="brand-circle-card__ring">
                 {b.logoUrl
                   ? <img src={b.logoUrl} alt={b.name} className="brand-circle-card__img" />
@@ -290,20 +372,21 @@ export default function Home() {
             </Link>
           ))}
         </ScrollRow>
+        </AnimatedSection>
       )}
 
       {/* ═══════════════════ SHOP BY CATEGORY ══════════════════════════ */}
-      <section className="section section--gray">
+      <AnimatedSection animation={getAnimationSetting('shopByCategory')} as="section" className="section section--gray">
         <div className="container">
           <div className="section__header">
             <h2 className="section__title">Shop by Category</h2>
             <Link to="/products" className="section__link">All Products <ChevronRight size={14} /></Link>
           </div>
           <div className="category-grid-v2">
-            {categories.slice(0, 16).map(cat => {
+            {categories.slice(0, 16).map((cat, idx) => {
               const cfg = CATEGORY_ICONS[cat.slug] || DEFAULT_CAT;
               return (
-                <Link key={cat._id} to={`/products?category=${cat.slug}`} className="cat-tile">
+                <Link key={cat._id} to={`/products?category=${cat.slug}`} className="cat-tile ripple-btn" onClick={ripple} style={{ animationDelay: `${idx * 0.04}s` }}>
                   <span className="cat-tile__icon" style={{ background: cfg.bg, color: cfg.color }}>{cfg.icon}</span>
                   <span className="cat-tile__name">{cat.name}</span>
                 </Link>
@@ -311,11 +394,11 @@ export default function Home() {
             })}
           </div>
         </div>
-      </section>
+      </AnimatedSection>
 
       {/* ═══════════════════ NEW ARRIVALS ════════════════════════════════ */}
       {newArrivals.length > 0 && (
-        <section className="section section--gray">
+        <AnimatedSection animation={getAnimationSetting('newArrivals')} as="section" className="section section--gray">
           <div className="container">
             <div className="section__header">
               <h2 className="section__title">New Arrivals</h2>
@@ -323,14 +406,15 @@ export default function Home() {
             </div>
             <div className="product-grid">{newArrivals.map(p => <ProductCard key={p._id} product={p} />)}</div>
           </div>
-        </section>
+        </AnimatedSection>
       )}
 
       {/* ════════════════════ AYURVEDA BRANDS ════════════════════════════ */}
       {ayurvedaBrands.length > 0 && (
+        <AnimatedSection animation={getAnimationSetting('ayurvedaBrands')}>
         <ScrollRow title="Ayurveda top brands" link="/products?category=ayurveda" accent="#1B8843">
           {ayurvedaBrands.map(b => (
-            <Link key={b._id} to={`/products?brand=${encodeURIComponent(b.name)}`} className="brand-ayur-card" title={b.name}>
+            <Link key={b._id} to={`/products?brand=${encodeURIComponent(b.name)}`} className="brand-ayur-card ripple-btn" onClick={ripple} title={b.name}>
               <div className="brand-ayur-card__box">
                 {b.logoUrl
                   ? <img src={b.logoUrl} alt={b.name} className="brand-ayur-card__img" />
@@ -341,11 +425,12 @@ export default function Home() {
             </Link>
           ))}
         </ScrollRow>
+        </AnimatedSection>
       )}
 
       {/* ════════════════════ BEST VALUE PRODUCTS ════════════════════════ */}
       {featured.length > 0 && (
-        <section className="section section--gray">
+        <AnimatedSection animation={getAnimationSetting('bestValue')} as="section" className="section section--gray">
           <div className="container">
             <div className="section__header">
               <h2 className="section__title">Best Value Medicines</h2>
@@ -353,7 +438,7 @@ export default function Home() {
             </div>
             <div className="product-grid">{featured.map(p => <ProductCard key={p._id} product={p} />)}</div>
           </div>
-        </section>
+        </AnimatedSection>
       )}
 
       {/* ════════════ HEALTH TIPS TICKER ════════════════════════════════ */}
@@ -369,7 +454,7 @@ export default function Home() {
       </div>
 
       {/* ════════════ DEAL OF THE DAY ════════════════════════════════════ */}
-      <section className="deal-section">
+      <AnimatedSection animation={getAnimationSetting('dealOfDay')} as="section" className="deal-section">
         <div className="container">
           <div className="deal-card">
             <div className="deal-card__badge"><BadgePercent size={16} /> Deal of the Day</div>
@@ -378,8 +463,8 @@ export default function Home() {
                 <h2>Up to <span>70% OFF</span></h2>
                 <p>On selected medicines, lab tests &amp; health essentials. Don't miss out!</p>
                 <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1.2rem' }}>
-                  <Link to="/products" className="btn btn--white btn--lg">Shop Now <ChevronRight size={16} /></Link>
-                  <Link to="/lab" className="btn btn--outline-white btn--lg">Book Lab Test</Link>
+                  <Link to="/products" className="btn btn--white btn--lg ripple-btn" onClick={ripple}>Shop Now <ChevronRight size={16} /></Link>
+                  <Link to="/lab" className="btn btn--outline-white btn--lg ripple-btn" onClick={ripple}>Book Lab Test</Link>
                 </div>
               </div>
               <div className="deal-card__timer">
@@ -404,11 +489,11 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </AnimatedSection>
 
       {/* ════════════ PATHOLOGY TESTS ══════════════════════════════════ */}
       {labTests.length > 0 && (
-        <section className="section">
+        <AnimatedSection animation={getAnimationSetting('labTests')} as="section" className="section">
           <div className="container">
             <div className="section__header">
               <h2 className="section__title">Pathology Tests <span className="lab-section__badge">UP TO 70% OFF</span></h2>
@@ -416,7 +501,7 @@ export default function Home() {
             </div>
             <div className="lab-home-grid">
               {labTests.map(test => (
-                <Link key={test._id} to="/lab" className="lab-home-card">
+                <Link key={test._id} to="/lab" className="lab-home-card ripple-btn" onClick={ripple}>
                   <div className="lab-home-card__icon">
                     <FlaskConical size={22} />
                   </div>
@@ -431,11 +516,11 @@ export default function Home() {
               ))}
             </div>
           </div>
-        </section>
+        </AnimatedSection>
       )}
 
       {/* ════════════ WHY CHOOSE US ══════════════════════════════════════ */}
-      <section className="section why-section">
+      <AnimatedSection animation={getAnimationSetting('whyChoose')} as="section" className="section why-section">
         <div className="container">
           <div className="section__header" style={{ flexDirection: 'column', gap: '4px', textAlign: 'center' }}>
             <h2 className="section__title" style={{ justifyContent: 'center' }}>Why Choose Batla Medicos?</h2>
@@ -443,7 +528,7 @@ export default function Home() {
           </div>
           <div className="why-grid">
             {WHY_CHOOSE.map((w, i) => (
-              <div key={i} className="why-card">
+              <div key={i} className="why-card ripple-btn" onClick={ripple} style={{ animationDelay: `${i * 0.08}s` }}>
                 <div className="why-card__icon" style={{ background: w.bg, color: w.color }}>{w.icon}</div>
                 <h4 className="why-card__title">{w.title}</h4>
                 <p className="why-card__desc">{w.desc}</p>
@@ -451,9 +536,10 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </AnimatedSection>
 
       {/* ════════════════════ STORE MAP STRIP ═══════════════════════════ */}
+      <AnimatedSection animation={getAnimationSetting('mapStrip')} className="map-strip-wrap">
       <div className="map-strip">
         <div className="map-strip__inner">
           <div className="map-strip__left">
@@ -467,12 +553,13 @@ export default function Home() {
             <a href={GOOGLE_MAPS_URL} target="_blank" rel="noopener noreferrer" className="map-strip__btn map-strip__btn--primary">
               <Navigation size={14} /> Get Directions
             </a>
-            <a href={GOOGLE_MAPS_URL} target="_blank" rel="noopener noreferrer" className="map-strip__btn map-strip__btn--outline">
+            <a href={GOOGLE_MAPS_URL} target="_blank" rel="noopener noreferrer" className="map-strip__btn map-strip__btn--outline ripple-btn" onClick={ripple}>
               <ExternalLink size={14} /> Open Maps
             </a>
           </div>
         </div>
       </div>
+      </AnimatedSection>
     </main>
   );
 }

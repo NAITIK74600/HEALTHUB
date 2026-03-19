@@ -49,6 +49,7 @@ import AdminLabBookings from './pages/admin/AdminLabBookings';
 import AdminDelivery from './pages/admin/AdminDelivery';
 import AdminCoupons from './pages/admin/AdminCoupons';
 import AdminBrands from './pages/admin/AdminBrands';
+import AdminSiteSettings from './pages/admin/AdminSiteSettings';
 
 const PublicLayout = () => (
   <>
@@ -139,6 +140,7 @@ export default function App() {
                 <Route path="delivery" element={<AdminDelivery />} />
                 <Route path="coupons" element={<AdminCoupons />} />
                 <Route path="brands" element={<AdminBrands />} />
+                <Route path="site-settings" element={<AdminSiteSettings />} />
               </Route>
             </Routes>
           </CartProvider>
