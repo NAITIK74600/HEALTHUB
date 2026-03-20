@@ -66,7 +66,50 @@ const PARENT_GROUPS = {
 const LIFESTYLE_SLUGS = new Set([
   'sexual-wellness', 'skin-care', 'hair-care', 'baby-care',
   'fitness-health', 'vitamins-nutrition', 'diabetes-care', 'supports-braces',
+  'immunity-boosters',
 ]);
+
+// SQL fallback for when lifestyle_category IS NULL (column not yet populated by classifyProducts.js).
+// Once the column is populated the fast indexed equality path handles those rows.
+// All patterns use LOWER() for case-insensitive matching on MySQL 5.7.
+const LIFESTYLE_FALLBACK_SQL = {
+  'sexual-wellness':
+    `(LOWER(p.name) REGEXP 'condom|sildenafil|tadalafil|dapoxetine|contraceptive|ipill|unwanted|mifepristone|levonorgestrel|lubricant gel|vaginal|kamagra|vigora|suhagra|caverta|erectile|spermicide'
+     OR LOWER(p.brand) REGEXP 'manforce|moods|skore|notyet|playgard|durex'
+     OR LOWER(p.salt)  REGEXP 'sildenafil|tadalafil|dapoxetine|vardenafil|avanafil|levonorgestrel|mifepristone')`,
+
+  'baby-care':
+    `(LOWER(p.name) REGEXP 'baby oil|baby powder|baby shampoo|baby lotion|baby cream|baby soap|baby wipe|baby diaper|gripe water|lactogen|nan pro|similac|pediasure|cerelac|enfamil|aptamil|feeding bottle|breast pump|pacifier|teether|baby rash'
+     OR LOWER(p.brand) REGEXP 'johnsonbaby|johnson baby|himalaya baby|mother sparsh|mamy poko|huggies|pampers|pigeon|dr.brown')`,
+
+  'skin-care':
+    `(LOWER(p.name) REGEXP 'sunscreen|sun screen|spf [0-9]|face wash|facewash|face scrub|face pack|face mask|face serum|face gel|face toner|face cream|moisturizer|moisturiser|anti aging|anti-aging|anti ageing|wrinkle|dark spot|pigmentation|skin whitening|skin brightening|fairness cream|fairness lotion|retinol|niacinamide|hyaluronic acid|kojic|salicylic acid gel|benzoyl peroxide|acne gel|pimple gel|under eye gel'
+     OR LOWER(p.brand) REGEXP 'cetaphil|lacto calamine|neutrogena|olay|loreal revitalift|clean.and.clear|himalaya face|mamaearth face|plum face|wow face|biotique face|minimalist|re-equil|dot.and.key|pilgrim')`,
+
+  'hair-care':
+    `(LOWER(p.name) REGEXP 'shampoo|conditioner|hair serum|hair mask|hair spray|hair cream|hair tonic|anti dandruff|anti-dandruff|hairfall|hair fall|hair loss|hair growth serum|hair oil|amla oil|argan oil|bhringraj|onion hair|onion shampoo|scalp serum|hair color|hair colour'
+     OR LOWER(p.brand) REGEXP 'tresemme|pantene|head.and.shoulder|dove shampoo|clinic plus|himalaya hair|mamaearth hair|wow hair|biotique hair|indulekha|kesh king|parachute|livon'
+     OR LOWER(p.salt)  REGEXP 'minoxidil|finasteride|ketoconazole|zinc pyrithione|selenium sulfide')`,
+
+  'diabetes-care':
+    `(LOWER(p.name) REGEXP 'glucometer|glucose meter|glucose monitor|lancet|blood glucose|accu.chek|contour plus|onetouch|freestyle libre|sugar free|sugar-free|diabetic sock|insulin pen|insulin syringe|insulin needle|glucose strip'
+     OR LOWER(p.salt)  REGEXP 'metformin|glipizide|glibenclamide|gliclazide|glimepiride|voglibose|sitagliptin|empagliflozin|dapagliflozin|canagliflozin|saxagliptin|linagliptin|alogliptin|insulin glargine|insulin degludec|insulin aspart|insulin lispro|insulin detemir|liraglutide|dulaglutide|semaglutide')`,
+
+  'vitamins-nutrition':
+    `(LOWER(p.name) REGEXP 'multivitamin|multi-vitamin|vitamin b12 tab|vitamin b12 cap|vitamin c tab|vitamin c chew|vitamin d3 tab|vitamin d3 cap|calcium tab|iron tab|folic acid tab|biotin tab|zinc tab|omega 3 cap|omega-3 cap|whey protein|protein powder|mass gainer|casein protein|bcaa|creatine mono'
+     OR LOWER(p.brand) REGEXP 'revital|supradyn|centrum|limcee|becosules|neurobion|complan|horlicks|bournvita|ensure|protinex|boost|healthkart|muscleblaze|optimum nutrition|gnc|now foods|fast.and.up|myprotein'
+     OR LOWER(p.name)  REGEXP 'complan|horlicks|bournvita|ensure powder|protinex powder')`,
+
+  'fitness-health':
+    `(LOWER(p.name) REGEXP 'pre workout|pre-workout|post workout|energy booster cap|stamina booster cap|fat burner cap|weight loss cap|slimming cap|testosterone booster|ashwagandha cap|ashwagandha tab|shilajit cap|shilajit resin|tribulus cap|safed musli|kaunch|shatavari cap|chyawanprash|giloy juice|giloy tab|amla juice|neem tab|moringa cap|spirulina tab|turmeric cap|curcumin cap')`,
+
+  'supports-braces':
+    `(LOWER(p.name) REGEXP 'knee cap|knee brace|knee support|ankle brace|ankle support|wrist brace|wrist support|elbow brace|elbow support|lumbar support|back support|cervical collar|cervical support|shoulder brace|shoulder support|compression stocking|compression bandage|crepe bandage|abdominal belt|surgical belt|hernia belt|maternity belt|splint|walker frame|crutch|wheelchair|nebulizer|pulse oximeter|bp monitor|blood pressure monitor')`,
+
+  'immunity-boosters':
+    `(LOWER(p.name) REGEXP 'chyawanprash|chyavanprash|immunity booster|immune booster|immune support|immunoboost|giloy syrup|giloy juice|giloy tab|tulsi syrup|amla juice|elderberry|echinacea|zinc immunity|vitamin c immunity'
+     OR LOWER(p.brand) REGEXP 'dabur chyawan|baidyanath|patanjali immunity|himalaya immuno')`,
+};
 
 function normalizeCategorySlug(input = '') {
   const raw = String(input).trim().toLowerCase();
@@ -176,8 +219,14 @@ function buildProductWhere({ admin = false, params = {}, categoryIds = [] } = {}
   }
 
   if (params.lifestyleCategory) {
-    // Indexed lifestyle_category column — set at import time, single equality lookup
-    where.push('p.lifestyle_category = ?');
+    // Use indexed column for already-classified rows; fall back to REGEXP for NULL rows
+    // so the page works correctly even before classifyProducts.js has been run.
+    const fallback = LIFESTYLE_FALLBACK_SQL[params.lifestyleCategory];
+    if (fallback) {
+      where.push(`(p.lifestyle_category = ? OR (p.lifestyle_category IS NULL AND ${fallback}))`);
+    } else {
+      where.push('p.lifestyle_category = ?');
+    }
     values.push(params.lifestyleCategory);
   } else if (params.search) {
     where.push('(p.name LIKE ? OR p.brand LIKE ? OR p.company LIKE ? OR p.description LIKE ? OR p.salt LIKE ?)');

@@ -78,6 +78,12 @@ const RULES = [
     /\b(revital|supradyn|centrum|limcee|becosules|neurobion|calci)\b/.test(t)
   ],
 
+  // ── Immunity Boosters ─────────────────────────────────────────────────────
+  ['immunity-boosters', (t) =>
+    /\b(chyawanprash|chyavanprash|giloy|guduchi)\b/.test(t) ||
+    /\b(immunity booster|immune booster|immune support|immunoboost)\b/.test(t)
+  ],
+
   // ── Fitness & Health ───────────────────────────────────────────────────────
   ['fitness-health', (t) =>
     /\b(gym|workout|pre.?workout|post.?workout|energy booster|stamina|endurance)\b/.test(t) ||
