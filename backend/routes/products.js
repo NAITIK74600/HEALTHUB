@@ -61,6 +61,20 @@ const PARENT_GROUPS = {
   herbal:               ['herbal', 'ayurvedic'],
 };
 
+// ── Lifestyle virtual categories — keyword search on name/brand/salt ────────
+// Products are imported by dosage form (caps-tabs, fmcg…), not by therapy area.
+// These keyword arrays let each lifestyle page show only relevant products.
+const LIFESTYLE_KEYWORDS = {
+  'sexual-wellness':    ['condom', 'contraceptive', 'intimate', 'lubricant', 'lubricating', 'spermicide', 'sildenafil', 'tadalafil', 'vardenafil', 'sexual', 'kamagra', 'manforce', 'skore', 'durex', 'moods'],
+  'skin-care':          ['skin', 'sunscreen', 'moisturizer', 'moisturiser', 'fairness', 'face wash', 'facewash', 'acne', 'pimple', 'anti-aging', 'whitening', 'brightening', 'serum', 'toner'],
+  'hair-care':          ['hair', 'shampoo', 'conditioner', 'scalp', 'dandruff', 'hairfall', 'hair fall', 'minoxidil', 'alopecia', 'hair oil', 'hair growth'],
+  'baby-care':          ['baby', 'infant', 'pediatric', 'paediatric', 'cerelac', 'lactogen', 'nan pro', 'similac', 'feeding', 'diaper', 'nappy', 'pediasure', 'complan kids'],
+  'fitness-health':     ['protein', 'whey', 'creatine', 'bcaa', 'pre-workout', 'mass gainer', 'fitness', 'testosterone', 'stamina', 'energy booster', 'muscle'],
+  'vitamins-nutrition': ['vitamin', 'multivitamin', 'mineral', 'supplement', 'calcium', 'iron tablet', 'omega', 'zinc', 'magnesium', 'b12', 'folic acid', 'biotin', 'collagen'],
+  'diabetes-care':      ['insulin', 'glucose', 'diabetes', 'diabetic', 'metformin', 'gluco', 'glyco', 'sugar free', 'glucometer', 'lancet', 'test strip'],
+  'supports-braces':    ['support', 'brace', 'knee cap', 'ankle', 'ortho', 'compression', 'splint', 'bandage', 'crepe', 'belt', 'collar', 'walker'],
+};
+
 function normalizeCategorySlug(input = '') {
   const raw = String(input).trim().toLowerCase();
   return SLUG_ALIASES[raw] || raw;
@@ -168,7 +182,15 @@ function buildProductWhere({ admin = false, params = {}, categoryIds = [] } = {}
     values.push(`%${params.brand}%`);
   }
 
-  if (params.search) {
+  if (params.keywordSearch) {
+    // Lifestyle-category keyword OR-search across name, brand, salt
+    const kws = params.keywordSearch.filter(Boolean).slice(0, 15);
+    if (kws.length) {
+      const clause = kws.map(() => '(p.name LIKE ? OR p.brand LIKE ? OR p.salt LIKE ?)').join(' OR ');
+      where.push(`(${clause})`);
+      for (const kw of kws) values.push(`%${kw}%`, `%${kw}%`, `%${kw}%`);
+    }
+  } else if (params.search) {
     where.push('(p.name LIKE ? OR p.brand LIKE ? OR p.company LIKE ? OR p.description LIKE ? OR p.salt LIKE ?)');
     values.push(`%${params.search}%`, `%${params.search}%`, `%${params.search}%`, `%${params.search}%`, `%${params.search}%`);
   }
@@ -239,14 +261,27 @@ router.get('/', [
 
     const page = Number(req.query.page || 1);
     const limit = Number(req.query.limit || 20);
-    const categoryIds = await resolveCategoryIds(req.query.category);
-    // [] means a specific numeric ID was requested but not found → 0 results
-    if (Array.isArray(categoryIds) && !categoryIds.length) {
-      return res.json({ products: [], total: 0, page, pages: 0 });
-    }
-    // null means unknown slug with no DB match → show all products (graceful fallback)
 
-    const { whereSql, values } = buildProductWhere({ params: req.query, categoryIds: categoryIds || [] });
+    const catSlug      = req.query.category ? normalizeCategorySlug(req.query.category) : null;
+    const lifestyleKws = catSlug ? LIFESTYLE_KEYWORDS[catSlug] : null;
+
+    let categoryIds, keywordSearch;
+    if (lifestyleKws) {
+      // Lifestyle category → search by relevant keywords, ignore category_id filter
+      categoryIds   = null;
+      keywordSearch = lifestyleKws;
+    } else {
+      categoryIds = await resolveCategoryIds(req.query.category);
+      // [] means a specific numeric ID was requested but not found → 0 results
+      if (Array.isArray(categoryIds) && !categoryIds.length) {
+        return res.json({ products: [], total: 0, page, pages: 0 });
+      }
+    }
+
+    const { whereSql, values } = buildProductWhere({
+      params: { ...req.query, keywordSearch },
+      categoryIds: categoryIds || [],
+    });
     const [products, totalRows] = await Promise.all([
       fetchProducts({ whereSql, values, sort: sortSql(req.query.sort), limit, offset: (page - 1) * limit }),
       query(`SELECT COUNT(*) AS total FROM products p ${whereSql}`, values),
@@ -276,12 +311,26 @@ router.get('/admin/list', requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const page = Number(req.query.page || 1);
     const limit = Number(req.query.limit || 20);
-    const categoryIds = await resolveCategoryIds(req.query.category);
-    if (Array.isArray(categoryIds) && !categoryIds.length) {
-      return res.json({ products: [], total: 0, page, pages: 0 });
+
+    const catSlug      = req.query.category ? normalizeCategorySlug(req.query.category) : null;
+    const lifestyleKws = catSlug ? LIFESTYLE_KEYWORDS[catSlug] : null;
+
+    let categoryIds, keywordSearch;
+    if (lifestyleKws) {
+      categoryIds   = null;
+      keywordSearch = lifestyleKws;
+    } else {
+      categoryIds = await resolveCategoryIds(req.query.category);
+      if (Array.isArray(categoryIds) && !categoryIds.length) {
+        return res.json({ products: [], total: 0, page, pages: 0 });
+      }
     }
 
-    const { whereSql, values } = buildProductWhere({ admin: true, params: req.query, categoryIds: categoryIds || [] });
+    const { whereSql, values } = buildProductWhere({
+      admin: true,
+      params: { ...req.query, keywordSearch },
+      categoryIds: categoryIds || [],
+    });
     const [products, totalRows] = await Promise.all([
       fetchProducts({ whereSql, values, sort: sortSql(req.query.sort, true), limit, offset: (page - 1) * limit }),
       query(`SELECT COUNT(*) AS total FROM products p ${whereSql}`, values),
