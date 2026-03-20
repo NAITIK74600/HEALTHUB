@@ -41,7 +41,7 @@ async function ensureCoreSchema() {
       requires_prescription TINYINT(1) NOT NULL DEFAULT 0,
       images_json JSON NULL,
       expiry_date DATETIME NULL,
-      batch_number VARCHAR(100) NOT NULL DEFAULT '',,
+      batch_number VARCHAR(100) NOT NULL DEFAULT '',
       salt VARCHAR(500) NOT NULL DEFAULT '',
       side_effects VARCHAR(1000) NOT NULL DEFAULT '',
       is_active TINYINT(1) NOT NULL DEFAULT 1,
