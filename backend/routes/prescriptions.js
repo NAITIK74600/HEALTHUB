@@ -11,6 +11,18 @@ const { query, execute } = require('../db/mysql');
 const router = express.Router();
 
 const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
+let _hasAddressJsonColumn = null;
+
+async function hasAddressJsonColumn() {
+  if (_hasAddressJsonColumn !== null) return _hasAddressJsonColumn;
+  try {
+    const cols = await query("SHOW COLUMNS FROM prescriptions LIKE 'address_json'");
+    _hasAddressJsonColumn = Array.isArray(cols) && cols.length > 0;
+  } catch {
+    _hasAddressJsonColumn = false;
+  }
+  return _hasAddressJsonColumn;
+}
 
 const uploadPrescriptionFile = upload.fields([
   { name: 'file', maxCount: 1 },
@@ -82,10 +94,16 @@ router.post('/', requireAuth, uploadPrescriptionFile, async (req, res, next) => 
     }
 
     const url = saveFile(f.buffer, 'prescriptions', f.originalname);
-    const result = await execute(
-      'INSERT INTO prescriptions (user_id, image_url, patient_name, doctor_name, notes, address_json) VALUES (?, ?, ?, ?, ?, ?)',
-      [req.user.id, url, patientName || null, doctorName || null, notes || null, addressJson]
-    );
+    const includeAddress = await hasAddressJsonColumn();
+    const result = includeAddress
+      ? await execute(
+        'INSERT INTO prescriptions (user_id, image_url, patient_name, doctor_name, notes, address_json) VALUES (?, ?, ?, ?, ?, ?)',
+        [req.user.id, url, patientName || null, doctorName || null, notes || null, addressJson]
+      )
+      : await execute(
+        'INSERT INTO prescriptions (user_id, image_url, patient_name, doctor_name, notes) VALUES (?, ?, ?, ?, ?)',
+        [req.user.id, url, patientName || null, doctorName || null, notes || null]
+      );
 
     res.status(201).json({
       _id: String(result.insertId),
@@ -104,8 +122,10 @@ router.post('/', requireAuth, uploadPrescriptionFile, async (req, res, next) => 
 // GET /api/prescriptions/my — customer's prescriptions
 router.get('/my', requireAuth, async (req, res, next) => {
   try {
+    const includeAddress = await hasAddressJsonColumn();
     const rows = await query(
-      `SELECT p.id, p.user_id, p.image_url, p.status, p.patient_name, p.doctor_name, p.notes, p.admin_notes, p.created_at, p.updated_at, p.address_json,
+      `SELECT p.id, p.user_id, p.image_url, p.status, p.patient_name, p.doctor_name, p.notes, p.admin_notes, p.created_at, p.updated_at,
+        ${includeAddress ? 'p.address_json' : 'NULL AS address_json'},
         (
           SELECT GROUP_CONCAT(o.id)
           FROM orders o
@@ -133,6 +153,7 @@ router.get('/', requireAuth, requireAdmin, [
   queryValidator('status').optional().trim(),
 ], async (req, res, next) => {
   try {
+    const includeAddress = await hasAddressJsonColumn();
     const page = Number(req.query.page || 1);
     const limit = Number(req.query.limit || 20);
     const offset = (page - 1) * limit;
@@ -147,7 +168,8 @@ router.get('/', requireAuth, requireAdmin, [
 
     const [rows, countRows] = await Promise.all([
       query(
-        `SELECT p.id, p.user_id, p.image_url, p.status, p.patient_name, p.doctor_name, p.notes, p.admin_notes, p.created_at, p.updated_at, p.address_json,
+        `SELECT p.id, p.user_id, p.image_url, p.status, p.patient_name, p.doctor_name, p.notes, p.admin_notes, p.created_at, p.updated_at,
+          ${includeAddress ? 'p.address_json' : 'NULL AS address_json'},
           u.name AS user_name, u.email AS user_email, u.phone AS user_phone,
           (
             SELECT GROUP_CONCAT(o.id)
@@ -207,8 +229,9 @@ router.post(
       const errors = validationResult(req);
       if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
 
+      const includeAddress = await hasAddressJsonColumn();
       const rxRows = await query(
-        `SELECT p.*, p.address_json, u.name AS user_name, u.email AS user_email, u.phone AS user_phone
+        `SELECT p.*, ${includeAddress ? 'p.address_json' : 'NULL AS address_json'}, u.name AS user_name, u.email AS user_email, u.phone AS user_phone
          FROM prescriptions p
          LEFT JOIN users u ON u.id = p.user_id
          WHERE p.id = ? LIMIT 1`,
