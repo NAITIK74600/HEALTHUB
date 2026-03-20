@@ -4,11 +4,17 @@ import { Link, useLocation } from 'react-router-dom';
 const GOOGLE_MAPS_URL = 'https://maps.app.goo.gl/W4Qtps1fKbArBvz17';
 
 const QUICK_LINKS = [
-  { label: 'All Products',      to: '/products' },
-  { label: 'Lab Tests',         to: '/lab' },
+  { label: 'All Products',        to: '/products' },
+  { label: 'Lab Tests',           to: '/lab' },
   { label: 'Upload Prescription', to: '/prescriptions' },
-  { label: 'My Orders',         to: '/orders' },
-  { label: 'My Account',        to: '/account' },
+  { label: 'My Orders',           to: '/orders' },
+  { label: 'My Account',          to: '/account' },
+];
+
+const POLICY_LINKS = [
+  { label: 'Privacy Policy',    to: '/privacy-policy' },
+  { label: 'Terms & Conditions', to: '/terms' },
+  { label: 'Refund Policy',     to: '/refund-policy' },
 ];
 
 export default function Footer() {
@@ -84,6 +90,14 @@ export default function Footer() {
               </li>
             ))}
           </ul>
+          <h4 style={{ marginTop: 18 }}>Legal</h4>
+          <ul>
+            {POLICY_LINKS.map(l => (
+              <li key={l.to}>
+                <Link to={l.to}><ChevronRight size={13} /> {l.label}</Link>
+              </li>
+            ))}
+          </ul>
         </div>
 
         {/* ── Column 4: Contact ── */}
@@ -110,6 +124,13 @@ export default function Footer() {
       </div>
       <div className="footer__copy">
         &copy; {new Date().getFullYear()} Batla Medicos Chemist &amp; Cosmetics, New Delhi — All rights reserved.
+        <span className="footer__policy-links">
+          <Link to="/privacy-policy">Privacy Policy</Link>
+          <span>·</span>
+          <Link to="/terms">Terms</Link>
+          <span>·</span>
+          <Link to="/refund-policy">Refund Policy</Link>
+        </span>
       </div>
     </footer>
   );

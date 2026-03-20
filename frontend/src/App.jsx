@@ -33,6 +33,9 @@ import LabBookings from './pages/LabBookings';
 import GoogleCallback from './pages/GoogleCallback';
 import DeliveryPanel from './pages/DeliveryPanel';
 import Diseases from './pages/Diseases';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsConditions from './pages/TermsConditions';
+import RefundPolicy from './pages/RefundPolicy';
 
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -115,6 +118,9 @@ export default function App() {
                 <Route path="/account" element={<RequireAuth><Account /></RequireAuth>} />
                 <Route path="/lab" element={<LabTests />} />
                 <Route path="/lab/bookings" element={<RequireAuth><LabBookings /></RequireAuth>} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<TermsConditions />} />
+                <Route path="/refund-policy" element={<RefundPolicy />} />
               </Route>
               <Route element={<AuthLayout />}>
                 <Route path="/login" element={<Login />} />

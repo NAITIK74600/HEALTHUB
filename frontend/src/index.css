@@ -1586,7 +1586,112 @@ svg { flex-shrink: 0; }
   color: rgba(255,255,255,0.3);
   max-width: 1260px;
   margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 20px;
 }
+.footer__policy-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.footer__policy-links a {
+  color: rgba(255,255,255,0.35);
+  text-decoration: none;
+  transition: color .2s;
+}
+.footer__policy-links a:hover { color: #fff; }
+.footer__policy-links span { color: rgba(255,255,255,0.15); }
+
+/* ── Policy Pages (Privacy, Terms, Refund) ─────────────────────────────────── */
+.policy-page { max-width: 860px; margin: 0 auto; padding: 32px 16px 60px; }
+
+.policy-hero {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 16px;
+  padding: 28px 32px;
+  margin-bottom: 36px;
+}
+.policy-hero__icon {
+  width: 64px; height: 64px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.policy-hero h1 { font-size: 1.7rem; font-weight: 800; margin: 0 0 4px; }
+.policy-hero p  { font-size: 13px; opacity: 0.75; margin: 0; }
+
+.policy-body section {
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 28px;
+}
+.policy-body section:last-child { border-bottom: none; }
+.policy-body h2 { font-size: 1.15rem; font-weight: 700; color: var(--text-dark); margin: 0 0 14px; }
+.policy-body h3 { font-size: 1rem; font-weight: 600; margin: 18px 0 8px; }
+.policy-body p  { font-size: 14.5px; color: var(--gray-600); line-height: 1.7; margin: 0 0 10px; }
+.policy-body ul { padding-left: 20px; margin: 6px 0 10px; }
+.policy-body li { font-size: 14.5px; color: var(--gray-600); line-height: 1.7; margin-bottom: 6px; }
+.policy-body a  { color: var(--primary); text-decoration: underline; }
+
+.policy-contact-list { list-style: none !important; padding: 0 !important; }
+.policy-contact-list li {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; color: var(--gray-600); margin-bottom: 8px;
+}
+
+.policy-card {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px 18px; border-radius: 10px; font-size: 14px;
+}
+.policy-card--green { background: #F0FBF4; color: #1B8843; }
+.policy-card--red   { background: #FEF2F2; color: #C0392B; }
+.policy-card p { font-size: 13.5px; color: var(--gray-600); margin: 4px 0 0; }
+.policy-card strong { display: block; font-weight: 700; }
+
+.policy-timeline { padding: 12px 0; }
+.policy-timeline__item {
+  display: flex; gap: 14px; margin-bottom: 20px;
+  align-items: flex-start;
+}
+.policy-timeline__dot {
+  width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; margin-top: 4px;
+}
+.policy-timeline__dot--green  { background: #22C55E; }
+.policy-timeline__dot--yellow { background: #F59E0B; }
+.policy-timeline__dot--red    { background: #EF4444; }
+.policy-timeline__item strong { font-size: 14px; font-weight: 700; color: var(--text-dark); }
+.policy-timeline__item p { font-size: 13.5px; color: var(--gray-600); margin: 4px 0 0; }
+
+.policy-steps { display: flex; flex-direction: column; gap: 16px; }
+.policy-step  { display: flex; gap: 14px; align-items: flex-start; }
+.policy-step__num {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--primary); color: #fff;
+  font-size: 14px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.policy-step strong { font-size: 14px; font-weight: 700; color: var(--text-dark); }
+.policy-step p { font-size: 13.5px; color: var(--gray-600); margin: 4px 0 0; }
+
+.policy-footer-links {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.policy-footer-links a { font-size: 13px; color: var(--primary); text-decoration: none; font-weight: 500; }
+.policy-footer-links a:hover { text-decoration: underline; }
+.policy-footer-links span { color: var(--gray-300); }
 
 /* Minimal footer — all pages except Home/Products */
 .footer--minimal {
