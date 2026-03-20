@@ -8602,6 +8602,304 @@ svg { flex-shrink: 0; }
   to { transform: scale(1); opacity: 0; }
 }
 
+/* ================================================================
+   ENHANCED ANIMATIONS & MICRO-INTERACTIONS
+   ================================================================ */
+
+/* ── Stagger children entrance ── */
+.anim-stagger-item {
+  animation-fill-mode: both;
+  animation-duration: 0.55s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Floating pulse on trust strip icons ── */
+.trust-strip__icon {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.trust-strip__item:hover .trust-strip__icon {
+  transform: scale(1.22) rotate(-6deg) !important;
+}
+.trust-strip__item {
+  transition: box-shadow 0.22s, transform 0.22s, background 0.22s !important;
+}
+.trust-strip__item:hover {
+  box-shadow: 0 4px 18px rgba(0,0,0,0.10) !important;
+  transform: translateY(-3px) !important;
+  background: #fff !important;
+}
+
+/* ── Personal care card shimmer sweep ── */
+.pc-cat-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+  pointer-events: none;
+  z-index: 3;
+  border-radius: inherit;
+}
+.pc-cat-card:hover::after { transform: translateX(100%); }
+.pc-cat-card {
+  transition: transform 0.28s cubic-bezier(0.34, 1.36, 0.64, 1), box-shadow 0.28s !important;
+}
+.pc-cat-card:hover {
+  transform: translateY(-6px) scale(1.03) !important;
+  box-shadow: 0 14px 36px rgba(0,0,0,0.18) !important;
+}
+
+/* ── Category tile icon bounce ── */
+.cat-tile__icon {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.cat-tile:hover .cat-tile__icon {
+  transform: scale(1.25) translateY(-3px) !important;
+}
+.cat-tile {
+  transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s, background 0.22s !important;
+}
+.cat-tile:hover {
+  background: linear-gradient(145deg, #fff7f7, #fff) !important;
+}
+
+/* ── Brand circle card pop ── */
+.brand-circle-card {
+  transition: transform 0.25s cubic-bezier(0.34, 1.46, 0.64, 1) !important;
+}
+.brand-circle-card:hover { transform: translateY(-6px) scale(1.06) !important; }
+.brand-circle-card__ring {
+  transition: box-shadow 0.25s, border-color 0.25s, transform 0.25s !important;
+}
+.brand-circle-card:hover .brand-circle-card__ring {
+  box-shadow: 0 6px 24px rgba(192,57,43,0.22) !important;
+  transform: scale(1.04) !important;
+}
+
+/* ── Product card entrance & hover improvements ── */
+.product-card {
+  transition: transform 0.28s cubic-bezier(0.23,1,.32,1), box-shadow 0.28s, border-color 0.2s !important;
+}
+.product-card:hover {
+  transform: translateY(-8px) scale(1.015) !important;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.13), 0 6px 16px rgba(0,0,0,0.07) !important;
+  border-color: rgba(192,57,43,0.2) !important;
+}
+.product-card__add-btn {
+  transition: background 0.18s, color 0.18s, transform 0.15s, box-shadow 0.18s !important;
+}
+.product-card__add-btn:not(:disabled):hover {
+  transform: scale(1.04) !important;
+  box-shadow: 0 3px 12px rgba(192,57,43,0.25) !important;
+}
+.product-card__add-btn:not(:disabled):active { transform: scale(0.97) !important; }
+
+/* ── Lab home card bounce ── */
+.lab-home-card {
+  transition: box-shadow 0.22s, transform 0.22s cubic-bezier(0.34,1.46,.64,1), border-color 0.22s !important;
+}
+.lab-home-card:hover {
+  transform: translateY(-4px) scale(1.02) !important;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.10) !important;
+}
+.lab-home-card__icon {
+  transition: transform 0.3s cubic-bezier(0.34,1.56,.64,1) !important;
+}
+.lab-home-card:hover .lab-home-card__icon {
+  transform: scale(1.2) rotate(-8deg) !important;
+}
+
+/* ── Why card icon spin ── */
+.why-card {
+  transition: transform 0.25s cubic-bezier(0.34,1.46,.64,1), box-shadow 0.25s !important;
+}
+.why-card:hover { transform: translateY(-6px) !important; box-shadow: 0 12px 30px rgba(0,0,0,0.10) !important; }
+.why-card__icon {
+  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1) !important;
+}
+.why-card:hover .why-card__icon { transform: scale(1.18) rotate(8deg) !important; }
+
+/* ── Button pulse on hover ── */
+.btn--primary {
+  transition: transform 0.18s, box-shadow 0.18s, background 0.18s !important;
+}
+.btn--primary:hover {
+  transform: translateY(-2px) scale(1.02) !important;
+  box-shadow: 0 8px 28px rgba(192,57,43,0.38) !important;
+}
+.btn--primary:active { transform: translateY(0) scale(0.98) !important; }
+
+/* ── Section title underline draw ── */
+.section__title {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.section__title::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #C0392B, #1B8843);
+  border-radius: 2px;
+  transition: width 0.5s cubic-bezier(0.22,1,0.36,1);
+}
+.anim-section.anim--visible .section__title::after { width: 100%; }
+
+/* ── Deal card timer digits flip ── */
+.deal-card__timer-unit span {
+  display: inline-block;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* ── Navbar link underline slide ── */
+.navbar__links a {
+  position: relative;
+  overflow: visible !important;
+}
+.navbar__links a::after {
+  content: '';
+  position: absolute;
+  bottom: 2px; left: 8px;
+  width: 0; height: 2px;
+  background: var(--primary);
+  border-radius: 1px;
+  transition: width 0.25s cubic-bezier(0.22,1,0.36,1);
+}
+.navbar__links a:hover::after { width: calc(100% - 16px); }
+.navbar__links a.active::after { width: calc(100% - 16px); }
+
+/* ── Scroll row arrow pulse ── */
+.scroll-row-btn {
+  transition: background 0.2s, box-shadow 0.2s, transform 0.2s cubic-bezier(0.34,1.56,.64,1), color 0.2s !important;
+}
+.scroll-row-btn:hover { transform: scale(1.14) !important; }
+
+/* ── Hero search input glow ring ── */
+.hero-search__btn {
+  transition: background 0.18s, box-shadow 0.18s, transform 0.18s !important;
+}
+.hero-search__btn:hover {
+  transform: scale(1.04) !important;
+  box-shadow: 0 4px 16px rgba(192,57,43,0.3) !important;
+}
+
+/* ── Page-level fade-in on route change ── */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+main, .catalog-page-wrap, .product-detail, .orders-page, .account-page, .checkout-page {
+  animation: page-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Skeleton shimmer for loading states ── */
+@keyframes skeleton-shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 37%, #f0f0f0 63%);
+  background-size: 1200px 100%;
+  animation: skeleton-shimmer 1.4s ease infinite;
+  border-radius: 6px;
+}
+
+/* ── Floating badge animation (cart count, notification) ── */
+@keyframes badge-pop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  70%  { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.navbar__cart-badge, .notif-badge {
+  animation: badge-pop 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+/* ── Floating WhatsApp/Chat button ── */
+@keyframes float-bob {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%       { transform: translateY(-5px) scale(1.02); }
+}
+.chatbot-fab { animation: float-bob 3.5s ease-in-out infinite; }
+.chatbot-fab--open { animation: none; }
+
+/* ── Map strip hover lift ── */
+.map-strip__btn {
+  transition: transform 0.2s cubic-bezier(0.34,1.46,.64,1), box-shadow 0.2s, background 0.2s !important;
+}
+.map-strip__btn:hover { transform: translateY(-2px) scale(1.04) !important; }
+
+/* ── Form input focus animation ── */
+input:focus, select:focus, textarea:focus {
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s !important;
+  transform: scale(1.005) !important;
+}
+
+/* ── Offer banner slide indicator dots ── */
+@keyframes dot-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50%       { transform: scale(1.4); opacity: 1; }
+}
+
+/* ── Health ticker smooth scroll ── */
+@keyframes tickerScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ── Section header link hover ── */
+.section__link {
+  transition: color 0.18s, gap 0.18s, transform 0.18s !important;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.section__link:hover { gap: 8px !important; color: var(--primary-dark) !important; }
+
+/* ── Product detail add-to-cart button ── */
+.pd-add-cart {
+  transition: transform 0.18s, box-shadow 0.18s, background 0.18s !important;
+}
+.pd-add-cart:not(:disabled):hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(192,57,43,0.32) !important;
+}
+.pd-add-cart:not(:disabled):active { transform: scale(0.97) !important; }
+
+/* ── Image zoom-in on product card hover (smoother) ── */
+.product-card__image-wrap {
+  overflow: hidden;
+}
+.product-card__image-wrap img {
+  transition: transform 0.5s cubic-bezier(0.23,1,.32,1) !important;
+}
+.product-card:hover .product-card__image-wrap img { transform: scale(1.07) !important; }
+
+/* ── Reduce all animations on prefers-reduced-motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Stagger delay utilities ── */
+.product-grid .product-card:nth-child(1), .category-grid .cat-tile:nth-child(1),
+.brand-scroll .brand-circle-card:nth-child(1), .pc-personal-care-grid .pc-cat-card:nth-child(1) { animation-delay: 0ms; }
+.product-grid .product-card:nth-child(2), .category-grid .cat-tile:nth-child(2),
+.brand-scroll .brand-circle-card:nth-child(2), .pc-personal-care-grid .pc-cat-card:nth-child(2) { animation-delay: 60ms; }
+.product-grid .product-card:nth-child(3), .category-grid .cat-tile:nth-child(3),
+.brand-scroll .brand-circle-card:nth-child(3), .pc-personal-care-grid .pc-cat-card:nth-child(3) { animation-delay: 120ms; }
+.product-grid .product-card:nth-child(4), .category-grid .cat-tile:nth-child(4),
+.brand-scroll .brand-circle-card:nth-child(4), .pc-personal-care-grid .pc-cat-card:nth-child(4) { animation-delay: 180ms; }
+.product-grid .product-card:nth-child(5), .category-grid .cat-tile:nth-child(5) { animation-delay: 240ms; }
+.product-grid .product-card:nth-child(6), .category-grid .cat-tile:nth-child(6) { animation-delay: 300ms; }
+.product-grid .product-card:nth-child(7) { animation-delay: 360ms; }
+.product-grid .product-card:nth-child(8) { animation-delay: 420ms; }
+
 /* ── Hero Search Bar ── */
 .hero-search {
   position: relative;
