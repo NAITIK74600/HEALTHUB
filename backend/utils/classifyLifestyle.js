@@ -8,7 +8,8 @@
  * prioritised rule-sets.
  *
  * Returns one of:
- *   'sexual-wellness' | 'skin-care' | 'hair-care' | 'baby-care' |
+ *   'sexual-wellness' | 'oral-care' | 'women-care' | 'men-grooming' |
+ *   'skin-care' | 'hair-care' | 'baby-care' |
  *   'fitness-health'  | 'vitamins-nutrition' | 'diabetes-care' |
  *   'supports-braces' | null
  *
@@ -30,6 +31,30 @@ const RULES = [
     /\b(contraceptive|oral pill|emergency pill|ipill|i-pill|unwanted|mifepristone|levonorgestrel|ulipristal)\b/.test(t) ||
     /\b(intimate|lubricant|lubricating gel|vaginal|kamagra|vigora|suhagra|caverta)\b/.test(t) ||
     /\b(erectile|sexual wellness|spermicide|female arousal|sex delay|delay spray|dotted condom|ultra thin condom|flavoured condom)\b/.test(t)
+  ],
+
+  // ── Oral Care ─────────────────────────────────────────────────────────────
+  ['oral-care', (t) =>
+    /\b(toothpaste|tooth paste|toothbrush|tooth brush|tooth powder|tooth gel|mouthwash|mouth wash|mouth rinse|dental floss|tongue cleaner|gum care|gum gel|gum paint|whitening strip)\b/.test(t) ||
+    /\b(colgate|sensodyne|pepsodent|closeup|close.?up|oral.?b|dabur red|himalaya toothpaste|listerine|meswak|promise tooth|spinbrush|himalaya gum|vicco vajradanti|patanjali dant)\b/.test(t) ||
+    /\b(gingivitis|plaque|tartar|fluoride|cavity protection|caries|enamel protect|mouth ulcer gel|stomatitis gel|clove oil dental|orajel)\b/.test(t)
+  ],
+
+  // ── Women Care ────────────────────────────────────────────────────────────
+  ['women-care', (t) =>
+    /\b(sanitary pad|sanitary napkin|panty liner|tampon|menstrual cup|feminine hygiene|vaginal wash|intimate wash|women hygiene|period pain)\b/.test(t) ||
+    /\b(pcod|pcos|menstruation|menorrhagia|dysmenorrhea|amenorrhea|endometriosis|leucorrhoea|white discharge|uterine|ovarian cyst)\b/.test(t) ||
+    /\b(pregnancy test|ovulation kit|prenatal vitamin|iron folic|lactation|breastfeeding|breast pump|maternity|postpartum)\b/.test(t) ||
+    /\b(sofy|whisper pad|stayfree|carefree pad|everteen|v wash|lactacyd|episoft|gynaecosid|regestrone|primolut|provera|duphaston|dienogest)\b/.test(t) ||
+    /\b(female hormone|progesterone|estrogen|oestrogen|norethisterone|ethinyl estradiol|clomiphene|letrozole|gynaecology)\b/.test(t)
+  ],
+
+  // ── Men Grooming ─────────────────────────────────────────────────────────
+  ['men-grooming', (t) =>
+    /\b(shaving cream|shaving foam|shaving gel|shaving brush|after.?shave|razor blade|razor cartridge|pre.?shave)\b/.test(t) ||
+    /\b(beard oil|beard balm|beard wax|beard conditioner|beard serum|beard growth|moustache|mustache wax)\b/.test(t) ||
+    /\b(brylcreem|gillette shav|park avenue shav|old spice shav|fogg men|axe deo men|wildstone|denver deo|engage men|beardo|ustraa|man arden|bombay shaving)\b/.test(t) ||
+    /\b(men.?s face wash|men.?s grooming|men moisturizer|men deodorant|men body wash|men talc|men perfume)\b/.test(t)
   ],
 
   // ── Baby Care ──────────────────────────────────────────────────────────────

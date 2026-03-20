@@ -19,11 +19,10 @@ const SLUG_ALIASES = {
   baby: 'baby-products',
   keimed: 'generic',
   'keimed-generics': 'generic',
-  // Personal-care tile slugs → real product category slugs
-  'oral-care':        'dental',
+  // Personal-care tile slugs
+  // oral-care / women-care / men-grooming → handled by LIFESTYLE_SLUGS (indexed lifestyle_category column)
+  // elderly-care → map to allopathic (no lifestyle column for this)
   'elderly-care':     'allopathic',
-  'women-care':       'fmcg',
-  'men-grooming':     'fmcg',
   // Typo/wrong-name aliases
   'sexual':           'sexual-wellness', // admin brand named "Sexual" instead of "Sexual Wellness"
 };
@@ -71,7 +70,8 @@ const PARENT_GROUPS = {
 // Lifestyle slugs — products carry an indexed lifestyle_category column set at import time.
 // Querying by this column is fast (single indexed equality) vs. N×LIKE scans.
 const LIFESTYLE_SLUGS = new Set([
-  'sexual-wellness', 'skin-care', 'hair-care', 'baby-care',
+  'sexual-wellness', 'oral-care', 'women-care', 'men-grooming',
+  'skin-care', 'hair-care', 'baby-care',
   'fitness-health', 'vitamins-nutrition', 'diabetes-care', 'supports-braces',
   'immunity-boosters',
 ]);
