@@ -20,10 +20,12 @@ const SLUG_ALIASES = {
   keimed: 'generic',
   'keimed-generics': 'generic',
   // Personal-care tile slugs → real product category slugs
-  'oral-care':    'dental',
-  'elderly-care': 'allopathic',
-  'women-care':   'fmcg',
-  'men-grooming': 'fmcg',
+  'oral-care':        'dental',
+  'elderly-care':     'allopathic',
+  'women-care':       'fmcg',
+  'men-grooming':     'fmcg',
+  // Typo/wrong-name aliases
+  'sexual':           'sexual-wellness', // admin brand named "Sexual" instead of "Sexual Wellness"
 };
 
 // ── Virtual parent-group slugs (used in CategoryNav) ────────────────────────

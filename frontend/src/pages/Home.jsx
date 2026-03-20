@@ -90,15 +90,15 @@ const PERSONAL_CARE_CATS = [
 // Maps personal_care brand slug → product ?category= slug
 // (brand slug is auto-derived from name, may differ from product category)
 const PC_BRAND_TO_CAT = {
-  'skin-care':      'skin-care',
-  'hair-care':      'hair-care',
-  'sexual-wellness':'sexual-wellness',
-  'oral-care':      'oral-care',    // aliased on backend → 'dental'
-  'elderly-care':   'elderly-care', // aliased on backend → 'allopathic'
-  'baby-care':      'baby-care',
-  'women-care':     'women-care',   // aliased on backend → 'fmcg'
-  'men-grooming':   'men-grooming', // aliased on backend → 'fmcg'
-  // fallback emoji lookup by label
+  'skin-care':        'skin-care',
+  'hair-care':        'hair-care',
+  'sexual-wellness':  'sexual-wellness',
+  'sexual':           'sexual-wellness', // DB brand named "Sexual" → correct slug
+  'oral-care':        'oral-care',    // aliased on backend → 'dental'
+  'elderly-care':     'elderly-care', // aliased on backend → 'allopathic'
+  'baby-care':        'baby-care',
+  'women-care':       'women-care',   // aliased on backend → 'fmcg'
+  'men-grooming':     'men-grooming', // aliased on backend → 'fmcg'
 };
 const PC_EMOJI_BY_LABEL = Object.fromEntries(PERSONAL_CARE_CATS.map(c => [c.label, c.emoji]));
 const PC_GRADIENT_BY_LABEL = Object.fromEntries(PERSONAL_CARE_CATS.map(c => [c.label, c.gradient]));
