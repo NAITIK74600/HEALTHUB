@@ -134,9 +134,11 @@ export default function AdminLayout() {
           <div style={{ flex: 1 }} />
           <NotificationBell adminMode={true} />
         </div>
-        <AdminErrorBoundary>
-          <Outlet />
-        </AdminErrorBoundary>
+        <div className="admin-main__body">
+          <AdminErrorBoundary>
+            <Outlet />
+          </AdminErrorBoundary>
+        </div>
       </main>
     </div>
   );

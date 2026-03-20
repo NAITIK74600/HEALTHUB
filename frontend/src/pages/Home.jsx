@@ -164,7 +164,9 @@ export default function Home() {
   const [ayurvedaBrands, setAyurvedaBrands] = useState([]);
   const [personalCareBrands, setPersonalCareBrands] = useState([]);
   const [countdown, setCountdown]   = useState({ h: 0, m: 0, s: 0 });
-  const [labTests, setLabTests]       = useState([]);
+  const [dealEndDate, setDealEndDate] = useState(null);
+  const [dealData, setDealData] = useState({ title: 'Up to 70% OFF', subtitle: 'On selected medicines, lab tests & health essentials. Don\'t miss out!', link: '/products' });
+  const [labTests, setLabTests]       = useState([]);;
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
@@ -201,7 +203,9 @@ export default function Home() {
   useEffect(() => {
     const tick = () => {
       const now = new Date();
-      const end = new Date(); end.setHours(23, 59, 59, 999);
+      const end = dealEndDate && dealEndDate > now
+        ? dealEndDate
+        : (() => { const e = new Date(); e.setHours(23, 59, 59, 999); return e; })();
       const diff = Math.max(0, end - now);
       setCountdown({
         h: Math.floor(diff / 3600000),
@@ -212,10 +216,22 @@ export default function Home() {
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [dealEndDate]);
 
   useEffect(() => {
-    getActiveOffers().then(r => setOffers(r.data.offers || [])).catch(() => {});
+    getActiveOffers().then(r => {
+      const allOffers = r.data.offers || [];
+      setOffers(allOffers);
+      const deal = allOffers.find(o => o.badge === 'deal_of_day');
+      if (deal) {
+        setDealData({
+          title: deal.title,
+          subtitle: deal.description || 'Don\'t miss out on today\'s special deal!',
+          link: deal.link || '/products',
+        });
+        if (deal.endDate) setDealEndDate(new Date(deal.endDate));
+      }
+    }).catch(() => {});
     getCategories().then(r => setCategories(r.data.categories || [])).catch(() => {});
     getProducts({ limit: 8, sort: 'newest' }).then(r => setNewArrivals(r.data.products || [])).catch(() => {});
     getProducts({ limit: 8, sort: 'price_asc' }).then(r => setFeatured(r.data.products || [])).catch(() => {});
@@ -471,10 +487,10 @@ export default function Home() {
             <div className="deal-card__badge"><BadgePercent size={16} /> Deal of the Day</div>
             <div className="deal-card__content">
               <div className="deal-card__text">
-                <h2>Up to <span>70% OFF</span></h2>
-                <p>On selected medicines, lab tests &amp; health essentials. Don't miss out!</p>
+                <h2>{dealData.title}</h2>
+                <p>{dealData.subtitle}</p>
                 <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1.2rem' }}>
-                  <Link to="/products" className="btn btn--white btn--lg ripple-btn" onClick={ripple}>Shop Now <ChevronRight size={16} /></Link>
+                  <Link to={dealData.link || '/products'} className="btn btn--white btn--lg ripple-btn" onClick={ripple}>Shop Now <ChevronRight size={16} /></Link>
                   <Link to="/lab" className="btn btn--outline-white btn--lg ripple-btn" onClick={ripple}>Book Lab Test</Link>
                 </div>
               </div>

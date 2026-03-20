@@ -37,6 +37,7 @@ const EMPTY = {
   title: '', description: '', imageUrl: '', startDate: '', endDate: '',
   isActive: true, freeDelivery: false, freeDeliveryMin: '',
   discountText: '', badgeColor: '#C0392B', priority: 0,
+  isDealOfDay: false,
 };
 
 const BADGE_COLORS = [
@@ -100,6 +101,7 @@ export default function AdminOffers() {
         link: computedLink,
         freeDeliveryMin: form.freeDeliveryMin ? Number(form.freeDeliveryMin) : 0,
         priority: Number(form.priority) || 0,
+        badge: form.isDealOfDay ? 'deal_of_day' : '',
       };
       if (editing) {
         await updateOffer(editing, payload);
@@ -175,6 +177,7 @@ export default function AdminOffers() {
       discountText: offer.discountText || '',
       badgeColor: offer.badgeColor || '#C0392B',
       priority: offer.priority || 0,
+      isDealOfDay: offer.badge === 'deal_of_day',
     });
     setLinkType(parsed.type);
     setLinkCat(parsed.cat);
@@ -412,6 +415,16 @@ export default function AdminOffers() {
             onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))}
           />
           Active (show on homepage)
+        </label>
+
+        <label className="checkbox-label" style={{ background: '#fef9c3', border: '1.5px solid #fde047', borderRadius: 8, padding: '8px 12px', gap: 8 }}>
+          <input
+            type="checkbox"
+            checked={form.isDealOfDay}
+            onChange={e => setForm(f => ({ ...f, isDealOfDay: e.target.checked }))}
+          />
+          <span>⭐ Feature as <strong>"Deal of the Day"</strong> on homepage</span>
+          <span style={{ fontSize: '0.7rem', color: '#92400e', marginLeft: 4 }}>(Title &amp; description show in the red deal card. Set End Date = deal expiry for the countdown timer.)</span>
         </label>
 
         <label className="checkbox-label">
