@@ -75,16 +75,33 @@ const SHOP_CATS = [
 ];
 
 // Personal-care category tiles matching the screenshot style
+// Used as fallback when no DB brands are configured for personal_care category.
 const PERSONAL_CARE_CATS = [
   { label: 'Skin Care',       slug: 'skin-care',       gradient: 'linear-gradient(135deg,#8BC34A,#5D9E3F)', emoji: '✨' },
   { label: 'Hair Care',       slug: 'hair-care',       gradient: 'linear-gradient(135deg,#4CAF50,#2E7D32)', emoji: '💆' },
   { label: 'Sexual Wellness', slug: 'sexual-wellness', gradient: 'linear-gradient(135deg,#FF9800,#E65100)', emoji: '❤️' },
-  { label: 'Oral Care',       slug: 'dental',          gradient: 'linear-gradient(135deg,#E57373,#C62828)', emoji: '🦷' },
-  { label: 'Elderly Care',    slug: 'allopathic',      gradient: 'linear-gradient(135deg,#29B6F6,#0277BD)', emoji: '👴' },
+  { label: 'Oral Care',       slug: 'oral-care',       gradient: 'linear-gradient(135deg,#E57373,#C62828)', emoji: '🦷' },
+  { label: 'Elderly Care',    slug: 'elderly-care',    gradient: 'linear-gradient(135deg,#29B6F6,#0277BD)', emoji: '👴' },
   { label: 'Baby Care',       slug: 'baby-care',       gradient: 'linear-gradient(135deg,#9C27B0,#6A1B9A)', emoji: '🍼' },
-  { label: 'Women Care',      slug: 'skin-care',       gradient: 'linear-gradient(135deg,#EC407A,#AD1457)', emoji: '🌸' },
-  { label: 'Men Grooming',    slug: 'hair-care',       gradient: 'linear-gradient(135deg,#607D8B,#37474F)', emoji: '💈' },
+  { label: 'Women Care',      slug: 'women-care',      gradient: 'linear-gradient(135deg,#EC407A,#AD1457)', emoji: '🌸' },
+  { label: 'Men Grooming',    slug: 'men-grooming',    gradient: 'linear-gradient(135deg,#607D8B,#37474F)', emoji: '💈' },
 ];
+
+// Maps personal_care brand slug → product ?category= slug
+// (brand slug is auto-derived from name, may differ from product category)
+const PC_BRAND_TO_CAT = {
+  'skin-care':      'skin-care',
+  'hair-care':      'hair-care',
+  'sexual-wellness':'sexual-wellness',
+  'oral-care':      'oral-care',    // aliased on backend → 'dental'
+  'elderly-care':   'elderly-care', // aliased on backend → 'allopathic'
+  'baby-care':      'baby-care',
+  'women-care':     'women-care',   // aliased on backend → 'fmcg'
+  'men-grooming':   'men-grooming', // aliased on backend → 'fmcg'
+  // fallback emoji lookup by label
+};
+const PC_EMOJI_BY_LABEL = Object.fromEntries(PERSONAL_CARE_CATS.map(c => [c.label, c.emoji]));
+const PC_GRADIENT_BY_LABEL = Object.fromEntries(PERSONAL_CARE_CATS.map(c => [c.label, c.gradient]));
 
 const TRUST_FEATURES = [
   { icon: <Truck size={22} />,       bg: '#FEF2F2', color: '#C0392B', title: 'Free Delivery',           desc: 'On every order, every day' },
@@ -375,10 +392,26 @@ export default function Home() {
             <Link to="/products" className="section__link">See all <ChevronRight size={14} /></Link>
           </div>
           <div className="personal-care-grid">
-            {PERSONAL_CARE_CATS.map((cat, idx) => (
+            {/* Use DB brands when configured, fall back to hardcoded PERSONAL_CARE_CATS */}
+            {(personalCareBrands.length > 0
+              ? personalCareBrands
+                  .filter(b => b.isActive)
+                  .sort((a, b) => a.ord - b.ord)
+                  .map(b => ({
+                    label:    b.name,
+                    slug:     PC_BRAND_TO_CAT[b.slug] || b.slug,
+                    gradient: b.gradient || PC_GRADIENT_BY_LABEL[b.name] || 'linear-gradient(135deg,#8BC34A,#5D9E3F)',
+                    logoUrl:  b.logoUrl || null,
+                    emoji:    PC_EMOJI_BY_LABEL[b.name] || '💊',
+                  }))
+              : PERSONAL_CARE_CATS
+            ).map((cat, idx) => (
               <Link key={cat.slug + cat.label} to={`/products?category=${cat.slug}`} className="pc-cat-card ripple-btn" onClick={ripple} style={{ animationDelay: `${idx * 0.07}s` }}>
                 <div className="pc-cat-card__bg" style={{ background: cat.gradient }} />
-                <span className="pc-cat-card__emoji" style={{ fontSize: '2rem', position: 'absolute', top: '28%', left: '50%', transform: 'translateX(-50%)' }}>{cat.emoji}</span>
+                {cat.logoUrl
+                  ? <img src={resolveImageUrl(cat.logoUrl)} alt={cat.label} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit', opacity: 0.92 }} />
+                  : <span className="pc-cat-card__emoji" style={{ fontSize: '2rem', position: 'absolute', top: '28%', left: '50%', transform: 'translateX(-50%)' }}>{cat.emoji}</span>
+                }
                 <span className="pc-cat-card__label">{cat.label}</span>
               </Link>
             ))}

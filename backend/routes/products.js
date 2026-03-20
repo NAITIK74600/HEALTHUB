@@ -19,6 +19,11 @@ const SLUG_ALIASES = {
   baby: 'baby-products',
   keimed: 'generic',
   'keimed-generics': 'generic',
+  // Personal-care tile slugs → real product category slugs
+  'oral-care':    'dental',
+  'elderly-care': 'allopathic',
+  'women-care':   'fmcg',
+  'men-grooming': 'fmcg',
 };
 
 // ── Virtual parent-group slugs (used in CategoryNav) ────────────────────────

@@ -14,15 +14,16 @@ const CAT_COLOR = {
 };
 
 // Default gradients for each personal care tile (fallback)
+// slug = the ?category= slug used on the products page (may differ from brand slug)
 const PC_PRESETS = [
   { label: 'Skin Care',       slug: 'skin-care',       gradient: 'linear-gradient(135deg,#8BC34A,#5D9E3F)' },
   { label: 'Hair Care',       slug: 'hair-care',       gradient: 'linear-gradient(135deg,#4CAF50,#2E7D32)' },
   { label: 'Sexual Wellness', slug: 'sexual-wellness', gradient: 'linear-gradient(135deg,#FF9800,#E65100)' },
-  { label: 'Oral Care',       slug: 'dental',          gradient: 'linear-gradient(135deg,#E57373,#C62828)' },
-  { label: 'Elderly Care',    slug: 'caps-tabs',       gradient: 'linear-gradient(135deg,#29B6F6,#0277BD)' },
+  { label: 'Oral Care',       slug: 'oral-care',       gradient: 'linear-gradient(135deg,#E57373,#C62828)' },
+  { label: 'Elderly Care',    slug: 'elderly-care',    gradient: 'linear-gradient(135deg,#29B6F6,#0277BD)' },
   { label: 'Baby Care',       slug: 'baby-care',       gradient: 'linear-gradient(135deg,#9C27B0,#6A1B9A)' },
-  { label: 'Women Care',      slug: 'fmcg',            gradient: 'linear-gradient(135deg,#EC407A,#AD1457)' },
-  { label: 'Men Grooming',    slug: 'fmcg',            gradient: 'linear-gradient(135deg,#607D8B,#37474F)' },
+  { label: 'Women Care',      slug: 'women-care',      gradient: 'linear-gradient(135deg,#EC407A,#AD1457)' },
+  { label: 'Men Grooming',    slug: 'men-grooming',    gradient: 'linear-gradient(135deg,#607D8B,#37474F)' },
 ];
 
 export default function AdminBrands() {
