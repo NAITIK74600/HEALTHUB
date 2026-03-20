@@ -8,6 +8,7 @@ import { Upload, Loader, MapPin, Clock, House, Store, Share2, Navigation, Ticket
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { createOrder, verifyPayment } from '../api/orders';
+import { getGeoPosition, GEO_ERROR_MESSAGES } from '../utils/geo';
 import { validateCoupon } from '../api/coupons';
 import api from '../api/axios';
 import { uploadPrescription } from '../api/upload';
@@ -104,53 +105,39 @@ export default function Checkout() {
     setCouponResult(null);
   };
 
-  const handleAutoFillLocation = () => {
-    if (!navigator.geolocation) { toast.error('GPS not supported by your browser.'); return; }
+  const handleAutoFillLocation = async () => {
     setLocLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      async ({ coords: { latitude: lat, longitude: lng } }) => {
-        try {
-          // Call backend proxy — server-side Nominatim allows custom User-Agent
-          // which browsers block, causing direct calls to fail silently.
-          const { data } = await api.get('/geocode/reverse', { params: { lat, lng } });
-          const { line1, line2, city, pincode } = data;
-
-          if (!line1 && !city) throw new Error('Empty address returned');
-
-          if (line1)                              setValue('line1',   line1,   { shouldValidate: true });
-          if (line2)                              setValue('line2',   line2);
-          if (city)                               setValue('city',    city,    { shouldValidate: true });
-          if (pincode && /^\d{6}$/.test(pincode)) setValue('pincode', pincode, { shouldValidate: true });
-          toast.success('✅ Address auto-filled from your location!');
-        } catch (e) {
-          console.error('Reverse geocode failed', e);
-          const msg = e.response?.data?.message || 'Could not fetch address. Please fill in your address manually.';
-          toast.error(msg);
-        } finally { setLocLoading(false); }
-      },
-      (err) => {
-        setLocLoading(false);
-        if (err.code === 1)      toast.error('Location access denied. Please allow GPS in your browser settings.');
-        else if (err.code === 2) toast.error('Location unavailable. Check your GPS / network signal.');
-        else                     toast.error('Location request timed out. Please try again.');
-      },
-      { timeout: 20000, enableHighAccuracy: true, maximumAge: 0 }
-    );
+    const { position, error } = await getGeoPosition();
+    if (error) {
+      setLocLoading(false);
+      toast.error(GEO_ERROR_MESSAGES[error]);
+      return;
+    }
+    const { latitude: lat, longitude: lng } = position.coords;
+    try {
+      const { data } = await api.get('/geocode/reverse', { params: { lat, lng } });
+      const { line1, line2, city, pincode } = data;
+      if (!line1 && !city) throw new Error('Empty address returned');
+      if (line1)                              setValue('line1',   line1,   { shouldValidate: true });
+      if (line2)                              setValue('line2',   line2);
+      if (city)                               setValue('city',    city,    { shouldValidate: true });
+      if (pincode && /^\d{6}$/.test(pincode)) setValue('pincode', pincode, { shouldValidate: true });
+      toast.success('✅ Address auto-filled from your location!');
+    } catch (e) {
+      console.error('Reverse geocode failed', e);
+      toast.error(e.response?.data?.message || 'Could not fetch address. Please fill in your address manually.');
+    } finally { setLocLoading(false); }
   };
 
-  const handleShareLiveLocation = () => {
-    if (!navigator.geolocation) { toast.error('GPS not supported.'); return; }
-    navigator.geolocation.getCurrentPosition(
-      ({ coords: { latitude: lat, longitude: lng } }) => {
-        const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
-        const waMsg   = encodeURIComponent(`📍 My current location for delivery:\n${mapsUrl}`);
-        const waUrl   = `https://wa.me/919990165925?text=${waMsg}`;
-        window.open(waUrl, '_blank', 'noopener,noreferrer');
-        toast.success('Opening WhatsApp to share your location with us!');
-      },
-      () => toast.error('Could not get location. Allow GPS and try again.'),
-      { timeout: 10000, enableHighAccuracy: true }
-    );
+  const handleShareLiveLocation = async () => {
+    const { position, error } = await getGeoPosition({ timeout: 10000 });
+    if (error) { toast.error(GEO_ERROR_MESSAGES[error]); return; }
+    const { latitude: lat, longitude: lng } = position.coords;
+    const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+    const waMsg   = encodeURIComponent(`📍 My current location for delivery:\n${mapsUrl}`);
+    const waUrl   = `https://wa.me/919990165925?text=${waMsg}`;
+    window.open(waUrl, '_blank', 'noopener,noreferrer');
+    toast.success('Opening WhatsApp to share your location with us!');
   };
 
   if (items.length === 0) {

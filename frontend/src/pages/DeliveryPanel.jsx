@@ -6,6 +6,7 @@ import {
   pickupOrder, deliveryVerifyOtp
 } from '../api/delivery';
 import toast from 'react-hot-toast';
+import { getGeoPosition, GEO_ERROR_MESSAGES } from '../utils/geo';
 import {
   Truck, MapPin, Package, CheckCircle, Clock, AlertCircle,
   Power, PowerOff, Navigation, History, ChevronRight, Shield,
@@ -181,18 +182,14 @@ export default function DeliveryPanel() {
     } finally { setToggling(false); }
   };
 
-  const handleShareLocation = () => {
-    if (!navigator.geolocation) { toast.error('GPS not supported.'); return; }
-    navigator.geolocation.getCurrentPosition(
-      async ({ coords: { latitude: lat, longitude: lng } }) => {
-        try {
-          await updateLocation(lat, lng);
-          toast.success('Location updated!');
-        } catch { toast.error('Failed to update location.'); }
-      },
-      () => toast.error('Location access denied.'),
-      { timeout: 15000, enableHighAccuracy: true }
-    );
+  const handleShareLocation = async () => {
+    const { position, error } = await getGeoPosition({ timeout: 15000 });
+    if (error) { toast.error(GEO_ERROR_MESSAGES[error]); return; }
+    try {
+      const { latitude: lat, longitude: lng } = position.coords;
+      await updateLocation(lat, lng);
+      toast.success('Location updated!');
+    } catch { toast.error('Failed to update location.'); }
   };
 
   const handlePickup = async (orderId) => {

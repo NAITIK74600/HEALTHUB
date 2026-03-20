@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
-import { getOrderById, downloadReceipt, resendReceipt } from '../api/orders';
-import { shareLocation } from '../api/orders';
+import { getOrderById, downloadReceipt, resendReceipt, shareLocation } from '../api/orders';
+import { getGeoPosition, GEO_ERROR_MESSAGES } from '../utils/geo';
 import OrderStatusBadge from '../components/OrderStatusBadge';
 import toast from 'react-hot-toast';
 
@@ -27,40 +27,30 @@ export default function OrderDetail() {
   const [locSharing, setLocSharing] = useState(false);
   const [locShared, setLocShared] = useState(false);
 
-  const handleShareLocation = () => {
-    if (!navigator.geolocation) {
-      toast.error('Your browser does not support GPS location.');
+  const handleShareLocation = async () => {
+    setLocSharing(true);
+    const { position, error } = await getGeoPosition({ timeout: 10000, maximumAge: 60000 });
+    if (error) {
+      setLocSharing(false);
+      toast.error(GEO_ERROR_MESSAGES[error]);
       return;
     }
-    setLocSharing(true);
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const { latitude: lat, longitude: lng } = pos.coords;
-          // Reverse-geocode using free Nominatim API (no key needed)
-          let address = '';
-          try {
-            const r = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
-            );
-            const d = await r.json();
-            address = d.display_name || '';
-          } catch { /* non-critical */ }
-          await shareLocation(id, { lat, lng, address });
-          setLocShared(true);
-          toast.success('Location shared with delivery team! 📍');
-        } catch {
-          toast.error('Could not share location. Try again.');
-        } finally {
-          setLocSharing(false);
-        }
-      },
-      () => {
-        setLocSharing(false);
-        toast.error('Location access denied. Please allow GPS in browser settings.');
-      },
-      { timeout: 10000, maximumAge: 60000 }
-    );
+    try {
+      const { latitude: lat, longitude: lng } = position.coords;
+      let address = '';
+      try {
+        const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+        const d = await r.json();
+        address = d.display_name || '';
+      } catch { /* non-critical */ }
+      await shareLocation(id, { lat, lng, address });
+      setLocShared(true);
+      toast.success('Location shared with delivery team! 📍');
+    } catch {
+      toast.error('Could not share location. Try again.');
+    } finally {
+      setLocSharing(false);
+    }
   };
 
   const handleDownloadReceipt = async () => {

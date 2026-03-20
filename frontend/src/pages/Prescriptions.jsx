@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import { Upload, Trash2, Eye, FileText, CheckCircle, XCircle, Clock, MapPin, User, Sparkles, AlignLeft, LocateFixed } from 'lucide-react';
 import api from '../api/axios';
+import { getGeoPosition, GEO_ERROR_MESSAGES } from '../utils/geo';
 
 function statusBadge(status) {
   const map = {
@@ -60,35 +61,30 @@ export default function Prescriptions() {
     }
   }, [user]);
 
-  const handleAutoFillLocation = () => {
-    if (!navigator.geolocation) { toast.error('GPS not supported by your browser.'); return; }
+  const handleAutoFillLocation = async () => {
     setLocLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      async ({ coords: { latitude: lat, longitude: lng } }) => {
-        try {
-          const { data } = await api.get('/geocode/reverse', { params: { lat, lng } });
-          const { line1, line2, city, pincode } = data;
-          if (!line1 && !city) throw new Error('Empty address returned');
-          setAddr(a => ({
-            ...a,
-            line1: line1 || a.line1,
-            line2: line2 || a.line2,
-            city:  city  || a.city,
-            pincode: (pincode && /^\d{6}$/.test(pincode)) ? pincode : a.pincode,
-          }));
-          toast.success('\u2705 Address auto-filled from your location!');
-        } catch (e) {
-          toast.error(e.response?.data?.message || 'Could not fetch address. Please fill manually.');
-        } finally { setLocLoading(false); }
-      },
-      (err) => {
-        setLocLoading(false);
-        if (err.code === 1)      toast.error('Location access denied. Allow GPS in browser settings.');
-        else if (err.code === 2) toast.error('Location unavailable. Check GPS / network.');
-        else                     toast.error('Location request timed out.');
-      },
-      { timeout: 20000, enableHighAccuracy: true, maximumAge: 0 }
-    );
+    const { position, error } = await getGeoPosition();
+    if (error) {
+      setLocLoading(false);
+      toast.error(GEO_ERROR_MESSAGES[error]);
+      return;
+    }
+    const { latitude: lat, longitude: lng } = position.coords;
+    try {
+      const { data } = await api.get('/geocode/reverse', { params: { lat, lng } });
+      const { line1, line2, city, pincode } = data;
+      if (!line1 && !city) throw new Error('Empty address returned');
+      setAddr(a => ({
+        ...a,
+        line1: line1 || a.line1,
+        line2: line2 || a.line2,
+        city:  city  || a.city,
+        pincode: (pincode && /^\d{6}$/.test(pincode)) ? pincode : a.pincode,
+      }));
+      toast.success('✅ Address auto-filled from your location!');
+    } catch (e) {
+      toast.error(e.response?.data?.message || 'Could not fetch address. Please fill manually.');
+    } finally { setLocLoading(false); }
   };
 
   const toggleProfileAddr = () => {
