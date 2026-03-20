@@ -41,7 +41,7 @@ async function ensureCoreSchema() {
       requires_prescription TINYINT(1) NOT NULL DEFAULT 0,
       images_json JSON NULL,
       expiry_date DATETIME NULL,
-      batch_number VARCHAR(50) NOT NULL DEFAULT '',
+      batch_number VARCHAR(100) NOT NULL DEFAULT '',,
       salt VARCHAR(500) NOT NULL DEFAULT '',
       side_effects VARCHAR(1000) NOT NULL DEFAULT '',
       is_active TINYINT(1) NOT NULL DEFAULT 1,
@@ -400,6 +400,20 @@ async function ensureCoreSchema() {
     ALTER TABLE products ADD COLUMN secondary_category_ids JSON NULL DEFAULT NULL
   `).catch(() => {});
 
+  // ── Performance & data-integrity migrations ───────────────────────────────────────────
+  // Fix batch_number width: import allows 100 chars, CREATE TABLE had VARCHAR(50)
+  await execute(`ALTER TABLE products MODIFY COLUMN batch_number VARCHAR(100) NOT NULL DEFAULT ''`).catch(() => {});
+  // Speed up GET /products?brand= filter and GET /brands group-by
+  await execute(`CREATE INDEX idx_products_brand ON products (brand(50))`).catch(() => {});
+  // Speed up admin order list filters (status, payment_status)
+  await execute(`CREATE INDEX idx_orders_status_payment ON orders (status, payment_status)`).catch(() => {});
+  // Speed up user order history with status filter
+  await execute(`CREATE INDEX idx_orders_user_status ON orders (user_id, status)`).catch(() => {});
+  // Speed up order_items → product lookups
+  await execute(`CREATE INDEX idx_order_items_product ON order_items (product_id)`).catch(() => {});
+  // Prevent duplicate reviews: one review per user per product
+  await execute(`ALTER TABLE reviews ADD UNIQUE KEY uq_reviews_user_product (user_id, product_id)`).catch(() => {});
+
   await autoSeedBaseCategories();
   await seedDefaultLabTests();
   await ensureSuperAdmin();
@@ -439,19 +453,16 @@ async function autoSeedBaseCategories() {
     { name: 'Other',                slug: 'other',            ord: 99 },
   ];
 
-  for (const cat of CATS) {
-    const rows = await query('SELECT id FROM categories WHERE slug = ? LIMIT 1', [cat.slug]);
-    if (rows.length) {
-      await execute(
-        'UPDATE categories SET name = ?, ord = ?, is_deleted = 0 WHERE slug = ?',
-        [cat.name, cat.ord, cat.slug]
-      );
-    } else {
-      await execute(
-        'INSERT INTO categories (name, slug, ord, is_deleted) VALUES (?, ?, ?, 0)',
-        [cat.name, cat.slug, cat.ord]
-      );
-    }
+  // Batch upsert all canonical categories in a single SQL round-trip
+  // instead of 52+ sequential SELECT+UPDATE/INSERT queries
+  if (CATS.length) {
+    const placeholders = CATS.map(() => '(?, ?, ?, 0)').join(', ');
+    const vals = CATS.flatMap(c => [c.name, c.slug, c.ord]);
+    await execute(
+      `INSERT INTO categories (name, slug, ord, is_deleted) VALUES ${placeholders}
+       ON DUPLICATE KEY UPDATE name = VALUES(name), ord = VALUES(ord), is_deleted = 0`,
+      vals
+    );
   }
 
   // Soft-delete lifestyle slugs that were mistakenly added as DB categories

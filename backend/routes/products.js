@@ -554,16 +554,19 @@ function _col(headers, ...aliases) {
   return -1;
 }
 
-// CSV type → category slug
+// CSV type → category slug (MUST match seeded DB category slugs exactly)
+// Run: SELECT slug FROM categories WHERE is_deleted = 0 ORDER BY ord to see all valid slugs.
 const _TYPE_SLUG = {
-  allopathy: 'caps-tabs', allopathic: 'caps-tabs',
-  ayurvedic: 'ayurvedic', ayurveda: 'ayurvedic',
-  homeopathy: 'caps-tabs',
-  unani: 'herbal', siddha: 'herbal',
-  surgical: 'surgicals', otc: 'otc',
-  cosmetic: 'cosmetics', cosmetics: 'cosmetics',
-  nutritional: 'nutrition', nutrition: 'nutrition',
-  dental: 'dental', baby: 'baby-products', vaccine: 'vaccines',
+  allopathy:   'caps-tabs',  allopathic:  'caps-tabs',
+  ayurvedic:   'ayurvedic',  ayurveda:    'ayurvedic',
+  homeopathy:  'homeopathy',                // FIX: was 'caps-tabs' — homeopathy is a seeded slug
+  unani:       'herbal',     siddha:       'herbal',
+  surgical:    'surgicals',  otc:          'otc',
+  cosmetic:    'fmcg',       cosmetics:    'fmcg',      // FIX: 'cosmetics' not a DB slug → fmcg
+  nutritional: 'nutrition',  nutrition:    'nutrition',
+  dental:      'dental',
+  baby:        'fmcg',                                  // FIX: 'baby-products' not a DB slug → fmcg
+  vaccine:     'vaccines',
 };
 
 router.post(
@@ -803,14 +806,23 @@ router.get('/:id/related', [param('id').isInt({ min: 1 })], async (req, res, nex
     const { brand, category_id } = rows[0];
     const promises = [];
 
-    // Brand-related (same brand, different product)
+    // Fisher-Yates shuffle — runs in Node.js, avoids ORDER BY RAND() full-table scan in MySQL
+    function shuffleArr(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // Brand-related: fetch 30 recent by PK order (fast index scan), shuffle in JS
     if (brand) {
       promises.push(
         query(
           `SELECT p.*, c.id AS category_id, c.name AS category_name, c.slug AS category_slug
            FROM products p LEFT JOIN categories c ON c.id = p.category_id
            WHERE p.brand = ? AND p.id <> ? AND p.is_deleted = 0 AND p.is_active = 1
-           ORDER BY RAND() LIMIT 20`,
+           ORDER BY p.created_at DESC LIMIT 30`,
           [brand, productId]
         )
       );
@@ -818,14 +830,14 @@ router.get('/:id/related', [param('id').isInt({ min: 1 })], async (req, res, nex
       promises.push(Promise.resolve([]));
     }
 
-    // Category-related (same category, different product)
+    // Category-related: same approach — 30 recent, JS-shuffled
     if (category_id) {
       promises.push(
         query(
           `SELECT p.*, c.id AS category_id, c.name AS category_name, c.slug AS category_slug
            FROM products p LEFT JOIN categories c ON c.id = p.category_id
            WHERE p.category_id = ? AND p.id <> ? AND p.is_deleted = 0 AND p.is_active = 1
-           ORDER BY RAND() LIMIT 20`,
+           ORDER BY p.created_at DESC LIMIT 30`,
           [category_id, productId]
         )
       );
@@ -835,13 +847,17 @@ router.get('/:id/related', [param('id').isInt({ min: 1 })], async (req, res, nex
 
     const [brandRows, categoryRows] = await Promise.all(promises);
 
+    // Shuffle in JS then trim to 10 each
+    shuffleArr(brandRows);
+    shuffleArr(categoryRows);
+
     // Deduplicate: remove from category list any that appear in brand list
     const brandIds = new Set(brandRows.map(r => r.id));
     const dedupedCategory = categoryRows.filter(r => !brandIds.has(r.id));
 
     res.json({
-      brandRelated: brandRows.map(mapProduct),
-      categoryRelated: dedupedCategory.map(mapProduct),
+      brandRelated:    brandRows.slice(0, 10).map(mapProduct),
+      categoryRelated: dedupedCategory.slice(0, 10).map(mapProduct),
     });
   } catch (err) { next(err); }
 });
@@ -1097,6 +1113,14 @@ router.patch('/bulk-update', requireAuth, requireAdmin, async (req, res, next) =
     if (!setParts.length) return res.status(400).json({ message: 'Nothing to update.' });
 
     if (applyToAll) {
+      // Safety guard: require at least one meaningful filter to prevent accidental mass updates
+      const hasMeaningfulFilter = filterParams.category || filterParams.search || filterParams.brand
+        || filterParams.status || filterParams.stockFilter;
+      if (!hasMeaningfulFilter) {
+        return res.status(422).json({
+          message: 'applyToAll requires at least one filter (category, search, brand, status, or stockFilter) to prevent unintended mass updates.',
+        });
+      }
       const categoryIds = await resolveCategoryIds(filterParams.category);
       const { whereSql, values: whereValues } = buildProductWhere({ admin: true, params: filterParams, categoryIds: categoryIds || [] });
       // Direct update using the same WHERE clause
@@ -1139,6 +1163,14 @@ router.patch('/bulk-discount', requireAuth, requireAdmin, async (req, res, next)
     let modified = 0;
 
     if (applyToAll) {
+      // Safety guard: require at least one meaningful filter to prevent accidental mass price changes
+      const hasMeaningfulFilter = filterParams.category || filterParams.search || filterParams.brand
+        || filterParams.status || filterParams.stockFilter;
+      if (!hasMeaningfulFilter) {
+        return res.status(422).json({
+          message: 'applyToAll requires at least one filter (category, search, brand, status, or stockFilter) to prevent mass price changes.',
+        });
+      }
       const categoryIds = await resolveCategoryIds(filterParams.category);
       const { whereSql, values } = buildProductWhere({ admin: true, params: filterParams, categoryIds: categoryIds || [] });
       // Use query() (pool.query, NOT prepared statement execute) for arithmetic UPDATE

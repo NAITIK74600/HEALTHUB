@@ -49,14 +49,31 @@ router.post('/', requireAuth, requireAdmin, [
   } catch (err) { next(err); }
 });
 
-router.put('/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })], async (req, res, next) => {
+router.put('/:id', requireAuth, requireAdmin, [
+  param('id').isInt({ min: 1 }),
+  body('name').optional().trim().isLength({ min: 1, max: 150 }),
+  body('icon').optional().trim().isLength({ max: 255 }),
+  body('order').optional().isInt({ min: 0 }).toInt(),
+], async (req, res, next) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+
     const rows = await query('SELECT * FROM categories WHERE id = ? AND is_deleted = 0 LIMIT 1', [req.params.id]);
     if (!rows.length) return res.status(404).json({ message: 'Category not found.' });
 
     const current = rows[0];
     const nextName = req.body.name !== undefined ? String(req.body.name).trim() : current.name;
     const nextSlug = req.body.name ? slugify(req.body.name) : current.slug;
+
+    // Return 409 instead of raw DB 500 on slug collision
+    if (nextSlug !== current.slug) {
+      const collision = await query(
+        'SELECT id FROM categories WHERE slug = ? AND id <> ? LIMIT 1',
+        [nextSlug, req.params.id]
+      );
+      if (collision.length) return res.status(409).json({ message: 'A category with that name already exists.' });
+    }
 
     await execute(
       'UPDATE categories SET name = ?, slug = ?, icon = ?, ord = ? WHERE id = ?',
@@ -76,6 +93,21 @@ router.put('/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })], a
 
 router.delete('/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })], async (req, res, next) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+
+    // Prevent orphaning products: block delete if any non-deleted products are assigned here
+    const [countRow] = await query(
+      'SELECT COUNT(*) AS cnt FROM products WHERE category_id = ? AND is_deleted = 0',
+      [req.params.id]
+    );
+    const productCount = Number(countRow?.cnt || 0);
+    if (productCount > 0) {
+      return res.status(409).json({
+        message: `Cannot delete: ${productCount} product(s) are assigned to this category. Reassign them first.`,
+      });
+    }
+
     const result = await execute('UPDATE categories SET is_deleted = 1 WHERE id = ? AND is_deleted = 0', [req.params.id]);
     if (!result.affectedRows) return res.status(404).json({ message: 'Category not found.' });
     res.json({ message: 'Category deleted.' });
