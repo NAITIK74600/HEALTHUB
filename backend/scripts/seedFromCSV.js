@@ -21,6 +21,7 @@ const fs       = require('fs');
 const path     = require('path');
 const { parse } = require('csv-parse');
 const mysql    = require('mysql2/promise');
+const { classifyLifestyle } = require('../utils/classifyLifestyle');
 
 // ── CLI args ──────────────────────────────────────────────────────────────────
 function arg(flag) {
@@ -175,15 +176,20 @@ async function main() {
         const slug   = getCategorySlug(row.pack_size_label, row.type);
         const catId  = catMap[slug] || catMap['other'];
         const productSlug = makeSlug(row.name, row.id);
+        const nameStr  = String(row.name || '').trim().substring(0, 200);
+        const brandStr = String(row.manufacturer_name || '').trim().substring(0, 100);
+        const saltStr  = String(row.salt_composition || '').trim().substring(0, 500);
+        const lifestyle = classifyLifestyle(nameStr, brandStr, saltStr);
 
         await conn.execute(
           `INSERT INTO products
-             (code, name, slug, category_id, brand, description, pack, mrp, price,
-              stock, requires_prescription, salt, side_effects, is_active, is_deleted)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+             (code, name, slug, category_id, brand, company, description, pack, mrp, price,
+              stock, requires_prescription, salt, side_effects, is_active, lifestyle_category, is_deleted)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
            ON DUPLICATE KEY UPDATE
              name = VALUES(name),
              brand = VALUES(brand),
+             company = VALUES(company),
              description = VALUES(description),
              pack = VALUES(pack),
              mrp = VALUES(mrp),
@@ -191,22 +197,25 @@ async function main() {
              salt = VALUES(salt),
              side_effects = VALUES(side_effects),
              requires_prescription = VALUES(requires_prescription),
+             lifestyle_category = VALUES(lifestyle_category),
              is_active = VALUES(is_active)`,
           [
             String(row.id || '').trim().substring(0, 50),       // code
-            String(row.name || '').trim().substring(0, 200),    // name
+            nameStr,                                             // name
             productSlug,                                         // slug
             catId,                                               // category_id
-            String(row.manufacturer_name || '').trim().substring(0, 100), // brand
-            String(row.medicine_desc || '').trim() || null,     // description (full TEXT, no truncation)
-            String(row.pack_size_label || '').trim().substring(0, 100),   // pack
+            brandStr,                                            // brand
+            brandStr,                                            // company (same as manufacturer)
+            String(row.medicine_desc || '').trim() || null,     // description
+            String(row.pack_size_label || '').trim().substring(0, 100), // pack
             price,                                               // mrp
             price,                                               // price
             50,                                                  // stock default
-            /prescription|rx\b/i.test(String(row.medicine_desc || '') + String(row.name || '')) ? 1 : 0, // requires_prescription
-            String(row.salt_composition || '').trim().substring(0, 500),  // salt
-            String(row.side_effects || '').trim().substring(0, 1000),     // side_effects
+            /prescription|rx\b/i.test(String(row.medicine_desc || '') + String(row.name || '')) ? 1 : 0,
+            saltStr,                                             // salt
+            String(row.side_effects || '').trim().substring(0, 1000),   // side_effects
             isDiscontinued ? 0 : 1,                             // is_active
+            lifestyle,                                           // lifestyle_category
           ]
         );
         inserted++;

@@ -18,10 +18,11 @@ const requireAuth = require('../middleware/requireAuth');
 const requireAdmin = require('../middleware/requireAdmin');
 const requireSuperAdmin = require('../middleware/requireSuperAdmin');
 const auditLogger = require('../middleware/auditLogger');
+const { classifyLifestyle } = require('../utils/classifyLifestyle');
 
 const router = express.Router();
 
-let syncStatus = { running: false, done: false, matched: 0, updated: 0, skipped: 0, error: null, startedAt: null, finishedAt: null };
+let syncStatus = { running: false, done: false, phase: 'idle', total: 0, processed: 0, matched: 0, updated: 0, added: 0, skipped: 0, error: null, startedAt: null, finishedAt: null };
 
 function mapAuditLog(row) {
   return {
@@ -261,7 +262,7 @@ router.post('/sync-csv', requireAuth, requireSuperAdmin, async (req, res) => {
     return res.status(409).json({ message: 'Sync already running.', status: syncStatus });
   }
 
-  // Find the data file — support CSV and Excel (.xlsx, .xls)
+  // Find data file — support CSV and Excel (.xlsx, .xls)
   const ROOT = path.join(__dirname, '..', '..');
   const candidates = [
     'paid_indian_medicine_data.xlsx',
@@ -277,76 +278,145 @@ router.post('/sync-csv', requireAuth, requireSuperAdmin, async (req, res) => {
     });
   }
 
-  syncStatus = { running: true, done: false, matched: 0, updated: 0, skipped: 0, added: 0, error: null, startedAt: new Date().toISOString(), finishedAt: null };
+  syncStatus = { running: true, done: false, phase: 'reading', total: 0, processed: 0, matched: 0, updated: 0, added: 0, skipped: 0, error: null, startedAt: new Date().toISOString(), finishedAt: null };
   res.json({ message: 'Product sync started.', status: syncStatus });
 
-  // Run asynchronously after response
   setImmediate(async () => {
     try {
       const wb = XLSX.readFile(filePath, { raw: false });
       const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      const rawRows = XLSX.utils.sheet_to_json(ws, { defval: '' });
 
-      for (const row of rows) {
-        const rawName  = String(row['name'] || row['Name'] || row['medicine_name'] || '').trim();
-        const rawPrice = parseFloat(row['price'] || row['Price'] || row['mrp'] || 0);
-        const rawDescr = String(row['medicine_desc'] || row['description'] || row['short_composition1'] || '').trim().slice(0, 2000);
-        const rawType  = String(row['type'] || row['Type'] || 'allopathic').trim().toLowerCase();
-        const rawMfg   = String(row['manufacturer_name'] || row['manufacturer'] || '').trim().slice(0, 200);
-        const packSize = String(row['pack_size_label'] || row['pack_size'] || '').trim().slice(0, 200);
-        const saltComp = String(row['salt_composition'] || row['composition'] || '').trim().slice(0, 500);
-
-        if (!rawName || rawName.length < 2) { syncStatus.skipped++; continue; }
-
-        const price = isNaN(rawPrice) || rawPrice <= 0 ? null : rawPrice;
-
-        // Try to match existing product by name (case-insensitive, partial OK)
-        const existing = await query(
-          'SELECT id, price, description FROM products WHERE LOWER(name) = LOWER(?) LIMIT 1',
-          [rawName]
-        );
-
-        if (existing.length > 0) {
-          syncStatus.matched++;
-          const updates = [];
-          const vals    = [];
-          if (price !== null && Math.abs(Number(existing[0].price) - price) > 0.01) {
-            updates.push('price = ?'); vals.push(price);
-          }
-          if (rawDescr && !existing[0].description) {
-            updates.push('description = ?'); vals.push(rawDescr);
-          }
-          if (updates.length > 0) {
-            vals.push(existing[0].id);
-            await execute(`UPDATE products SET ${updates.join(', ')}, updated_at = NOW() WHERE id = ?`, vals);
-            syncStatus.updated++;
-          } else {
-            syncStatus.skipped++;
-          }
-        } else {
-          // Insert new product with minimal required fields
-          try {
-            const slugBase = rawName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-            const slug = slugBase + '-' + Date.now() % 100000;
-            await execute(
-              `INSERT INTO products (name, slug, price, description, brand, stock, is_active, created_at, updated_at)
-               VALUES (?, ?, ?, ?, ?, 0, 1, NOW(), NOW())`,
-              [rawName, slug, price || 0, rawDescr || (saltComp ? `${saltComp}. ${packSize}`.trim() : rawMfg), rawMfg]
-            );
-            syncStatus.added++;
-          } catch (insertErr) {
-            syncStatus.skipped++;
-          }
-        }
+      // Build name → parsed-row map (keep last occurrence per name)
+      const rowMap = new Map();
+      for (const row of rawRows) {
+        const rawName = String(row['name'] || row['Name'] || row['medicine_name'] || '').trim();
+        if (rawName.length < 2) continue;
+        rowMap.set(rawName.toLowerCase(), row);
       }
 
-      syncStatus.running   = false;
-      syncStatus.done      = true;
+      const allKeys = [...rowMap.keys()];
+      syncStatus.total = allKeys.length;
+      syncStatus.phase = 'syncing';
+
+      const BATCH = 500;
+
+      for (let i = 0; i < allKeys.length; i += BATCH) {
+        const keyBatch = allKeys.slice(i, i + BATCH);
+        const placeholders = keyBatch.map(() => '?').join(',');
+
+        // Fetch products in this name batch
+        const existing = await query(
+          `SELECT id, LOWER(name) AS name_key, price, description, brand, company, salt, pack, lifestyle_category
+           FROM products WHERE LOWER(name) IN (${placeholders})`,
+          keyBatch
+        );
+        const foundKeys = new Set(existing.map(r => r.name_key));
+
+        // ── UPDATES ─────────────────────────────────────────────────────────
+        for (const ex of existing) {
+          const row = rowMap.get(ex.name_key);
+          if (!row) { syncStatus.skipped++; continue; }
+
+          const rawName  = String(row['name'] || row['Name'] || row['medicine_name'] || '').trim();
+          const rawPrice = parseFloat(row['price'] || row['Price'] || row['mrp'] || 0);
+          const rawDescr = String(row['medicine_desc'] || row['description'] || row['short_composition1'] || '').trim().slice(0, 2000);
+          const rawComp  = String(row['manufacturer_name'] || row['manufacturer'] || '').trim().slice(0, 150);
+          const rawPack  = String(row['pack_size_label'] || row['pack_size'] || '').trim().slice(0, 100);
+          const rawSalt  = String(row['salt_composition'] || row['composition'] || '').trim().slice(0, 500);
+          const price    = isNaN(rawPrice) || rawPrice <= 0 ? null : rawPrice;
+          const newLifestyle = classifyLifestyle(rawName, rawComp, rawSalt);
+
+          const updates = [];
+          const vals    = [];
+
+          if (price !== null && Math.abs(Number(ex.price) - price) > 0.01) {
+            updates.push('price = ?'); vals.push(price);
+          }
+          if (rawDescr && !ex.description) {
+            updates.push('description = ?'); vals.push(rawDescr);
+          }
+          if (rawComp && !ex.company) {
+            updates.push('company = ?'); vals.push(rawComp);
+          }
+          if (!ex.brand && rawComp) {
+            updates.push('brand = ?'); vals.push(rawComp);
+          }
+          if (rawSalt && !ex.salt) {
+            updates.push('salt = ?'); vals.push(rawSalt);
+          }
+          if (rawPack && !ex.pack) {
+            updates.push('pack = ?'); vals.push(rawPack);
+          }
+          // Always refresh lifestyle_category (fast indexed lookup)
+          if (newLifestyle !== ex.lifestyle_category) {
+            updates.push('lifestyle_category = ?'); vals.push(newLifestyle);
+          }
+
+          if (updates.length > 0) {
+            vals.push(ex.id);
+            await execute(`UPDATE products SET ${updates.join(', ')}, updated_at = NOW() WHERE id = ?`, vals);
+            syncStatus.updated++;
+          }
+          syncStatus.matched++;
+        }
+
+        // ── INSERTS (names not in DB yet) ──────────────────────────────────
+        const toInsert = keyBatch.filter(k => !foundKeys.has(k));
+        for (const key of toInsert) {
+          const row = rowMap.get(key);
+          const rawName  = String(row['name'] || row['Name'] || row['medicine_name'] || '').trim();
+          const rawPrice = parseFloat(row['price'] || row['Price'] || row['mrp'] || 0);
+          const rawDescr = String(row['medicine_desc'] || row['description'] || row['short_composition1'] || '').trim().slice(0, 2000);
+          const rawComp  = String(row['manufacturer_name'] || row['manufacturer'] || '').trim().slice(0, 150);
+          const rawPack  = String(row['pack_size_label'] || row['pack_size'] || '').trim().slice(0, 100);
+          const rawSalt  = String(row['salt_composition'] || row['composition'] || '').trim().slice(0, 500);
+          const price    = isNaN(rawPrice) || rawPrice <= 0 ? 0 : rawPrice;
+          const lifestyle = classifyLifestyle(rawName, rawComp, rawSalt);
+
+          const slugBase = rawName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          const slug = `${slugBase}-${Math.random().toString(36).slice(2, 8)}`;
+          const desc = rawDescr || rawSalt || rawComp || '';
+
+          // Need a valid category_id — use the first available one
+          const cats = await query('SELECT id FROM categories ORDER BY id ASC LIMIT 1', []);
+          const catId = cats.length ? cats[0].id : 1;
+
+          try {
+            await execute(
+              `INSERT INTO products (name, slug, category_id, price, mrp, description, brand, company, salt, pack, stock, is_active, lifestyle_category, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 1, ?, NOW(), NOW())`,
+              [rawName, slug, catId, price, price, desc, rawComp, rawComp, rawSalt, rawPack, lifestyle]
+            );
+            syncStatus.added++;
+          } catch {
+            // Slug collision — retry with timestamp suffix
+            try {
+              const slug2 = `${slugBase}-${Date.now().toString(36)}`;
+              await execute(
+                `INSERT INTO products (name, slug, category_id, price, mrp, description, brand, company, salt, pack, stock, is_active, lifestyle_category, created_at, updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 1, ?, NOW(), NOW())`,
+                [rawName, slug2, catId, price, price, desc, rawComp, rawComp, rawSalt, rawPack, lifestyle]
+              );
+              syncStatus.added++;
+            } catch {
+              syncStatus.skipped++;
+            }
+          }
+        }
+
+        syncStatus.processed = Math.min(i + BATCH, allKeys.length);
+      }
+
+      syncStatus.running    = false;
+      syncStatus.done       = true;
+      syncStatus.phase      = 'complete';
       syncStatus.finishedAt = new Date().toISOString();
     } catch (err) {
-      syncStatus.running   = false;
-      syncStatus.done      = true;
-      syncStatus.error     = err.message;
+      syncStatus.running    = false;
+      syncStatus.done       = true;
+      syncStatus.phase      = 'error';
+      syncStatus.error      = err.message;
       syncStatus.finishedAt = new Date().toISOString();
     }
   });

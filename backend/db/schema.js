@@ -387,6 +387,10 @@ async function ensureCoreSchema() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
 
+  // Lifestyle category column — populated at import time via classifyLifestyle()
+  await execute(`ALTER TABLE products ADD COLUMN IF NOT EXISTS lifestyle_category VARCHAR(100) NULL DEFAULT NULL`).catch(() => {});
+  await execute(`CREATE INDEX idx_products_lifestyle ON products (lifestyle_category)`).catch(() => {});
+
   await seedDefaultLabTests();
   await ensureSuperAdmin();
   initialized = true;
