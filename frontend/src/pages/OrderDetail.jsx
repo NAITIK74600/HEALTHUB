@@ -251,9 +251,9 @@ export default function OrderDetail() {
             <div className="inv-number">Invoice #{invoiceNo}</div>
             <div className="inv-date">Date: {fmt(order.createdAt)}</div>
             <div className="inv-badge">
-              {order.payment.method === 'cod'
+              {order.paymentStatus === 'cod' || (!order.razorpayOrderId && order.paymentStatus !== 'paid')
                 ? 'Cash on Delivery'
-                : order.payment.method === 'paytm'
+                : order.paymentStatus === 'paytm'
                   ? 'Paytm Payment'
                   : 'Razorpay Payment'}
             </div>
@@ -335,9 +335,9 @@ export default function OrderDetail() {
               <span>Payment Status</span>
               <span style={{
                 fontWeight: 700,
-                color: order.payment.status === 'paid' ? 'var(--green)' : 'var(--primary)'
+                color: order.paymentStatus === 'paid' ? 'var(--green)' : 'var(--primary)'
               }}>
-                {order.payment.status.toUpperCase()}
+                {(order.paymentStatus || 'pending').toUpperCase()}
               </span>
             </div>
             <div className="receipt-totals__row final">
