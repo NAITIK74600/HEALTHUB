@@ -395,16 +395,28 @@ router.get('/:id/receipt', requireAuth, [param('id').isInt({ min: 1 })], async (
     res.setHeader('Content-Disposition', `attachment; filename="receipt-${req.params.id}.pdf"`);
     doc.pipe(res);
 
+    const path = require('path');
     const L = 50, R = 545, W = R - L;
     const GREEN = '#2e7d32', GRAY = '#666666', BLACK = '#1a1a1a';
 
     // ── Green header band ───────────────────────────────────────────────────
-    doc.rect(0, 0, 595, 88).fill(GREEN);
+    doc.rect(0, 0, 595, 100).fill(GREEN);
+
+    // Logo (left side of header)
+    const logoPath = path.join(__dirname, '..', 'email-logo.png');
+    try {
+      doc.image(logoPath, L, 10, { width: 72, height: 72 });
+    } catch { /* logo missing — skip silently */ }
+
+    // Store name + contact (right of logo)
+    const textX = L + 82;
+    const textW = W - 82;
     doc.fillColor('#ffffff').fontSize(22).font('Helvetica-Bold')
-      .text('Batla Medicos', L, 14, { width: W, align: 'center' });
+      .text('Batla Medicos', textX, 16, { width: textW });
     doc.fontSize(9).font('Helvetica')
-      .text('F 41/2 Nafees Road, Batla House, Jamia Nagar, New Delhi - 110025', L, 44, { width: W, align: 'center' })
-      .text('Ph: +91 9990165925   |   ordersupport@batlamedicos.shop', L, 58, { width: W, align: 'center' });
+      .text('F 41/2 Nafees Road, Batla House, Jamia Nagar, New Delhi - 110025', textX, 46, { width: textW })
+      .text('Ph: +91 9990165925   |   ordersupport@batlamedicos.shop', textX, 60, { width: textW })
+      .text('www.batlamedicos.shop', textX, 74, { width: textW });
 
     // ── Invoice meta ────────────────────────────────────────────────────────
     const invoiceNo = 'BM-' + String(r.id).padStart(6, '0');
@@ -412,15 +424,15 @@ router.get('/:id/receipt', requireAuth, [param('id').isInt({ min: 1 })], async (
     const payLabel = r.payment_status === 'cod' ? 'Cash on Delivery' : 'Online Payment';
 
     doc.fillColor(BLACK).fontSize(15).font('Helvetica-Bold')
-      .text('TAX INVOICE', L, 102, { width: W, align: 'center' });
+      .text('TAX INVOICE', L, 114, { width: W, align: 'center' });
     doc.fillColor(GRAY).fontSize(9).font('Helvetica')
-      .text(`Invoice No: ${invoiceNo}   |   Date: ${dateStr}   |   Status: ${String(r.status).toUpperCase()}   |   Payment: ${payLabel}`, L, 122, { width: W, align: 'center' });
+      .text(`Invoice No: ${invoiceNo}   |   Date: ${dateStr}   |   Status: ${String(r.status).toUpperCase()}   |   Payment: ${payLabel}`, L, 134, { width: W, align: 'center' });
 
     // ── Divider ─────────────────────────────────────────────────────────────
-    doc.moveTo(L, 142).lineTo(R, 142).lineWidth(0.5).strokeColor('#cccccc').stroke();
+    doc.moveTo(L, 154).lineTo(R, 154).lineWidth(0.5).strokeColor('#cccccc').stroke();
 
     // ── Bill To / Deliver To ─────────────────────────────────────────────────
-    let leftY = 152, rightY = 152;
+    let leftY = 164, rightY = 164;
     const MID = 320;
 
     doc.fillColor(BLACK).fontSize(10).font('Helvetica-Bold').text('Bill To:', L, leftY);
