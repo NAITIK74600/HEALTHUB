@@ -127,7 +127,7 @@ export default function ProductCard({ product }) {
         <div className="product-card__image-wrap">
           <MedicineImage product={product} />
           {discount > 0 && (
-            <span className="product-card__badge product-card__badge--discount">{discount}% OFF</span>
+            <span className="product-card__badge product-card__badge--discount">{discount}%<br/>OFF</span>
           )}
           {product.requiresPrescription && (
             <span className="product-card__badge product-card__badge--rx">
@@ -139,6 +139,7 @@ export default function ProductCard({ product }) {
         <div className="product-card__info">
           <p className="product-card__brand">{product.brand || 'Generic'}</p>
           <p className="product-card__name">{product.name}</p>
+          {product.pack && <p className="product-card__pack">{product.pack}</p>}
 
           {/* Star rating row */}
           <div className="pc-rating-row">
@@ -150,9 +151,6 @@ export default function ProductCard({ product }) {
           <div className="product-card__pricing">
             <span className="product-card__price">₹{product.price}</span>
             {discount > 0 && <span className="product-card__mrp">₹{product.mrp}</span>}
-            {discount > 0 && (
-              <span className="pc-save-pct">Save {discount}%</span>
-            )}
           </div>
         </div>
       </Link>

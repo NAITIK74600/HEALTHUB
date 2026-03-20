@@ -11,13 +11,45 @@ const resolveImageUrl = (url) => {
 
 /* ─── Category themes ────────────────────────────────────────── */
 const THEMES = {
-  allopathic:       { from: '#C0392B', to: '#922B21' },
-  ayurvedic:        { from: '#1E8449', to: '#145A32' },
-  cosmetics:        { from: '#8E44AD', to: '#6C3483' },
-  'baby-products':  { from: '#2980B9', to: '#1A5276' },
-  surgical:         { from: '#2E4057', to: '#1A252F' },
+  // Allopathic family — crimson
+  allopathic:        { from: '#C0392B', to: '#922B21' },
+  'caps-tabs':       { from: '#C0392B', to: '#922B21' },
+  generic:           { from: '#C0392B', to: '#9B2220' },
+  'high-value':      { from: '#B03A2E', to: '#78281F' },
+  otc:               { from: '#D35400', to: '#A04000' },
+  // Liquids family — blue
+  liquids:           { from: '#1A6FA8', to: '#0E4D7E' },
+  drop:              { from: '#2471A3', to: '#154360' },
+  fluids:            { from: '#117A9E', to: '#0E6B8A' },
+  injection:         { from: '#1F618D', to: '#154360' },
+  // Topicals family — teal/green
+  'cream-ointment':  { from: '#148F77', to: '#0E6655' },
+  lotion:            { from: '#1E8449', to: '#145A32' },
+  fmcg:              { from: '#7D3C98', to: '#5B2C6F' },
+  // Ayurvedic / herbal — forest green
+  ayurvedic:         { from: '#1E8449', to: '#145A32' },
+  herbal:            { from: '#1D8A5A', to: '#117A45' },
+  nutrition:         { from: '#1D8348', to: '#117A3F' },
+  // Powder / inhaler — warm amber
+  powder:            { from: '#B7770D', to: '#876104' },
+  inhaler:           { from: '#7F8C8D', to: '#5D6D7E' },
+  // Baby / child — sky blue
+  'baby-products':   { from: '#2E86C1', to: '#1A5276' },
+  // Surgical / misc — slate
+  surgical:          { from: '#2E4057', to: '#1A252F' },
+  surgicals:         { from: '#2E4057', to: '#1A252F' },
+  container:         { from: '#555F6E', to: '#343D48' },
+  'pharma-misc':     { from: '#5D6D7E', to: '#3B4A59' },
+  // Specialty — distinct colors
+  'softgel-capsules':{ from: '#A569BD', to: '#7D3C98' },
+  fridge:            { from: '#2196F3', to: '#0D47A1' },
+  vaccines:          { from: '#00897B', to: '#00695C' },
+  dental:            { from: '#0277BD', to: '#01579B' },
+  homeopathy:        { from: '#E67E22', to: '#B9770E' },
+  // Cosmetics
+  cosmetics:         { from: '#8E44AD', to: '#6C3483' },
 };
-const DEFAULT_THEME = { from: '#566573', to: '#2C3E50' };
+const DEFAULT_THEME = { from: '#455A64', to: '#263238' };
 
 function getTheme(category) {
   const slug = typeof category === 'object' ? category?.slug : null;
