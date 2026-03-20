@@ -191,20 +191,24 @@ function buildProductWhere({ admin = false, params = {}, categoryIds = [] } = {}
 
 function sortSql(sort, admin = false) {
   const publicSort = {
-    price_asc: 'p.price ASC',
-    price_desc: 'p.price DESC',
-    name_asc: 'p.name ASC',
-    name_desc: 'p.name DESC',
-    newest: 'p.created_at DESC',
+    price_asc:    'p.price ASC',
+    price_desc:   'p.price DESC',
+    name_asc:     'p.name ASC',
+    name_desc:    'p.name DESC',
+    newest:       'p.created_at DESC',
+    category_asc: 'c.name ASC, p.name ASC',
+    category_desc:'c.name DESC, p.name ASC',
   };
   const adminSort = {
-    newest: 'p.created_at DESC',
-    name_asc: 'p.name ASC',
-    name_desc: 'p.name DESC',
-    stock_asc: 'p.stock ASC',
-    stock_desc: 'p.stock DESC',
-    price_asc: 'p.price ASC',
-    price_desc: 'p.price DESC',
+    newest:       'p.created_at DESC',
+    name_asc:     'p.name ASC',
+    name_desc:    'p.name DESC',
+    stock_asc:    'p.stock ASC',
+    stock_desc:   'p.stock DESC',
+    price_asc:    'p.price ASC',
+    price_desc:   'p.price DESC',
+    category_asc: 'c.name ASC, p.name ASC',
+    category_desc:'c.name DESC, p.name ASC',
   };
   const map = admin ? adminSort : publicSort;
   return map[sort] || 'p.created_at DESC';

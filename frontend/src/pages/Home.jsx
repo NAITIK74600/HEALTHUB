@@ -60,14 +60,14 @@ const DEFAULT_CAT = { icon: <Hospital size={28} />, bg: '#F0FBF4', color: '#1E84
 
 // Personal-care category tiles matching the screenshot style
 const PERSONAL_CARE_CATS = [
-  { label: 'Skin Care',       slug: 'skin-care',       gradient: 'linear-gradient(135deg,#8BC34A,#5D9E3F)', img: 'https://www.1mg.com/images/category_page_icons/skin_care.png' },
-  { label: 'Hair Care',       slug: 'hair-care',       gradient: 'linear-gradient(135deg,#4CAF50,#2E7D32)', img: 'https://www.1mg.com/images/category_page_icons/hair_care.png' },
-  { label: 'Sexual Wellness', slug: 'sexual-wellness', gradient: 'linear-gradient(135deg,#FF9800,#E65100)', img: 'https://www.1mg.com/images/category_page_icons/sexual_wellness.png' },
-  { label: 'Oral Care',       slug: 'dental',          gradient: 'linear-gradient(135deg,#E57373,#C62828)', img: 'https://www.1mg.com/images/category_page_icons/oral_care.png' },
-  { label: 'Elderly Care',    slug: 'caps-tabs',       gradient: 'linear-gradient(135deg,#29B6F6,#0277BD)', img: 'https://www.1mg.com/images/category_page_icons/elderly_care.png' },
-  { label: 'Baby Care',       slug: 'baby-care',       gradient: 'linear-gradient(135deg,#9C27B0,#6A1B9A)', img: 'https://www.1mg.com/images/category_page_icons/baby_care.png' },
-  { label: 'Women Care',      slug: 'fmcg',            gradient: 'linear-gradient(135deg,#EC407A,#AD1457)', img: 'https://www.1mg.com/images/category_page_icons/womens_care.png' },
-  { label: 'Men Grooming',    slug: 'fmcg',            gradient: 'linear-gradient(135deg,#607D8B,#37474F)', img: 'https://www.1mg.com/images/category_page_icons/mens_grooming.png' },
+  { label: 'Skin Care',       slug: 'skin-care',       gradient: 'linear-gradient(135deg,#8BC34A,#5D9E3F)', emoji: '✨' },
+  { label: 'Hair Care',       slug: 'hair-care',       gradient: 'linear-gradient(135deg,#4CAF50,#2E7D32)', emoji: '💆' },
+  { label: 'Sexual Wellness', slug: 'sexual-wellness', gradient: 'linear-gradient(135deg,#FF9800,#E65100)', emoji: '❤️' },
+  { label: 'Oral Care',       slug: 'dental',          gradient: 'linear-gradient(135deg,#E57373,#C62828)', emoji: '🦷' },
+  { label: 'Elderly Care',    slug: 'allopathic',      gradient: 'linear-gradient(135deg,#29B6F6,#0277BD)', emoji: '👴' },
+  { label: 'Baby Care',       slug: 'baby-care',       gradient: 'linear-gradient(135deg,#9C27B0,#6A1B9A)', emoji: '🍼' },
+  { label: 'Women Care',      slug: 'skin-care',       gradient: 'linear-gradient(135deg,#EC407A,#AD1457)', emoji: '🌸' },
+  { label: 'Men Grooming',    slug: 'hair-care',       gradient: 'linear-gradient(135deg,#607D8B,#37474F)', emoji: '💈' },
 ];
 
 const TRUST_FEATURES = [
@@ -359,26 +359,13 @@ export default function Home() {
             <Link to="/products" className="section__link">See all <ChevronRight size={14} /></Link>
           </div>
           <div className="personal-care-grid">
-            {PERSONAL_CARE_CATS.map((cat, idx) => {
-              const norm = (v) => String(v || '').trim().toLowerCase();
-              const dbBrand = personalCareBrands.find(
-                b => b.slug === cat.slug || norm(b.name) === norm(cat.label)
-              );
-              const gradient = (dbBrand && dbBrand.gradient) ? dbBrand.gradient : cat.gradient;
-              const imgSrcRaw = (dbBrand && dbBrand.logoUrl) ? dbBrand.logoUrl : cat.img;
-              const imgSrc = resolveImageUrl(imgSrcRaw);
-              const hasImage = !!imgSrc;
-              return (
-                <Link key={cat.slug + cat.label} to={`/products?category=${cat.slug}`} className="pc-cat-card ripple-btn" onClick={ripple} style={{ animationDelay: `${idx * 0.07}s` }}>
-                  {hasImage ? (
-                    <div className="pc-cat-card__bg" style={{ backgroundImage: `url(${imgSrc})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-                  ) : (
-                    <div className="pc-cat-card__bg" style={{ background: gradient }} />
-                  )}
-                  <span className="pc-cat-card__label">{cat.label}</span>
-                </Link>
-              );
-            })}
+            {PERSONAL_CARE_CATS.map((cat, idx) => (
+              <Link key={cat.slug + cat.label} to={`/products?category=${cat.slug}`} className="pc-cat-card ripple-btn" onClick={ripple} style={{ animationDelay: `${idx * 0.07}s` }}>
+                <div className="pc-cat-card__bg" style={{ background: cat.gradient }} />
+                <span className="pc-cat-card__emoji" style={{ fontSize: '2rem', position: 'absolute', top: '28%', left: '50%', transform: 'translateX(-50%)' }}>{cat.emoji}</span>
+                <span className="pc-cat-card__label">{cat.label}</span>
+              </Link>
+            ))}
           </div>
         </div>
       </AnimatedSection>
@@ -410,7 +397,7 @@ export default function Home() {
             <Link to="/products" className="section__link">All Products <ChevronRight size={14} /></Link>
           </div>
           <div className="category-grid-v2">
-            {categories.slice(0, 16).map((cat, idx) => {
+            {categories.map((cat, idx) => {
               const cfg = CATEGORY_ICONS[cat.slug] || DEFAULT_CAT;
               return (
                 <Link key={cat._id} to={`/products?category=${cat.slug}`} className="cat-tile ripple-btn" onClick={ripple} style={{ animationDelay: `${idx * 0.04}s` }}>

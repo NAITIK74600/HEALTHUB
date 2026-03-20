@@ -6,11 +6,12 @@ import { getCategories } from '../api/categories';
 import ProductCard from '../components/ProductCard';
 
 const SORT_OPTIONS = [
-  { value: 'newest',     label: 'Newest First' },
-  { value: 'price_asc',  label: 'Price: Low → High' },
-  { value: 'price_desc', label: 'Price: High → Low' },
-  { value: 'name_asc',   label: 'Name: A – Z' },
-  { value: 'name_desc',  label: 'Name: Z – A' },
+  { value: 'newest',        label: 'Newest First' },
+  { value: 'price_asc',     label: 'Price: Low → High' },
+  { value: 'price_desc',    label: 'Price: High → Low' },
+  { value: 'name_asc',      label: 'Name: A – Z' },
+  { value: 'name_desc',     label: 'Name: Z – A' },
+  { value: 'category_asc',  label: 'Category: A – Z' },
 ];
 
 const CAT_ICONS = {

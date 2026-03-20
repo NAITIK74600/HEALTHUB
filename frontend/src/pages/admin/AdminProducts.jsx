@@ -27,13 +27,15 @@ const STATUS_OPTS = [
   { value: 'inactive', label: 'Inactive' },
 ];
 const SORT_OPTS = [
-  { value: 'newest',     label: 'Newest First' },
-  { value: 'name_asc',   label: 'Name A-Z' },
-  { value: 'name_desc',  label: 'Name Z-A' },
-  { value: 'stock_asc',  label: 'Stock Low-High' },
-  { value: 'stock_desc', label: 'Stock High-Low' },
-  { value: 'price_asc',  label: 'Price Low-High' },
-  { value: 'price_desc', label: 'Price High-Low' },
+  { value: 'newest',        label: 'Newest First' },
+  { value: 'category_asc',  label: 'Category A-Z' },
+  { value: 'category_desc', label: 'Category Z-A' },
+  { value: 'name_asc',      label: 'Name A-Z' },
+  { value: 'name_desc',     label: 'Name Z-A' },
+  { value: 'stock_asc',     label: 'Stock Low-High' },
+  { value: 'stock_desc',    label: 'Stock High-Low' },
+  { value: 'price_asc',     label: 'Price Low-High' },
+  { value: 'price_desc',    label: 'Price High-Low' },
 ];
 
 function StockBadge({ stock }) {
