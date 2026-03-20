@@ -2175,6 +2175,8 @@ svg { flex-shrink: 0; }
   grid-template-columns: 1fr 1fr;
   gap: 48px;
   align-items: start;
+  min-width: 0;
+  overflow: hidden;
 }
 @media (max-width: 768px) {
   .product-detail { grid-template-columns: 1fr; gap: 20px; padding: 20px 14px; }
@@ -3546,21 +3548,25 @@ svg { flex-shrink: 0; }
 .review-item__comment { font-size: 0.88rem; color: var(--gray-700); line-height: 1.5; margin: 0; }
 
 /* Related products section */
-.product-detail__related { margin-top: 48px; grid-column: 1 / -1; }
+.product-detail__related { margin-top: 48px; grid-column: 1 / -1; max-width: 100%; min-width: 0; overflow: hidden; }
 .product-detail__related h2 { font-size: 1.3rem; color: var(--gray-800); margin-bottom: 20px; }
 .related-scroll {
   display: flex;
   gap: 16px;
   overflow-x: auto;
+  overflow-y: visible;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   padding-bottom: 8px;
   scrollbar-width: thin;
+  max-width: 100%;
+  width: 100%;
 }
 .related-scroll > * {
   scroll-snap-align: start;
   flex: 0 0 200px;
-  min-width: 200px;
+  width: 200px;
+  min-width: 0;
 }
 .related-scroll::-webkit-scrollbar { height: 6px; }
 .related-scroll::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 3px; }
