@@ -67,7 +67,7 @@ app.use(helmet({
 
 // Extra headers not covered by Helmet defaults
 app.use((req, res, next) => {
-  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self)');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   next();
 });

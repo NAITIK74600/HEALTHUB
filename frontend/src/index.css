@@ -8998,6 +8998,19 @@ svg { flex-shrink: 0; }
   box-shadow: 0 3px 12px rgba(192,57,43,0.25) !important;
 }
 .product-card__add-btn:not(:disabled):active { transform: scale(0.97) !important; }
+/* "Added!" state — green flash */
+.product-card__add-btn--added {
+  background: #16a34a !important;
+  color: #fff !important;
+  border-color: #16a34a !important;
+  transform: scale(1.08) !important;
+  animation: pc-add-pop 0.35s cubic-bezier(0.34,1.56,.64,1);
+}
+@keyframes pc-add-pop {
+  0%   { transform: scale(0.9); }
+  60%  { transform: scale(1.13); }
+  100% { transform: scale(1.08); }
+}
 
 /* ── Lab home card bounce ── */
 .lab-home-card {

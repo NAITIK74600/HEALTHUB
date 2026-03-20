@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { useCallback } from 'react';
-import { ShoppingCart, FileText, Heart, Plus, Minus, Trash2, Star } from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { ShoppingCart, FileText, Heart, Plus, Minus, Trash2, Star, Check } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import MedicineImage from './MedicineImage';
@@ -68,6 +68,7 @@ export default function ProductCard({ product }) {
   const wishlisted = isWishlisted(product._id);
   const cartItem = items.find(i => i.productId === product._id);
   const inCart = !!cartItem;
+  const [added, setAdded] = useState(false);
 
   const { rating, count } = pseudoRating(product);
 
@@ -80,6 +81,9 @@ export default function ProductCard({ product }) {
     e.stopPropagation();
     addItem(product);
     playCartSound();
+    // Show "Added" feedback for 1.2s
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1200);
   }, [addItem, product]);
 
   const handleInc = useCallback((e) => {
@@ -169,11 +173,13 @@ export default function ProductCard({ product }) {
           </div>
         ) : (
           <button
-            className="product-card__add-btn"
+            className={`product-card__add-btn${added ? ' product-card__add-btn--added' : ''}`}
             onClick={handleAdd}
             aria-label={`Add ${product.name} to cart`}
           >
-            <ShoppingCart size={14} /> ADD
+            {added
+              ? <><Check size={14} /> Added!</>
+              : <><ShoppingCart size={14} /> ADD</>}
           </button>
         )}
       </div>
