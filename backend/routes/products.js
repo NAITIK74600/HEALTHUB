@@ -74,9 +74,9 @@ const LIFESTYLE_SLUGS = new Set([
 // All patterns use LOWER() for case-insensitive matching on MySQL 5.7.
 const LIFESTYLE_FALLBACK_SQL = {
   'sexual-wellness':
-    `(LOWER(p.name) REGEXP 'condom|sildenafil|tadalafil|dapoxetine|contraceptive|ipill|unwanted|mifepristone|levonorgestrel|lubricant gel|vaginal|kamagra|vigora|suhagra|caverta|erectile|spermicide'
-     OR LOWER(p.brand) REGEXP 'manforce|moods|skore|notyet|playgard|durex'
-     OR LOWER(p.salt)  REGEXP 'sildenafil|tadalafil|dapoxetine|vardenafil|avanafil|levonorgestrel|mifepristone')`,
+    `(LOWER(p.name) REGEXP 'condom|contraceptive|ipill|i-pill|unwanted|mifepristone|levonorgestrel|lubricant|lubricating gel|vaginal gel|vaginal cream|vaginal tablet|kamagra|vigora|suhagra|caverta|erectile|spermicide|female arousal|sex delay|delay spray|male enhancement|manforce|durex|kamasutra|moods condom|skore|notyet|playgard|sensation condom|kohinoor|bleu condom|okamoto|uber condom|contempo|trojan condom|ultra thin condom|dotted condom|flavoured condom|female condom|internal condom'
+     OR LOWER(p.brand) REGEXP 'manforce|durex|kamasutra|moods|skore|notyet|playgard|kohinoor|bleu|okamoto|uber|contempo|trojan|bekind'
+     OR LOWER(p.salt)  REGEXP 'sildenafil|tadalafil|dapoxetine|vardenafil|avanafil|levonorgestrel|mifepristone|ulipristal|benzalkonium|nonoxynol')`,
 
   'baby-care':
     `(LOWER(p.name) REGEXP 'baby oil|baby powder|baby shampoo|baby lotion|baby cream|baby soap|baby wipe|baby diaper|gripe water|lactogen|nan pro|similac|pediasure|cerelac|enfamil|aptamil|feeding bottle|breast pump|pacifier|teether|baby rash'

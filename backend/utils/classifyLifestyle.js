@@ -25,11 +25,11 @@
 const RULES = [
   // ── Sexual Wellness ────────────────────────────────────────────────────────
   ['sexual-wellness', (t) =>
-    /\b(condom|manforce|durex|moods|skore|notyet|playgard|sensation)\b/.test(t) ||
+    /\b(condom|manforce|durex|kamasutra|moods|skore|notyet|playgard|kohinoor|bleu|okamoto|sensation|contempo|trojan)\b/.test(t) ||
     /\b(sildenafil|tadalafil|vardenafil|avanafil|dapoxetine)\b/.test(t) ||
-    /\b(contraceptive|oral pill|emergency pill|ipill|unwanted|mifepristone|levonorgestrel)\b/.test(t) ||
+    /\b(contraceptive|oral pill|emergency pill|ipill|i-pill|unwanted|mifepristone|levonorgestrel|ulipristal)\b/.test(t) ||
     /\b(intimate|lubricant|lubricating gel|vaginal|kamagra|vigora|suhagra|caverta)\b/.test(t) ||
-    /\b(erectile|sexual wellness|spermicide|female arousal)\b/.test(t)
+    /\b(erectile|sexual wellness|spermicide|female arousal|sex delay|delay spray|dotted condom|ultra thin condom|flavoured condom)\b/.test(t)
   ],
 
   // ── Baby Care ──────────────────────────────────────────────────────────────
