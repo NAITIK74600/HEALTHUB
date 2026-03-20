@@ -9,6 +9,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ChatBot from './components/ChatBot';
 import CategoryNav from './components/CategoryNav';
+import ScrollToTop from './components/ScrollToTop';
 import { Truck } from 'lucide-react';
 
 import Home from './pages/Home';
@@ -96,6 +97,7 @@ export default function App() {
       <AuthProvider>
         <WishlistProvider>
           <CartProvider>
+            <ScrollToTop />
             <Toaster position="top-right" />
             <Routes>
               <Route element={<PublicLayout />}>

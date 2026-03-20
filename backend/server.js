@@ -62,7 +62,15 @@ app.use(helmet({
     },
   },
   crossOriginEmbedderPolicy: false,
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
 }));
+
+// Extra headers not covered by Helmet defaults
+app.use((req, res, next) => {
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  next();
+});
 
 // ── CORS ────────────────────────────────────────────────────────────────────
 const allowedOrigins = [
@@ -152,7 +160,16 @@ app.get('/health', (req, res) => {
 
 // ── Serve uploaded files ───────────────────────────────────────────────────
 const UPLOADS = path.join(__dirname, 'uploads');
-app.use('/uploads', express.static(UPLOADS, { maxAge: '7d' }));
+app.use('/uploads', (req, res, next) => {
+  // Block any attempt to serve HTML/JS from the uploads folder to prevent stored XSS
+  const ext = path.extname(req.path).toLowerCase();
+  const blocked = ['.html', '.htm', '.js', '.mjs', '.cjs', '.svg', '.xml', '.php'];
+  if (blocked.includes(ext)) return res.status(403).json({ message: 'Forbidden' });
+  // Force download disposition for non-image files (e.g. PDFs served inline is fine, but not scripts)
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Content-Security-Policy', "default-src 'none'");
+  next();
+}, express.static(UPLOADS, { maxAge: '7d' }));
 
 // ── Serve React frontend (production build) ────────────────────────────
 const DIST = path.join(__dirname, '..', 'frontend', 'dist');

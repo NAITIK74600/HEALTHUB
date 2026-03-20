@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { uploadPrescription, getMyPrescriptions, deletePrescription } from '../api/prescriptions';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
-import { Upload, Trash2, Eye, FileText, CheckCircle, XCircle, Clock, MapPin } from 'lucide-react';
+import { Upload, Trash2, Eye, FileText, CheckCircle, XCircle, Clock, MapPin, User, Sparkles, AlignLeft } from 'lucide-react';
 
 function statusBadge(status) {
   const map = {
@@ -39,29 +39,43 @@ export default function Prescriptions() {
   const { user } = useAuth();
   const fileRef = useRef(null);
 
+  // Auto-fill address when user data loads
   useEffect(() => {
-    if (user && !addr.phone) setAddr(a => ({ ...a, phone: user.phone || '' }));
+    if (user) {
+      const firstAddr = user.addresses?.[0];
+      if (firstAddr) {
+        setAddr({
+          line1: firstAddr.line1 || '',
+          line2: firstAddr.line2 || '',
+          city: firstAddr.city || 'New Delhi',
+          pincode: firstAddr.pincode || '',
+          phone: user.phone || '',
+        });
+        setUseProfileAddr(true);
+      } else if (user.phone) {
+        setAddr(a => ({ ...a, phone: user.phone }));
+      }
+    }
   }, [user]);
 
   const toggleProfileAddr = () => {
     if (!useProfileAddr) {
-        // Enable
-        if (user?.addresses?.length > 0) {
-            const a = user.addresses[0];
-            setAddr({
-                line1: a.line1 || '',
-                line2: a.line2 || '',
-                city: a.city || 'New Delhi',
-                pincode: a.pincode || '',
-                phone: user.phone || ''
-            });
-        } else {
-            toast('No saved address in profile.');
-        }
+      if (user?.addresses?.length > 0) {
+        const a = user.addresses[0];
+        setAddr({
+          line1: a.line1 || '',
+          line2: a.line2 || '',
+          city: a.city || 'New Delhi',
+          pincode: a.pincode || '',
+          phone: user.phone || '',
+        });
+        setUseProfileAddr(true);
+      } else {
+        toast('No saved address found in profile.');
+      }
     } else {
-        // Disable - maybe clear or keep? Let's keep.
+      setUseProfileAddr(false);
     }
-    setUseProfileAddr(!useProfileAddr);
   };
 
   const load = () => {
@@ -139,111 +153,174 @@ export default function Prescriptions() {
 
   return (
     <main className="rx-page container">
-      <div className="rx-page__header">
-        <h1>My Prescriptions</h1>
-        <p className="rx-page__sub">Upload prescriptions required for scheduled medicines. Our pharmacist will review within a few hours.</p>
+
+      {/* ── Hero Header ── */}
+      <div className="rx-hero">
+        <div className="rx-hero__left">
+          <div className="rx-hero__icon-wrap"><FileText size={26} /></div>
+          <div>
+            <h1 className="rx-hero__title">My Prescriptions</h1>
+            <p className="rx-hero__sub">Upload your prescription — our pharmacist reviews it within a few hours and contacts you.</p>
+          </div>
+        </div>
+        <nav className="rx-hero__crumb">
+          <Link to="/">Home</Link> <span>/</span> <span>Prescriptions</span>
+        </nav>
       </div>
 
-      {/* Upload Form */}
+      {/* ── Upload Card ── */}
       <section className="rx-upload-card">
-        <h2><Upload size={18} /> Upload New Prescription</h2>
         <form onSubmit={handleUpload} className="rx-upload-form">
-          {/* Drop zone */}
-          <div
-            className={`rx-dropzone${dragOver ? ' rx-dropzone--over' : ''}${file ? ' rx-dropzone--has-file' : ''}`}
-            onClick={() => fileRef.current?.click()}
-            onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={handleDrop}
-          >
-            <input ref={fileRef} type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" style={{ display: 'none' }}
-              onChange={e => handleFile(e.target.files[0])} />
-            {file ? (
-              <div className="rx-dropzone__file">
-                <FileText size={36} />
-                <span>{file.name}</span>
-                <span className="rx-dropzone__size">{(file.size / 1024).toFixed(0)} KB</span>
+
+          {/* Step 1 — File */}
+          <div className="rx-step">
+            <div className="rx-step__head">
+              <span className="rx-step__num">1</span>
+              <span className="rx-step__title"><Upload size={15} /> Upload File</span>
+            </div>
+            <div
+              className={`rx-dropzone${dragOver ? ' rx-dropzone--over' : ''}${file ? ' rx-dropzone--has-file' : ''}`}
+              onClick={() => fileRef.current?.click()}
+              onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+            >
+              <input ref={fileRef} type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" style={{ display: 'none' }}
+                onChange={e => handleFile(e.target.files[0])} />
+              {file ? (
+                <div className="rx-dropzone__file">
+                  <FileText size={38} />
+                  <span>{file.name}</span>
+                  <span className="rx-dropzone__size">{(file.size / 1024).toFixed(0)} KB</span>
+                  <button type="button" className="rx-dropzone__change"
+                    onClick={e => { e.stopPropagation(); setFile(null); }}>Change file</button>
+                </div>
+              ) : (
+                <div className="rx-dropzone__prompt">
+                  <div className="rx-dropzone__icon-circle"><Upload size={26} /></div>
+                  <span>Drag &amp; drop or <strong>click to browse</strong></span>
+                  <small>JPG · PNG · WebP · PDF &nbsp;·&nbsp; Max 5 MB</small>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Step 2 — Patient Details */}
+          <div className="rx-step">
+            <div className="rx-step__head">
+              <span className="rx-step__num">2</span>
+              <span className="rx-step__title"><User size={15} /> Patient Details</span>
+              <span className="rx-step__optional">Optional</span>
+            </div>
+            <div className="rx-upload-fields">
+              <div className="form-group">
+                <label>Patient Name</label>
+                <input value={form.patientName}
+                  onChange={e => setForm(f => ({ ...f, patientName: e.target.value }))}
+                  placeholder="Full name on prescription" maxLength={100} />
               </div>
-            ) : (
-              <div className="rx-dropzone__prompt">
-                <Upload size={36} />
-                <span>Drag &amp; drop or <strong>click to browse</strong></span>
-                <small>JPG, PNG, WebP or PDF · Max 5 MB</small>
+              <div className="form-group">
+                <label>Doctor / Hospital</label>
+                <input value={form.doctorName}
+                  onChange={e => setForm(f => ({ ...f, doctorName: e.target.value }))}
+                  placeholder="Dr. name or clinic name" maxLength={100} />
+              </div>
+            </div>
+          </div>
+
+          {/* Step 3 — Delivery Address */}
+          <div className="rx-step">
+            <div className="rx-step__head">
+              <span className="rx-step__num">3</span>
+              <span className="rx-step__title"><MapPin size={15} /> Delivery Address</span>
+              {user?.addresses?.length > 0 && (
+                <button
+                  type="button"
+                  className={`rx-autofill-btn${useProfileAddr ? ' rx-autofill-btn--active' : ''}`}
+                  onClick={toggleProfileAddr}
+                >
+                  {useProfileAddr
+                    ? <><CheckCircle size={13} /> Saved address applied</>  
+                    : <><Sparkles size={13} /> Use saved address</>}
+                </button>
+              )}
+            </div>
+            <div className="rx-upload-fields">
+              <div className="form-group">
+                <label>Phone Number</label>
+                <input value={addr.phone}
+                  onChange={e => setAddr(a => ({ ...a, phone: e.target.value }))}
+                  placeholder="10-digit mobile number" maxLength={10} />
+              </div>
+              <div className="form-group">
+                <label>Pincode</label>
+                <input value={addr.pincode}
+                  onChange={e => setAddr(a => ({ ...a, pincode: e.target.value }))}
+                  placeholder="6-digit pincode" maxLength={6} />
+              </div>
+              <div className="form-group rx-full-col">
+                <label>Address Line 1</label>
+                <input value={addr.line1}
+                  onChange={e => setAddr(a => ({ ...a, line1: e.target.value }))}
+                  placeholder="House no., building, street name" />
+              </div>
+              <div className="form-group">
+                <label>City</label>
+                <input value={addr.city}
+                  onChange={e => setAddr(a => ({ ...a, city: e.target.value }))} />
+              </div>
+              <div className="form-group">
+                <label>Address Line 2 <small>(optional)</small></label>
+                <input value={addr.line2}
+                  onChange={e => setAddr(a => ({ ...a, line2: e.target.value }))}
+                  placeholder="Apartment, area, landmark" />
+              </div>
+            </div>
+            <p className="rx-step__hint"><MapPin size={13} /> Adding an address helps us confirm stock and deliver faster.</p>
+          </div>
+
+          {/* Step 4 — Notes + Submit */}
+          <div className="rx-step rx-step--last">
+            <div className="rx-step__head">
+              <span className="rx-step__num">4</span>
+              <span className="rx-step__title"><AlignLeft size={15} /> Additional Notes</span>
+              <span className="rx-step__optional">Optional</span>
+            </div>
+            <div className="form-group">
+              <textarea
+                value={form.notes}
+                onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                placeholder="Any special instructions for the pharmacist… e.g. 'need urgently' or 'generic substitute ok'"
+                rows={3} maxLength={500} />
+            </div>
+            <button type="submit" className="btn btn--primary rx-submit-btn" disabled={uploading || !file}>
+              {uploading ? 'Uploading…' : <><Upload size={17} /> Upload Prescription</>}
+            </button>
+            {lastUploadedId && !uploading && (
+              <div className="rx-after-upload">
+                <CheckCircle size={18} />
+                <span>Uploaded successfully!</span>
+                <Link to="/" className="btn btn--outline btn--sm">Continue Shopping</Link>
               </div>
             )}
           </div>
 
-          <div className="rx-upload-fields">
-            <div className="form-group">
-              <label>Patient Name <small>(if different from account)</small></label>
-              <input value={form.patientName} onChange={e => setForm(f => ({ ...f, patientName: e.target.value }))}
-                placeholder="Full name on prescription" maxLength={100} />
-            </div>
-            <div className="form-group">
-              <label>Doctor / Hospital Name</label>
-
-            <div style={{ gridColumn: '1/-1', borderTop: '1px solid var(--clr-border)', margin: '10px 0' }}></div>
-            
-            <div style={{ gridColumn: '1/-1' }}>
-                <h4 style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <MapPin size={16}/> Delivery Address
-                    {user?.addresses?.length > 0 && (
-                        <button type="button" className="btn btn--xs btn--outline" onClick={toggleProfileAddr}>
-                            {useProfileAddr ? 'Edit Manually' : 'Use Profile Address'}
-                        </button>
-                    )}
-                </h4>
-                <div className="rx-upload-fields" style={{ marginTop: 0 }}>
-                    <div className="form-group">
-                        <label>Phone</label>
-                        <input value={addr.phone} onChange={e => setAddr(a => ({ ...a, phone: e.target.value }))} placeholder="10-digit mobile" maxLength={10} />
-                    </div>
-                    <div className="form-group">
-                        <label>Pincode</label>
-                        <input value={addr.pincode} onChange={e => setAddr(a => ({ ...a, pincode: e.target.value }))} placeholder="110025" maxLength={6} />
-                    </div>
-                    <div className="form-group" style={{ gridColumn: '1/-1' }}>
-                        <label>Address Line 1</label>
-                        <input value={addr.line1} onChange={e => setAddr(a => ({ ...a, line1: e.target.value }))} placeholder="House no, Building, Street" />
-                    </div>
-                     <div className="form-group">
-                        <label>City</label>
-                        <input value={addr.city} onChange={e => setAddr(a => ({ ...a, city: e.target.value }))} />
-                    </div>
-                </div>
-                <small style={{ color: 'var(--clr-muted)' }}>* Providing address helps us check availability and deliver faster.</small>
-            </div>
-              <input value={form.doctorName} onChange={e => setForm(f => ({ ...f, doctorName: e.target.value }))}
-                placeholder="Dr. name or clinic name" maxLength={100} />
-            </div>
-            <div className="form-group" style={{ gridColumn: '1/-1' }}>
-              <label>Additional Notes</label>
-              <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                placeholder="Any special instructions or notes for the pharmacist..." rows={2} maxLength={500} />
-            </div>
-          </div>
-
-          <button type="submit" className="btn btn--primary" disabled={uploading || !file}>
-            {uploading ? 'Uploading…' : 'Upload Prescription'}
-          </button>
-
-          {lastUploadedId && !uploading && (
-            <div style={{ marginTop: 10, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <Link to="/" className="btn btn--outline">Continue Shopping</Link>
-            </div>
-          )}
         </form>
       </section>
 
-      {/* List */}
+      {/* ── Uploaded Prescriptions List ── */}
       <section className="rx-list">
-        <h2>Uploaded Prescriptions</h2>
+        <h2 className="rx-list__title">
+          Uploaded Prescriptions
+          {prescriptions.length > 0 && <span className="rx-list__count">{prescriptions.length}</span>}
+        </h2>
         {loading ? (
-          <div className="spinner" style={{ padding: 40, textAlign: 'center' }}>Loading…</div>
+          <div className="rx-spinner-wrap"><p>Loading…</p></div>
         ) : prescriptions.length === 0 ? (
           <div className="rx-empty">
-            <FileText size={48} />
+            <div className="rx-empty__icon"><FileText size={42} /></div>
             <p>No prescriptions uploaded yet.</p>
+            <small>Upload your first prescription using the form above.</small>
           </div>
         ) : (
           <div className="rx-grid">
@@ -256,26 +333,26 @@ export default function Prescriptions() {
                     {isPdf ? (
                       <div className="rx-card__pdf-icon"><FileText size={40} /></div>
                     ) : (
-                      <img src={rx.imageUrl} alt="Prescription" />
+                      <img src={rx.imageUrl} alt="Prescription" loading="lazy" />
                     )}
-                    <div className="rx-card__overlay"><Eye size={20} /> View</div>
+                    <div className="rx-card__overlay"><Eye size={16} /> View</div>
                   </div>
                   <div className="rx-card__body">
                     <span className={badge.cls}>{badge.icon} {badge.label}</span>
                     {rx.patientName && <p><strong>Patient:</strong> {rx.patientName}</p>}
                     {rx.doctorName && <p><strong>Doctor:</strong> {rx.doctorName}</p>}
                     {rx.adminNote && (
-                      <p className="rx-card__admin-note"><strong>Pharmacist note:</strong> {rx.adminNote}</p>
+                      <div className="rx-card__admin-note"><strong>Pharmacist:</strong> {rx.adminNote}</div>
                     )}
                     {rx.address && (
-                        <p className="rx-card__address" style={{ fontSize: '0.85em', color: 'var(--clr-muted)', marginTop: 4 }}>
-                            <MapPin size={12} style={{ verticalAlign: 'middle', marginRight: 4 }}/>
-                            {rx.address.line1}, {rx.address.city} {rx.address.pincode}
-                        </p>
+                      <div className="rx-card__address">
+                        <MapPin size={11} />
+                        {rx.address.line1}, {rx.address.city} {rx.address.pincode}
+                      </div>
                     )}
-                    <p className="rx-card__date">Uploaded: {fmt(rx.createdAt)}</p>
+                    <p className="rx-card__date">{fmt(rx.createdAt)}</p>
                     {rx.usedInOrders?.length > 0 && (
-                      <p className="rx-card__used">Used in {rx.usedInOrders.length} order(s)</p>
+                      <p className="rx-card__used"><CheckCircle size={11} /> Used in {rx.usedInOrders.length} order(s)</p>
                     )}
                   </div>
                   <div className="rx-card__actions">
@@ -296,15 +373,17 @@ export default function Prescriptions() {
         )}
       </section>
 
-      {/* Preview Modal */}
+      {/* ── Preview Modal ── */}
       {preview && (
         <div className="rx-modal" onClick={() => setPreview(null)}>
           <div className="rx-modal__box" onClick={e => e.stopPropagation()}>
             <button className="rx-modal__close" onClick={() => setPreview(null)}>✕</button>
             {preview.isPdf ? (
-              <iframe src={preview.url} title="Prescription PDF" style={{ width: '100%', height: '80vh', border: 'none' }} />
+              <iframe src={preview.url} title="Prescription PDF"
+                style={{ width: '80vw', height: '80vh', border: 'none' }} />
             ) : (
-              <img src={preview.url} alt="Prescription" style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain' }} />
+              <img src={preview.url} alt="Prescription"
+                style={{ maxWidth: '90vw', maxHeight: '80vh', objectFit: 'contain', display: 'block' }} />
             )}
           </div>
         </div>

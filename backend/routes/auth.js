@@ -103,6 +103,16 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Tighter limiter for login to slow brute-force attacks
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  message: { message: 'Too many login attempts. Please try again in 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true, // only count failed logins
+});
+
 router.post('/register', authLimiter, [
   body('name').trim().notEmpty().withMessage('Name is required.').isLength({ max: 100 }),
   body('email').isEmail().normalizeEmail().withMessage('Valid email required.'),
@@ -201,7 +211,7 @@ router.post('/resend-email-otp', authLimiter, [body('email').isEmail().normalize
   } catch (err) { next(err); }
 });
 
-router.post('/login', authLimiter, [
+router.post('/login', loginLimiter, authLimiter, [
   body('email').isEmail().normalizeEmail(),
   body('password').notEmpty(),
 ], async (req, res, next) => {
