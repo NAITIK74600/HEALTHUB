@@ -39,10 +39,26 @@ async function main() {
   const conn = await pool.getConnection();
   console.log('Connected to MySQL:', process.env.MYSQL_DATABASE);
 
-  // First ensure the column exists (safe migration)
-  await conn.execute(`ALTER TABLE products ADD COLUMN IF NOT EXISTS lifestyle_category VARCHAR(100) NULL DEFAULT NULL`).catch(() => {});
-  await conn.execute(`CREATE INDEX idx_products_lifestyle ON products (lifestyle_category)`).catch(() => {});
-  console.log('lifestyle_category column ensured.');
+  // Add column safely — check INFORMATION_SCHEMA first (works on all MySQL versions)
+  const [[colCheck]] = await conn.execute(
+    `SELECT COUNT(*) AS cnt FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = 'lifestyle_category'`
+  );
+  if (Number(colCheck.cnt) === 0) {
+    await conn.execute(`ALTER TABLE products ADD COLUMN lifestyle_category VARCHAR(100) NULL DEFAULT NULL`);
+    console.log('lifestyle_category column added.');
+  } else {
+    console.log('lifestyle_category column already exists.');
+  }
+  // Add index if missing
+  const [[idxCheck]] = await conn.execute(
+    `SELECT COUNT(*) AS cnt FROM INFORMATION_SCHEMA.STATISTICS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND INDEX_NAME = 'idx_products_lifestyle'`
+  );
+  if (Number(idxCheck.cnt) === 0) {
+    await conn.execute(`CREATE INDEX idx_products_lifestyle ON products (lifestyle_category)`).catch(() => {});
+    console.log('Index idx_products_lifestyle created.');
+  }
 
   const whereClause = ALL_MODE
     ? 'WHERE is_deleted = 0'

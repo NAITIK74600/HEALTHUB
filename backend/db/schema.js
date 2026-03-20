@@ -388,7 +388,10 @@ async function ensureCoreSchema() {
   `);
 
   // Lifestyle category column — populated at import time via classifyLifestyle()
-  await execute(`ALTER TABLE products ADD COLUMN IF NOT EXISTS lifestyle_category VARCHAR(100) NULL DEFAULT NULL`).catch(() => {});
+  // Use INFORMATION_SCHEMA check for MySQL 5.7 compatibility (no IF NOT EXISTS on ALTER TABLE)
+  await execute(`
+    ALTER TABLE products ADD COLUMN lifestyle_category VARCHAR(100) NULL DEFAULT NULL
+  `).catch(() => {}); // silently skip if column already exists (duplicate column error)
   await execute(`CREATE INDEX idx_products_lifestyle ON products (lifestyle_category)`).catch(() => {});
 
   await seedDefaultLabTests();
