@@ -58,6 +58,22 @@ const CATEGORY_ICONS = {
 };
 const DEFAULT_CAT = { icon: <Hospital size={28} />, bg: '#F0FBF4', color: '#1E8449' };
 
+// Customer-facing Shop by Category — 12 lifestyle groups matching CategoryNav
+const SHOP_CATS = [
+  { slug: 'allopathic',         label: 'Medicines',          icon: <Pill size={28} />,        bg: '#FEF2F2', color: '#C0392B' },
+  { slug: 'ayurveda',           label: 'Ayurveda',           icon: <Leaf size={28} />,        bg: '#F0FBF4', color: '#1E8449' },
+  { slug: 'homeopathy',         label: 'Homeopathy',         icon: <Droplet size={28} />,     bg: '#EFF6FF', color: '#2563EB' },
+  { slug: 'skin-care',          label: 'Skin Care',          icon: <Sparkles size={28} />,    bg: '#FFF0F6', color: '#DB2777' },
+  { slug: 'hair-care',          label: 'Hair Care',          icon: <Scissors size={28} />,    bg: '#F0FFFE', color: '#0D9488' },
+  { slug: 'baby-care',          label: 'Baby Care',          icon: <Baby size={28} />,        bg: '#FDF4FF', color: '#9333EA' },
+  { slug: 'vitamins-nutrition', label: 'Vitamins & Nutrition', icon: <Activity size={28} />,  bg: '#FFFBEB', color: '#D97706' },
+  { slug: 'fitness-health',     label: 'Fitness & Health',   icon: <Zap size={28} />,         bg: '#EFF6FF', color: '#2563EB' },
+  { slug: 'sexual-wellness',    label: 'Sexual Wellness',    icon: <Heart size={28} />,       bg: '#FFF5E5', color: '#EA580C' },
+  { slug: 'dental',             label: 'Dental Care',        icon: <SmilePlus size={28} />,   bg: '#F0FFFE', color: '#0D9488' },
+  { slug: 'diabetes-care',      label: 'Diabetes Care',      icon: <Thermometer size={28} />, bg: '#E8EEFF', color: '#4F46E5' },
+  { slug: 'supports-braces',    label: 'Supports & Braces',  icon: <Shield size={28} />,      bg: '#F0F4F8', color: '#334155' },
+];
+
 // Personal-care category tiles matching the screenshot style
 const PERSONAL_CARE_CATS = [
   { label: 'Skin Care',       slug: 'skin-care',       gradient: 'linear-gradient(135deg,#8BC34A,#5D9E3F)', emoji: '✨' },
@@ -397,15 +413,12 @@ export default function Home() {
             <Link to="/products" className="section__link">All Products <ChevronRight size={14} /></Link>
           </div>
           <div className="category-grid-v2">
-            {categories.map((cat, idx) => {
-              const cfg = CATEGORY_ICONS[cat.slug] || DEFAULT_CAT;
-              return (
-                <Link key={cat._id} to={`/products?category=${cat.slug}`} className="cat-tile ripple-btn" onClick={ripple} style={{ animationDelay: `${idx * 0.04}s` }}>
-                  <span className="cat-tile__icon" style={{ background: cfg.bg, color: cfg.color }}>{cfg.icon}</span>
-                  <span className="cat-tile__name">{cat.name}</span>
-                </Link>
-              );
-            })}
+            {SHOP_CATS.map((cat, idx) => (
+              <Link key={cat.slug} to={`/products?category=${cat.slug}`} className="cat-tile ripple-btn" onClick={ripple} style={{ animationDelay: `${idx * 0.04}s` }}>
+                <span className="cat-tile__icon" style={{ background: cat.bg, color: cat.color }}>{cat.icon}</span>
+                <span className="cat-tile__name">{cat.label}</span>
+              </Link>
+            ))}
           </div>
         </div>
       </AnimatedSection>
