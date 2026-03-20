@@ -143,6 +143,17 @@ function parseImages(value) {
 }
 
 function mapProduct(row) {
+  // Parse secondary_category_ids JSON column safely
+  let secondaryCategoryIds = [];
+  if (row.secondary_category_ids) {
+    try {
+      const arr = typeof row.secondary_category_ids === 'string'
+        ? JSON.parse(row.secondary_category_ids)
+        : row.secondary_category_ids;
+      secondaryCategoryIds = Array.isArray(arr) ? arr.map(Number).filter(Boolean) : [];
+    } catch { secondaryCategoryIds = []; }
+  }
+
   return {
     _id: String(row.id),
     code: row.code || '',
@@ -153,6 +164,7 @@ function mapProduct(row) {
       name: row.category_name,
       slug: row.category_slug,
     } : null,
+    secondaryCategoryIds,
     brand: row.brand || '',
     company: row.company || '',
     description: row.description || '',
@@ -204,8 +216,13 @@ function buildProductWhere({ admin = false, params = {}, categoryIds = [] } = {}
   if (!admin) where.push('p.is_active = 1');
 
   if (categoryIds.length) {
-    where.push(`p.category_id IN (${categoryIds.map(() => '?').join(', ')})`);
-    values.push(...categoryIds);
+    // Also match products where any of the requested categories appear in secondary_category_ids
+    const inPlaceholders = categoryIds.map(() => '?').join(', ');
+    const secondaryChecks = categoryIds
+      .map(() => `JSON_CONTAINS(COALESCE(p.secondary_category_ids, '[]'), CAST(? AS JSON))`)
+      .join(' OR ');
+    where.push(`(p.category_id IN (${inPlaceholders}) OR ${secondaryChecks})`);
+    values.push(...categoryIds, ...categoryIds);
   }
 
   if (params.requiresPrescription !== undefined) {
@@ -850,8 +867,8 @@ router.post('/', requireAuth, requireAdmin, auditLogger('CREATE_PRODUCT', 'Produ
     const result = await execute(
       `INSERT INTO products
         (code, name, slug, category_id, brand, company, description, pack, mrp, price, stock, requires_prescription,
-         images_json, expiry_date, batch_number, salt, side_effects, is_active, is_deleted)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0)`,
+         images_json, expiry_date, batch_number, salt, side_effects, secondary_category_ids, is_active, is_deleted)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0)`,
       [
         req.body.code || '',
         req.body.name.trim(),
@@ -870,6 +887,7 @@ router.post('/', requireAuth, requireAdmin, auditLogger('CREATE_PRODUCT', 'Produ
         req.body.batchNumber || '',
         req.body.salt || '',
         req.body.sideEffects || '',
+        JSON.stringify(Array.isArray(req.body.secondaryCategoryIds) ? req.body.secondaryCategoryIds.map(Number).filter(Boolean) : []),
       ]
     );
 
@@ -911,7 +929,7 @@ router.put('/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })], a
       `UPDATE products SET
         code = ?, name = ?, slug = ?, category_id = ?, brand = ?, company = ?, description = ?, pack = ?,
         mrp = ?, price = ?, stock = ?, requires_prescription = ?, expiry_date = ?,
-        batch_number = ?, salt = ?, side_effects = ?, is_active = ?
+        batch_number = ?, salt = ?, side_effects = ?, is_active = ?, secondary_category_ids = ?
        WHERE id = ?`,
       [
         req.body.code !== undefined ? req.body.code : current.code,
@@ -933,6 +951,9 @@ router.put('/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })], a
         req.body.salt !== undefined ? req.body.salt : current.salt,
         req.body.sideEffects !== undefined ? req.body.sideEffects : current.side_effects,
         req.body.isActive !== undefined ? (req.body.isActive === true || req.body.isActive === 'true' ? 1 : 0) : current.is_active,
+        req.body.secondaryCategoryIds !== undefined
+          ? JSON.stringify(Array.isArray(req.body.secondaryCategoryIds) ? req.body.secondaryCategoryIds.map(Number).filter(Boolean) : [])
+          : (current.secondary_category_ids || null),
         req.params.id,
       ]
     );

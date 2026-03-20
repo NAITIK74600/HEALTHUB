@@ -394,9 +394,80 @@ async function ensureCoreSchema() {
   `).catch(() => {}); // silently skip if column already exists (duplicate column error)
   await execute(`CREATE INDEX idx_products_lifestyle ON products (lifestyle_category)`).catch(() => {});
 
+  // Secondary categories — allows a product to appear in multiple categories
+  // e.g. Dolo: primary = caps-tabs, secondary = [allopathic]
+  await execute(`
+    ALTER TABLE products ADD COLUMN secondary_category_ids JSON NULL DEFAULT NULL
+  `).catch(() => {});
+
+  await autoSeedBaseCategories();
   await seedDefaultLabTests();
   await ensureSuperAdmin();
   initialized = true;
+}
+
+// ── Auto-seed all proper DB categories at startup ─────────────────────────────
+// Upserts the canonical list and soft-deletes any category whose slug is a
+// lifestyle slug (e.g. "sexual-wellness") — those are not DB categories.
+async function autoSeedBaseCategories() {
+  const CATS = [
+    { name: 'Caps & Tablets',       slug: 'caps-tabs',        ord:  1 },
+    { name: 'Liquids & Syrups',     slug: 'liquids',          ord:  2 },
+    { name: 'Cream & Ointment',     slug: 'cream-ointment',   ord:  3 },
+    { name: 'Drops',                slug: 'drop',             ord:  4 },
+    { name: 'Powder',               slug: 'powder',           ord:  5 },
+    { name: 'Lotion',               slug: 'lotion',           ord:  6 },
+    { name: 'Injection',            slug: 'injection',        ord:  7 },
+    { name: 'Inhaler',              slug: 'inhaler',          ord:  8 },
+    { name: 'Softgel Capsules',     slug: 'softgel-capsules', ord:  9 },
+    { name: 'Fluids & IV',          slug: 'fluids',           ord: 10 },
+    { name: 'High Value Medicines', slug: 'high-value',       ord: 11 },
+    { name: 'FMCG / Consumer',      slug: 'fmcg',             ord: 12 },
+    { name: 'Surgical & Supports',  slug: 'surgicals',        ord: 13 },
+    { name: 'Generic Medicines',    slug: 'generic',          ord: 14 },
+    { name: 'Containers & Devices', slug: 'container',        ord: 15 },
+    { name: 'Pharma Misc',          slug: 'pharma-misc',      ord: 16 },
+    { name: 'Refrigerated',         slug: 'fridge',           ord: 17 },
+    { name: 'Allopathic',           slug: 'allopathic',       ord: 19 },
+    { name: 'Ayurvedic',            slug: 'ayurvedic',        ord: 20 },
+    { name: 'Homeopathy',           slug: 'homeopathy',       ord: 21 },
+    { name: 'Vaccines',             slug: 'vaccines',         ord: 22 },
+    { name: 'Dental Care',          slug: 'dental',           ord: 23 },
+    { name: 'OTC',                  slug: 'otc',              ord: 24 },
+    { name: 'Herbal',               slug: 'herbal',           ord: 25 },
+    { name: 'Nutrition',            slug: 'nutrition',        ord: 26 },
+    { name: 'Other',                slug: 'other',            ord: 99 },
+  ];
+
+  for (const cat of CATS) {
+    const rows = await query('SELECT id FROM categories WHERE slug = ? LIMIT 1', [cat.slug]);
+    if (rows.length) {
+      await execute(
+        'UPDATE categories SET name = ?, ord = ?, is_deleted = 0 WHERE slug = ?',
+        [cat.name, cat.ord, cat.slug]
+      );
+    } else {
+      await execute(
+        'INSERT INTO categories (name, slug, ord, is_deleted) VALUES (?, ?, ?, 0)',
+        [cat.name, cat.slug, cat.ord]
+      );
+    }
+  }
+
+  // Soft-delete lifestyle slugs that were mistakenly added as DB categories
+  const LIFESTYLE_ONLY = [
+    'sexual-wellness', 'skin-care', 'hair-care', 'baby-care',
+    'fitness-health', 'vitamins-nutrition', 'diabetes-care',
+    'supports-braces', 'immunity-boosters',
+  ];
+  const properSlugs = CATS.map(c => c.slug);
+  const toRemove = LIFESTYLE_ONLY.filter(s => !properSlugs.includes(s));
+  if (toRemove.length) {
+    await execute(
+      `UPDATE categories SET is_deleted = 1 WHERE slug IN (${toRemove.map(() => '?').join(',')})`,
+      toRemove
+    );
+  }
 }
 
 async function seedDefaultLabTests() {

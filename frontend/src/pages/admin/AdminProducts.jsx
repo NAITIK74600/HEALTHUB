@@ -13,7 +13,7 @@ import {
   FileSpreadsheet, CheckCircle, AlertTriangle, Search, Package, Percent, Zap, Sparkles,
 } from 'lucide-react';
 
-const EMPTY = { name: '', category: '', brand: '', company: '', salt: '', description: '', mrp: '', price: '', stock: '', requiresPrescription: false };
+const EMPTY = { name: '', category: '', secondaryCategoryIds: [], brand: '', company: '', salt: '', description: '', mrp: '', price: '', stock: '', requiresPrescription: false };
 
 const STOCK_OPTS = [
   { value: 'all', label: 'All Stock' },
@@ -293,7 +293,7 @@ export default function AdminProducts() {
     e.preventDefault();
     try {
       // Send product data as JSON (no files — images handled separately)
-      const formPayload = { ...form };
+      const formPayload = { ...form, secondaryCategoryIds: (form.secondaryCategoryIds || []).map(Number).filter(Boolean) };
       let productId = editing;
       if (editing) { await updateProduct(editing, formPayload); toast.success('Product updated.'); }
       else         { const res = await createProduct(formPayload); toast.success('Product created.'); productId = res.data._id; }
@@ -429,7 +429,7 @@ export default function AdminProducts() {
   /* ── Edit helpers ── */
   const startEdit = (p) => {
     setEditing(p._id);
-    setForm({ name: p.name, category: p.category?._id || '', brand: p.brand || '', company: p.company || '', salt: p.salt || '', description: p.description || '', mrp: p.mrp, price: p.price, stock: p.stock, requiresPrescription: p.requiresPrescription });
+    setForm({ name: p.name, category: p.category?._id || '', secondaryCategoryIds: (p.secondaryCategoryIds || []).map(String), brand: p.brand || '', company: p.company || '', salt: p.salt || '', description: p.description || '', mrp: p.mrp, price: p.price, stock: p.stock, requiresPrescription: p.requiresPrescription });
     setImages([]); setImgPreviews([]); setExistingImages(p.images || []); setRemoveImages([]);
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -779,8 +779,12 @@ export default function AdminProducts() {
               <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required maxLength={200} />
             </div>
             <div className="form-group">
-              <label>Category *</label>
-              <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} required>
+              <label>Primary Category *</label>
+              <select
+                value={form.category}
+                onChange={e => setForm(f => ({ ...f, category: e.target.value, secondaryCategoryIds: f.secondaryCategoryIds.filter(id => id !== e.target.value) }))}
+                required
+              >
                 <option value="">Select category</option>
                 {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
               </select>
@@ -796,6 +800,31 @@ export default function AdminProducts() {
               <input value={form.company} onChange={e => setForm(f => ({ ...f, company: e.target.value }))} maxLength={150} placeholder="e.g. Sun Pharma, Cipla Ltd" />
             </div>
           </div>
+
+          {/* ── Also appears in (multi-category) ── */}
+          <div className="form-group">
+            <label>Also appears in <span style={{ fontWeight: 400, color: 'var(--gray-400)', fontSize: '0.82em' }}>(optional secondary categories)</span></label>
+            <div style={{ border: '1.5px solid var(--border)', borderRadius: 8, padding: '10px 14px', maxHeight: 140, overflowY: 'auto', background: 'var(--gray-50)', display: 'flex', flexWrap: 'wrap', gap: '6px 20px' }}>
+              {categories.filter(c => c._id !== form.category).map(cat => (
+                <label key={cat._id} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                  <input
+                    type="checkbox"
+                    checked={form.secondaryCategoryIds.includes(cat._id)}
+                    onChange={e => setForm(f => ({
+                      ...f,
+                      secondaryCategoryIds: e.target.checked
+                        ? [...f.secondaryCategoryIds, cat._id]
+                        : f.secondaryCategoryIds.filter(id => id !== cat._id),
+                    }))}
+                  />
+                  {cat.name}
+                </label>
+              ))}
+              {categories.length === 0 && <span style={{ color: 'var(--gray-400)', fontSize: 12 }}>Loading categories…</span>}
+            </div>
+            <p style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 4, marginBottom: 0 }}>e.g. Dolo 650 → Primary: Caps &amp; Tablets · Also in: Allopathic</p>
+          </div>
+
           <div className="form-group">
             <label>Composition / Salt</label>
             <input
@@ -1033,7 +1062,13 @@ export default function AdminProducts() {
                         <span className="missing-info-badge" title="Missing salt or description">⚠ Missing</span>
                       )}
                       {p.brand && <span className="product-name-cell__brand">{p.brand}</span>}
-                      <span className="product-name-cell__cat">{p.category?.name || '-'}</span>
+                      <span className="product-name-cell__cat">
+                        {p.category?.name || '-'}
+                        {p.secondaryCategoryIds?.length > 0 && p.secondaryCategoryIds.map(id => {
+                          const cat = categories.find(c => c._id === String(id));
+                          return cat ? <span key={id} style={{ opacity: 0.7 }}> · {cat.name}</span> : null;
+                        })}
+                      </span>
                     </div>
                   </td>
                   <td style={{ color: 'var(--gray-500)', textDecoration: 'line-through', fontSize: '0.85rem' }}>&#8377;{p.mrp}</td>
