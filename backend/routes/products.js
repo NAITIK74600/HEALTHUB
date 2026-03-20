@@ -937,7 +937,7 @@ router.patch('/bulk-update', requireAuth, requireAdmin, async (req, res, next) =
 
     if (applyToAll) {
       const categoryIds = await resolveCategoryIds(filterParams.category);
-      const { whereSql, values: whereValues } = buildProductWhere({ admin: true, params: filterParams, categoryIds });
+      const { whereSql, values: whereValues } = buildProductWhere({ admin: true, params: filterParams, categoryIds: categoryIds || [] });
       // Direct update using the same WHERE clause
       const result = await execute(
         `UPDATE products p SET ${setParts.join(', ')} ${whereSql}`,
@@ -979,7 +979,7 @@ router.patch('/bulk-discount', requireAuth, requireAdmin, async (req, res, next)
 
     if (applyToAll) {
       const categoryIds = await resolveCategoryIds(filterParams.category);
-      const { whereSql, values } = buildProductWhere({ admin: true, params: filterParams, categoryIds });
+      const { whereSql, values } = buildProductWhere({ admin: true, params: filterParams, categoryIds: categoryIds || [] });
       // Use query() (pool.query, NOT prepared statement execute) for arithmetic UPDATE
       const result = await query(
         `UPDATE products p SET p.price = ROUND(p.mrp * ?, 2) ${whereSql}`,
