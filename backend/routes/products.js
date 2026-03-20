@@ -565,7 +565,9 @@ router.post('/ai-fill', requireAuth, requireAdmin, async (req, res, next) => {
     res.json({ success: true, salt, description });
   } catch (err) {
     if (err.message.includes('GEMINI_API_KEY')) return res.status(503).json({ message: 'Gemini API Key missing.' });
-    if (err.message.includes('429')) return res.status(429).json({ message: 'AI quota exceeded. Try later.' });
+    if (err.message.includes('429') || err.message.includes('quota') || err.message.includes('RESOURCE_EXHAUSTED')) {
+      return res.status(429).json({ message: 'AI quota exhausted for today. The free-tier daily limit has been reached. Please try again tomorrow or upgrade the Gemini API plan.' });
+    }
     next(err);
   }
 });

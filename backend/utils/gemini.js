@@ -86,17 +86,16 @@ function parseGeminiResponse(text) {
 
 // Models to try in order — if one fails (quota/unavailable), next is used.
 // You can override the preferred model by setting GEMINI_MODEL in backend/.env.
-// Confirmed working 2026-03-20 via live API test.
+// Verified working March 2026 (may fail with 429 if free-tier daily quota is exhausted).
 const FALLBACK_GEMINI_MODELS = [
-  'gemini-3.1-flash-lite-preview',  // fast, latest, confirmed working
-  'gemini-2.5-flash-lite',          // fallback
-  'gemini-2.5-flash',               // fallback
-  'gemini-flash-lite-latest',       // alias fallback
-  'gemini-flash-latest',            // final fallback
+  'gemini-2.0-flash',           // primary — recommended
+  'gemini-2.0-flash-lite',      // lighter / faster fallback
+  'gemini-1.5-flash-8b',        // ultra-light fallback
+  'gemini-1.5-pro',             // high-quality fallback
 ];
 
 function getGeminiModels() {
-  const preferred = getEnvVar('GEMINI_MODEL') || 'gemini-3.1-flash-lite-preview';
+  const preferred = getEnvVar('GEMINI_MODEL') || 'gemini-2.0-flash';
   const list = [preferred, ...FALLBACK_GEMINI_MODELS];
   return [...new Set(list.map((m) => String(m || '').trim()).filter(Boolean))];
 }
