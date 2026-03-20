@@ -25,10 +25,12 @@ AddDefaultCharset UTF-8
 <IfModule mod_headers.c>
   Header always set X-Content-Type-Options "nosniff"
   Header always set X-Frame-Options "SAMEORIGIN"
-  # Use all four directive forms so a cPanel server-level Permissions-Policy
-  # (even one set with 'always') is removed and replaced with our permissive one
-  Header unset Permissions-Policy
+  # Remove any existing Permissions-Policy (including server/vhost level)
   Header always unset Permissions-Policy
-  Header set Permissions-Policy "geolocation=*, camera=(), microphone=()"
+  Header unset Permissions-Policy
+  # Re-set with geolocation allowed. Also use Header edit to overwrite
+  # any value a higher-level 'always' directive may have already written.
   Header always set Permissions-Policy "geolocation=*, camera=(), microphone=()"
+  Header edit Permissions-Policy "geolocation=[^,;]*" "geolocation=*"
+  Header always edit Permissions-Policy "geolocation=[^,;]*" "geolocation=*"
 </IfModule>

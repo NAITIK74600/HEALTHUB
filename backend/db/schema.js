@@ -367,6 +367,7 @@ async function ensureCoreSchema() {
   await execute(`ALTER TABLE prescriptions ADD COLUMN patient_name VARCHAR(100) NULL`).catch(() => {});
   await execute(`ALTER TABLE prescriptions ADD COLUMN doctor_name VARCHAR(100) NULL`).catch(() => {});
   await execute(`ALTER TABLE prescriptions ADD COLUMN notes TEXT NULL`).catch(() => {});
+  await execute(`ALTER TABLE prescriptions ADD COLUMN address_json JSON NULL`).catch(() => {});
 
   await seedDefaultLabTests();
   await ensureSuperAdmin();
