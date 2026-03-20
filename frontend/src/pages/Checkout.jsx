@@ -175,13 +175,15 @@ export default function Checkout() {
       }
 
       const orderPayload = {
-        items: items.map(i => ({ productId: i.productId, qty: i.qty })),
+        items: items.map(i => ({ productId: i.productId, name: i.name, price: i.price, qty: i.qty })),
         deliveryType: formData.deliveryType,
         address: formData.deliveryType === 'delivery'
           ? { line1: formData.line1, line2: formData.line2 || '', city: formData.city, pincode: formData.pincode, phone: formData.phone }
           : { phone: formData.phone, line1: 'Store Pickup - Batla Medicos', city: 'New Delhi', pincode: '110025' },
         ...(formData.deliveryType === 'takeaway' ? { takeawaySlot: formData.takeawaySlot } : {}),
-        payment: { method: formData.method },
+        paymentMethod: formData.method === 'razorpay' ? 'online' : formData.method,
+        discount: couponDiscount,
+        deliveryCharge: deliveryCharge,
         ...(prescriptionUrl ? { prescriptionUrl } : {}),
         ...(couponResult?.code ? { couponCode: couponResult.code } : {}),
       };
@@ -201,10 +203,10 @@ export default function Checkout() {
           handler: async (response) => {
             try {
               await verifyPayment({
-                razorpayOrderId:   response.razorpay_order_id,
-                razorpayPaymentId: response.razorpay_payment_id,
-                razorpaySignature: response.razorpay_signature,
-                orderId:           data.order._id,
+                razorpay_order_id:   response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature:  response.razorpay_signature,
+                orderId:             data.order._id,
               });
               playOrderSound();
               clearCart();
