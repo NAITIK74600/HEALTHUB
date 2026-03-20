@@ -5,6 +5,7 @@ const requireAuth = require('../middleware/requireAuth');
 const requireAdmin = require('../middleware/requireAdmin');
 const { query, execute } = require('../db/mysql');
 const { notifyUser, notifyAdmin } = require('../utils/notify');
+const { sendOrderConfirmation, sendOrderStatusUpdate } = require('../utils/mailer');
 
 const router = express.Router();
 
@@ -149,6 +150,15 @@ router.post('/', requireAuth, [
       link: `/admin/orders`,
     });
 
+    // Send order confirmation email (fire-and-forget — don't hold up response)
+    sendOrderConfirmation(req.user.email, req.user.name, {
+      _id: String(orderId),
+      items: orderItems.map(i => ({ name: i.name, price: i.price, qty: i.qty })),
+      total,
+      deliveryType: address?.deliveryType || 'delivery',
+      takeawaySlot: address?.takeawaySlot,
+    }).catch(err => console.error('[email] order confirm failed:', err.message));
+
     res.status(201).json({ order: mapOrder(rows[0], orderItemRows) });
   } catch (err) { next(err); }
 });
@@ -184,6 +194,14 @@ router.post('/verify-payment', requireAuth, async (req, res, next) => {
         message: `Payment of ₹${Number(total).toFixed(2)} confirmed for order #${oid}.`,
         link: `/orders/${oid}`,
       });
+      // Send order confirmation email (fire-and-forget)
+      const oiRows = await query('SELECT name, price, qty FROM order_items WHERE order_id = ?', [oid]);
+      sendOrderConfirmation(req.user.email, req.user.name, {
+        _id: String(oid),
+        items: oiRows.map(i => ({ name: i.name, price: Number(i.price), qty: Number(i.qty) })),
+        total: Number(total),
+        deliveryType: 'delivery',
+      }).catch(err => console.error('[email] payment confirm failed:', err.message));
     }
 
     res.json({ message: 'Payment verified.' });
@@ -272,7 +290,41 @@ router.patch('/:id/status', requireAuth, requireAdmin, [param('id').isInt({ min:
   try {
     const { status } = req.body;
     if (!status) return res.status(422).json({ message: 'Status required.' });
+
+    // Fetch order + customer before updating so we can send notifications
+    const orderRows = await query(
+      `SELECT o.id, o.total, o.user_id, u.email AS user_email, u.name AS user_name
+       FROM orders o LEFT JOIN users u ON u.id = o.user_id WHERE o.id = ?`,
+      [req.params.id]
+    );
+    if (!orderRows.length) return res.status(404).json({ message: 'Order not found.' });
+
     await execute('UPDATE orders SET status = ? WHERE id = ?', [status, req.params.id]);
+
+    const { id: oid, total, user_id, user_email, user_name } = orderRows[0];
+
+    // Bell notification to customer
+    const STATUS_LABELS = {
+      confirmed: 'Your order has been confirmed!',
+      dispatched: 'Your order is on the way!',
+      delivered: 'Your order has been delivered!',
+      cancelled: 'Your order has been cancelled.',
+    };
+    if (user_id && STATUS_LABELS[status]) {
+      notifyUser(user_id, {
+        type: `order_${status}`,
+        title: STATUS_LABELS[status],
+        message: `Order #${oid} status updated to: ${status}.`,
+        link: `/orders/${oid}`,
+      });
+    }
+
+    // Email to customer (fire-and-forget)
+    if (user_email) {
+      sendOrderStatusUpdate(user_email, user_name, { _id: String(oid), total: Number(total) }, status)
+        .catch(err => console.error('[email] status update failed:', err.message));
+    }
+
     res.json({ message: 'Status updated.' });
   } catch (err) { next(err); }
 });
@@ -312,6 +364,163 @@ router.post('/:id/reorder', requireAuth, [param('id').isInt({ min: 1 })], async 
 router.post('/webhook', (req, res) => {
   // TODO: Implement Razorpay webhook handling
   res.json({ status: 'ok' });
+});
+
+// GET /api/orders/:id/receipt — download PDF receipt
+router.get('/:id/receipt', requireAuth, [param('id').isInt({ min: 1 })], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+
+    const rows = await query(
+      `SELECT o.*, u.name AS user_name, u.email AS user_email, u.phone AS user_phone
+       FROM orders o LEFT JOIN users u ON u.id = o.user_id WHERE o.id = ? AND o.is_deleted = 0`,
+      [req.params.id]
+    );
+    if (!rows.length) return res.status(404).json({ message: 'Order not found.' });
+    if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && rows[0].user_id !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized.' });
+    }
+
+    const items = await query('SELECT * FROM order_items WHERE order_id = ?', [req.params.id]);
+    const r = rows[0];
+
+    let addr = {};
+    try { addr = typeof r.address_json === 'string' ? JSON.parse(r.address_json) : (r.address_json || {}); } catch {}
+
+    const PDFDocument = require('pdfkit');
+    const doc = new PDFDocument({ size: 'A4', margin: 0 });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="receipt-${req.params.id}.pdf"`);
+    doc.pipe(res);
+
+    const L = 50, R = 545, W = R - L;
+    const GREEN = '#2e7d32', GRAY = '#666666', BLACK = '#1a1a1a';
+
+    // ── Green header band ───────────────────────────────────────────────────
+    doc.rect(0, 0, 595, 88).fill(GREEN);
+    doc.fillColor('#ffffff').fontSize(22).font('Helvetica-Bold')
+      .text('Batla Medicos', L, 14, { width: W, align: 'center' });
+    doc.fontSize(9).font('Helvetica')
+      .text('F 41/2 Nafees Road, Batla House, Jamia Nagar, New Delhi - 110025', L, 44, { width: W, align: 'center' })
+      .text('Ph: +91 9990165925   |   ordersupport@batlamedicos.shop', L, 58, { width: W, align: 'center' });
+
+    // ── Invoice meta ────────────────────────────────────────────────────────
+    const invoiceNo = 'BM-' + String(r.id).padStart(6, '0');
+    const dateStr = new Date(r.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    const payLabel = r.payment_status === 'cod' ? 'Cash on Delivery' : 'Online Payment';
+
+    doc.fillColor(BLACK).fontSize(15).font('Helvetica-Bold')
+      .text('TAX INVOICE', L, 102, { width: W, align: 'center' });
+    doc.fillColor(GRAY).fontSize(9).font('Helvetica')
+      .text(`Invoice No: ${invoiceNo}   |   Date: ${dateStr}   |   Status: ${String(r.status).toUpperCase()}   |   Payment: ${payLabel}`, L, 122, { width: W, align: 'center' });
+
+    // ── Divider ─────────────────────────────────────────────────────────────
+    doc.moveTo(L, 142).lineTo(R, 142).lineWidth(0.5).strokeColor('#cccccc').stroke();
+
+    // ── Bill To / Deliver To ─────────────────────────────────────────────────
+    let leftY = 152, rightY = 152;
+    const MID = 320;
+
+    doc.fillColor(BLACK).fontSize(10).font('Helvetica-Bold').text('Bill To:', L, leftY);
+    leftY += 14;
+    doc.fontSize(9).font('Helvetica').fillColor(GRAY);
+    doc.text(r.user_name || 'Customer', L, leftY); leftY += 12;
+    if (r.user_email) { doc.text(r.user_email, L, leftY); leftY += 12; }
+    if (r.user_phone) { doc.text('Ph: ' + r.user_phone, L, leftY); leftY += 12; }
+
+    doc.fillColor(BLACK).fontSize(10).font('Helvetica-Bold').text('Deliver To:', MID, rightY);
+    rightY += 14;
+    doc.fontSize(9).font('Helvetica').fillColor(GRAY);
+    if (addr.line1) { doc.text(addr.line1, MID, rightY); rightY += 12; }
+    if (addr.line2) { doc.text(addr.line2, MID, rightY); rightY += 12; }
+    if (addr.city)  { doc.text(addr.city + (addr.pincode ? ' - ' + addr.pincode : ''), MID, rightY); rightY += 12; }
+    if (addr.phone) { doc.text('Ph: ' + addr.phone, MID, rightY); rightY += 12; }
+
+    // ── Items table ─────────────────────────────────────────────────────────
+    let tableY = Math.max(leftY, rightY) + 16;
+
+    // Table header row
+    doc.rect(L, tableY, W, 20).fill('#f0f7f0');
+    doc.fillColor(BLACK).fontSize(9).font('Helvetica-Bold');
+    doc.text('Item', L + 6, tableY + 5, { width: 230 });
+    doc.text('Qty', L + 240, tableY + 5, { width: 50, align: 'center' });
+    doc.text('Rate (Rs)', L + 293, tableY + 5, { width: 80, align: 'right' });
+    doc.text('Amount (Rs)', L + 378, tableY + 5, { width: 115, align: 'right' });
+
+    tableY += 20;
+    let subtotal = 0;
+    let alt = false;
+    doc.font('Helvetica').fontSize(9);
+
+    for (const item of items) {
+      const price = Number(item.price);
+      const qty = Number(item.qty);
+      const amount = price * qty;
+      subtotal += amount;
+      if (alt) doc.rect(L, tableY, W, 18).fill('#fafafa');
+      alt = !alt;
+      doc.fillColor(BLACK);
+      const name = String(item.name || '').slice(0, 50);
+      doc.text(name, L + 6, tableY + 4, { width: 228 });
+      doc.text(String(qty), L + 240, tableY + 4, { width: 50, align: 'center' });
+      doc.text(price.toFixed(2), L + 293, tableY + 4, { width: 80, align: 'right' });
+      doc.text(amount.toFixed(2), L + 378, tableY + 4, { width: 115, align: 'right' });
+      tableY += 18;
+    }
+
+    // ── Totals ───────────────────────────────────────────────────────────────
+    doc.moveTo(L, tableY).lineTo(R, tableY).lineWidth(0.5).strokeColor('#cccccc').stroke();
+    tableY += 10;
+    const total = Number(r.total || 0);
+
+    doc.fillColor(GRAY).fontSize(9).font('Helvetica');
+    doc.text('Subtotal:', L + 293, tableY, { width: 80, align: 'right' });
+    doc.text('Rs ' + subtotal.toFixed(2), L + 378, tableY, { width: 115, align: 'right' });
+    tableY += 16;
+    doc.text('Delivery:', L + 293, tableY, { width: 80, align: 'right' });
+    doc.text('FREE', L + 378, tableY, { width: 115, align: 'right' });
+    tableY += 14;
+    doc.moveTo(L + 293, tableY).lineTo(R, tableY).lineWidth(0.5).strokeColor('#cccccc').stroke();
+    tableY += 8;
+    doc.fillColor(GREEN).fontSize(11).font('Helvetica-Bold');
+    doc.text('Grand Total:', L + 293, tableY, { width: 80, align: 'right' });
+    doc.text('Rs ' + total.toFixed(2), L + 378, tableY, { width: 115, align: 'right' });
+
+    // ── Footer ───────────────────────────────────────────────────────────────
+    const footerY = 755;
+    doc.moveTo(L, footerY).lineTo(R, footerY).lineWidth(0.5).strokeColor('#cccccc').stroke();
+    doc.fillColor(GRAY).fontSize(8).font('Helvetica');
+    doc.text('Thank you for shopping with Batla Medicos!', L, footerY + 8, { width: W, align: 'center' });
+    doc.text('This is a computer-generated invoice and does not require a physical signature.', L, footerY + 20, { width: W, align: 'center' });
+
+    doc.end();
+  } catch (err) { next(err); }
+});
+
+// POST /api/orders/:id/resend-receipt — resend order confirmation email
+router.post('/:id/resend-receipt', requireAuth, [param('id').isInt({ min: 1 })], async (req, res, next) => {
+  try {
+    const rows = await query(
+      `SELECT o.*, u.name AS user_name, u.email AS user_email
+       FROM orders o LEFT JOIN users u ON u.id = o.user_id WHERE o.id = ? AND o.is_deleted = 0`,
+      [req.params.id]
+    );
+    if (!rows.length) return res.status(404).json({ message: 'Order not found.' });
+    if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && rows[0].user_id !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized.' });
+    }
+    const items = await query('SELECT name, price, qty FROM order_items WHERE order_id = ?', [req.params.id]);
+    const r = rows[0];
+    await sendOrderConfirmation(r.user_email, r.user_name, {
+      _id: String(r.id),
+      items: items.map(i => ({ name: i.name, price: Number(i.price), qty: Number(i.qty) })),
+      total: Number(r.total),
+      deliveryType: 'delivery',
+    });
+    res.json({ message: 'Receipt email sent.' });
+  } catch (err) { next(err); }
 });
 
 module.exports = router;

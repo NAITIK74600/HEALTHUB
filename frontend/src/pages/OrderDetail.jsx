@@ -1,6 +1,6 @@
 ﻿import { useEffect, useState } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
-import { getOrderById } from '../api/orders';
+import { getOrderById, downloadReceipt, resendReceipt } from '../api/orders';
 import { shareLocation } from '../api/orders';
 import OrderStatusBadge from '../components/OrderStatusBadge';
 import toast from 'react-hot-toast';
@@ -63,6 +63,33 @@ export default function OrderDetail() {
     );
   };
 
+  const handleDownloadReceipt = async () => {
+    try {
+      const res = await downloadReceipt(id);
+      const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `receipt-${id}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error('Could not download receipt. Try again.');
+    }
+  };
+
+  const [resending, setResending] = useState(false);
+  const handleResendReceipt = async () => {
+    setResending(true);
+    try {
+      await resendReceipt(id);
+      toast.success('Receipt sent to your email!');
+    } catch {
+      toast.error('Could not resend receipt. Try again.');
+    } finally {
+      setResending(false);
+    }
+  };
+
   useEffect(() => {
     getOrderById(id)
       .then(r => setOrder(r.data))
@@ -93,6 +120,10 @@ export default function OrderDetail() {
         </Link>
         <div className="order-detail-page__actions">
           <button className="btn btn--primary" onClick={() => window.print()}>🖨️ Print / Save PDF</button>
+          <button className="btn btn--outline" onClick={handleDownloadReceipt}>⬇️ Download Receipt</button>
+          <button className="btn btn--outline" onClick={handleResendReceipt} disabled={resending}>
+            {resending ? 'Sending…' : '📧 Email Receipt'}
+          </button>
           <OrderStatusBadge status={order.status} />
         </div>
       </div>
