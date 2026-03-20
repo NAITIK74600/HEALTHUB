@@ -84,14 +84,11 @@ function parseGeminiResponse(text) {
   };
 }
 
-// Models to try in order — if one fails (quota/unavailable), next is used.
-// You can override the preferred model by setting GEMINI_MODEL in backend/.env.
-// Verified working March 2026 (may fail with 429 if free-tier daily quota is exhausted).
+// Models to try in order — verified March 2026.
+// gemini-1.5-* and gemini-1.0-* families are all discontinued (404).
 const FALLBACK_GEMINI_MODELS = [
-  'gemini-2.0-flash',           // primary — recommended
-  'gemini-2.0-flash-lite',      // lighter / faster fallback
-  'gemini-1.5-flash-8b',        // ultra-light fallback
-  'gemini-1.5-pro',             // high-quality fallback
+  'gemini-2.0-flash',       // primary
+  'gemini-2.0-flash-lite',  // lighter fallback
 ];
 
 function getGeminiModels() {
