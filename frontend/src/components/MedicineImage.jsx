@@ -1,11 +1,8 @@
 ﻿import { useState } from 'react';
 
-const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/+$/, '');
-const ASSET_BASE = API_BASE.replace(/\/api\/?$/, '');
 const resolveImageUrl = (url) => {
   if (!url) return '';
   if (/^https?:\/\//i.test(url)) return url;
-  if (url.startsWith('/uploads/')) return `${ASSET_BASE}${url}`;
   return url;
 };
 

@@ -19,13 +19,12 @@ import AnimatedSection from '../components/AnimatedSection';
 import { useRipple } from '../hooks/useAnimations';
 import { getAnimationSetting } from '../pages/admin/AdminSiteSettings';
 
-const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/+$/, '');
-const ASSET_BASE = API_BASE.replace(/\/api\/?$/, '');
-
 const resolveImageUrl = (url) => {
   if (!url) return '';
+  // Absolute URLs (Cloudinary, etc.) — return as-is
   if (/^https?:\/\//i.test(url)) return url;
-  if (url.startsWith('/uploads/')) return `${ASSET_BASE}${url}`;
+  // /uploads/... paths served by same Express origin in prod;
+  // proxied to localhost:5000 in dev via vite.config.js
   return url;
 };
 
