@@ -971,14 +971,15 @@ router.patch('/bulk-discount', requireAuth, requireAdmin, async (req, res, next)
       return res.status(422).json({ message: 'discountPct must be a number between 0 and 100.' });
     }
 
-    const multiplier = ((100 - pct) / 100).toFixed(6);
+    // Use a JS number (not .toFixed string) so MySQL receives a proper numeric parameter
+    const multiplier = (100 - pct) / 100;
     let modified = 0;
 
     if (applyToAll) {
       const categoryIds = await resolveCategoryIds(filterParams.category);
       const { whereSql, values } = buildProductWhere({ admin: true, params: filterParams, categoryIds });
-      // Direct update using the same WHERE clause
-      const result = await execute(
+      // Use query() (pool.query, NOT prepared statement execute) for arithmetic UPDATE
+      const result = await query(
         `UPDATE products p SET p.price = ROUND(p.mrp * ?, 2) ${whereSql}`,
         [multiplier, ...values]
       );
@@ -987,12 +988,11 @@ router.patch('/bulk-discount', requireAuth, requireAdmin, async (req, res, next)
       const targetIds = Array.isArray(ids) ? ids.map((id) => Number(id)).filter(Boolean) : [];
       if (!targetIds.length) return res.json({ message: 'Discount applied. 0 products updated.', modified: 0 });
 
-      // Process in chunks
-      const CHUNK_SIZE = 1000;
+      const CHUNK_SIZE = 500;
       for (let i = 0; i < targetIds.length; i += CHUNK_SIZE) {
         const chunk = targetIds.slice(i, i + CHUNK_SIZE);
         const placeholders = chunk.map(() => '?').join(', ');
-        const result = await execute(
+        const result = await query(
           `UPDATE products p SET p.price = ROUND(p.mrp * ?, 2) WHERE p.id IN (${placeholders})`,
           [multiplier, ...chunk]
         );

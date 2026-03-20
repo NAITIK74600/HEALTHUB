@@ -28,6 +28,7 @@ export default function NotificationBell({ adminMode = false }) {
   const [unread, setUnread] = useState(0);
   const [loading, setLoading] = useState(false);
   const dropRef = useRef(null);
+  const prevUnreadRef = useRef(0);
 
   const fetchNotifs = async () => {
     try {
@@ -35,14 +36,33 @@ export default function NotificationBell({ adminMode = false }) {
       const { data } = adminMode
         ? await getAdminNotifications({ limit: 20 })
         : await getMyNotifications({ limit: 20 });
-      setNotifs(data.notifications || []);
-      setUnread(data.unread || 0);
+      const incoming = data.notifications || [];
+      const newUnread = data.unread || 0;
+      setNotifs(incoming);
+      setUnread(newUnread);
+
+      // Show browser notification for any newly arrived unread items
+      if (newUnread > prevUnreadRef.current && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+        // Find the first unread notification to show
+        const first = incoming.find(n => !n.is_read && !n.isRead);
+        if (first) {
+          new Notification(first.title || 'Batla Medicos', { body: first.message || '', icon: '/favicon.ico' });
+        }
+      }
+      prevUnreadRef.current = newUnread;
     } catch {
       // silent — bell is non-critical
     } finally {
       setLoading(false);
     }
   };
+
+  // Request browser notification permission once on mount (non-intrusively)
+  useEffect(() => {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      Notification.requestPermission().catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     fetchNotifs();

@@ -155,7 +155,7 @@ export default function AdminProducts() {
   const hasFilters = !!(search || catFilter || brandFilter || stockFilter !== 'all' || statusFilter !== 'all');
 
   /* -- Current filter params (for applyToAll bulk) -- */
-  const currentFilterParams = { search, category: catFilter || undefined, stockFilter, status: statusFilter };
+  const currentFilterParams = { search, category: catFilter || undefined, brand: brandFilter || undefined, stockFilter, status: statusFilter };
 
   /* ── Quick stock update ── */
   const handleQuickStock = async (id, val) => {

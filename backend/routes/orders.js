@@ -4,6 +4,7 @@ const { body, query: queryValidator, param, validationResult } = require('expres
 const requireAuth = require('../middleware/requireAuth');
 const requireAdmin = require('../middleware/requireAdmin');
 const { query, execute } = require('../db/mysql');
+const { notifyUser, notifyAdmin } = require('../utils/notify');
 
 const router = express.Router();
 
@@ -131,6 +132,23 @@ router.post('/', requireAuth, [
       [orderId]
     );
     const orderItemRows = await query('SELECT * FROM order_items WHERE order_id = ?', [orderId]);
+
+    // Fire notifications (fire-and-forget — don't block the response)
+    const itemNames = orderItems.slice(0, 2).map(i => i.name).join(', ');
+    const itemSuffix = orderItems.length > 2 ? ` +${orderItems.length - 2} more` : '';
+    notifyUser(req.user.id, {
+      type: 'order_placed',
+      title: 'Order placed successfully!',
+      message: `Your order #${orderId} has been placed. Items: ${itemNames}${itemSuffix}.`,
+      link: `/orders/${orderId}`,
+    });
+    notifyAdmin({
+      type: 'order_placed',
+      title: `New order #${orderId}`,
+      message: `${req.user.name || req.user.email} placed an order worth ₹${total.toFixed(2)}.`,
+      link: `/admin/orders`,
+    });
+
     res.status(201).json({ order: mapOrder(rows[0], orderItemRows) });
   } catch (err) { next(err); }
 });
@@ -152,6 +170,22 @@ router.post('/verify-payment', requireAuth, async (req, res, next) => {
       `UPDATE orders SET payment_status = 'paid', razorpay_payment_id = ? WHERE razorpay_order_id = ?`,
       [razorpay_payment_id, razorpay_order_id]
     );
+
+    // Notify user that payment was confirmed
+    const paidRows = await query(
+      'SELECT id, user_id, total FROM orders WHERE razorpay_order_id = ? LIMIT 1',
+      [razorpay_order_id]
+    );
+    if (paidRows[0]) {
+      const { id: oid, user_id, total } = paidRows[0];
+      notifyUser(user_id, {
+        type: 'order_confirmed',
+        title: 'Payment successful!',
+        message: `Payment of ₹${Number(total).toFixed(2)} confirmed for order #${oid}.`,
+        link: `/orders/${oid}`,
+      });
+    }
+
     res.json({ message: 'Payment verified.' });
   } catch (err) { next(err); }
 });
