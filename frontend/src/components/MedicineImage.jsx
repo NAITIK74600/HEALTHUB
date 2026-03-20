@@ -1,5 +1,14 @@
 ﻿import { useState } from 'react';
 
+const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/+$/, '');
+const ASSET_BASE = API_BASE.replace(/\/api\/?$/, '');
+const resolveImageUrl = (url) => {
+  if (!url) return '';
+  if (/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith('/uploads/')) return `${ASSET_BASE}${url}`;
+  return url;
+};
+
 /* ─── Category themes ────────────────────────────────────────── */
 const THEMES = {
   allopathic:       { from: '#C0392B', to: '#922B21' },
@@ -79,7 +88,7 @@ export default function MedicineImage({ product, alt, className = '', idx = 0, s
   const storedSrcRaw = product?.images?.[idx];
   const storedSrc =
     typeof storedSrcRaw === 'string' && storedSrcRaw.trim() && !isCloudinaryUrl(storedSrcRaw)
-      ? storedSrcRaw
+      ? resolveImageUrl(storedSrcRaw)
       : null;
 
   // 1. Stored image (local upload)

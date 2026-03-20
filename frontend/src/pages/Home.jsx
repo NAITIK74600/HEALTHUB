@@ -19,6 +19,16 @@ import AnimatedSection from '../components/AnimatedSection';
 import { useRipple } from '../hooks/useAnimations';
 import { getAnimationSetting } from '../pages/admin/AdminSiteSettings';
 
+const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/+$/, '');
+const ASSET_BASE = API_BASE.replace(/\/api\/?$/, '');
+
+const resolveImageUrl = (url) => {
+  if (!url) return '';
+  if (/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith('/uploads/')) return `${ASSET_BASE}${url}`;
+  return url;
+};
+
 const CATEGORY_ICONS = {
   'caps-tabs':        { icon: <Pill size={28} />,         bg: '#FEF2F2', color: '#C0392B' },
   'liquids':          { icon: <Droplets size={28} />,     bg: '#EFF6FF', color: '#2563EB' },
@@ -215,8 +225,6 @@ export default function Home() {
     getLabTests({ limit: 6 }).then(r => setLabTests(r.data.tests || [])).catch(() => {});
   }, []);
 
-  const WHATSAPP = import.meta.env.VITE_WHATSAPP_NUMBER || '919990165925';
-
   return (
     <main>
       {/* ══════════════════════════════ HERO ══════════════════════════════ */}
@@ -336,9 +344,13 @@ export default function Home() {
           </div>
           <div className="personal-care-grid">
             {PERSONAL_CARE_CATS.map((cat, idx) => {
-              const dbBrand = personalCareBrands.find(b => b.slug === cat.slug);
+              const norm = (v) => String(v || '').trim().toLowerCase();
+              const dbBrand = personalCareBrands.find(
+                b => b.slug === cat.slug || norm(b.name) === norm(cat.label)
+              );
               const gradient = (dbBrand && dbBrand.gradient) ? dbBrand.gradient : cat.gradient;
-              const imgSrc   = (dbBrand && dbBrand.logoUrl)  ? dbBrand.logoUrl  : cat.img;
+              const imgSrcRaw = (dbBrand && dbBrand.logoUrl) ? dbBrand.logoUrl : cat.img;
+              const imgSrc = resolveImageUrl(imgSrcRaw);
               const hasImage = !!imgSrc;
               return (
                 <Link key={cat.slug + cat.label} to={`/products?category=${cat.slug}`} className="pc-cat-card ripple-btn" onClick={ripple} style={{ animationDelay: `${idx * 0.07}s` }}>
@@ -363,7 +375,7 @@ export default function Home() {
             <Link key={b._id} to={`/products?brand=${encodeURIComponent(b.name)}`} className="brand-circle-card ripple-btn" onClick={ripple} title={b.name}>
               <div className="brand-circle-card__ring">
                 {b.logoUrl
-                  ? <img src={b.logoUrl} alt={b.name} className="brand-circle-card__img" />
+                  ? <img src={resolveImageUrl(b.logoUrl)} alt={b.name} className="brand-circle-card__img" />
                   : <span className="brand-circle-card__fb">{b.name.slice(0, 2).toUpperCase()}</span>
                 }
               </div>
@@ -416,7 +428,7 @@ export default function Home() {
             <Link key={b._id} to={`/products?brand=${encodeURIComponent(b.name)}`} className="brand-ayur-card ripple-btn" onClick={ripple} title={b.name}>
               <div className="brand-ayur-card__box">
                 {b.logoUrl
-                  ? <img src={b.logoUrl} alt={b.name} className="brand-ayur-card__img" />
+                  ? <img src={resolveImageUrl(b.logoUrl)} alt={b.name} className="brand-ayur-card__img" />
                   : <span className="brand-ayur-card__fb">{b.name.slice(0, 2).toUpperCase()}</span>
                 }
               </div>

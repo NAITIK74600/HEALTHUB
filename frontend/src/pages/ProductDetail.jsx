@@ -49,7 +49,6 @@ export default function ProductDetail() {
   const [recPage, setRecPage] = useState(1);
   const [recLoading, setRecLoading] = useState(false);
   const [recHasMore, setRecHasMore] = useState(true);
-  const recSentinel = useRef(null);
 
   // Image carousel
   const [autoPlay, setAutoPlay] = useState(true);
@@ -143,16 +142,6 @@ export default function ProductDetail() {
     } catch { setRecHasMore(false); }
     finally { setRecLoading(false); }
   }, [recLoading, recHasMore, product, recPage]);
-
-  // Intersection observer for infinite scroll
-  useEffect(() => {
-    if (!recSentinel.current) return;
-    const obs = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) loadMoreRecs();
-    }, { rootMargin: '200px' });
-    obs.observe(recSentinel.current);
-    return () => obs.disconnect();
-  }, [loadMoreRecs]);
 
   // Initial load of recommendations
   useEffect(() => {
@@ -355,15 +344,19 @@ export default function ProductDetail() {
           </section>
         )}
 
-        {/* You May Also Like — infinite scroll recommendations */}
+        {/* You May Also Like — recommendations */}
         {recommended.length > 0 && (
           <section className="product-detail__related product-detail__recs">
             <h2>You May Also Like</h2>
             <div className="recs-grid">
               {recommended.map(p => <ProductCard key={p._id} product={p} />)}
             </div>
-            <div ref={recSentinel} style={{ height: 1 }} />
             {recLoading && <p style={{ textAlign: 'center', padding: '16px 0', color: 'var(--gray-400)' }}>Loading more...</p>}
+            {!recLoading && recHasMore && (
+              <div style={{ textAlign: 'center', padding: '8px 0 4px' }}>
+                <button className="btn btn--outline" onClick={loadMoreRecs}>Load more</button>
+              </div>
+            )}
           </section>
         )}
 
