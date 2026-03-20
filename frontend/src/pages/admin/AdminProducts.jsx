@@ -351,13 +351,14 @@ export default function AdminProducts() {
 
   const handleExportExcel = async () => {
     try {
-      const { data } = await exportProductsExcel();
-      const url = URL.createObjectURL(new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+      const { data } = await exportProductsExcel({ search, category: catFilter || undefined, brand: brandFilter || undefined, status: statusFilter, stockFilter });
+      const url = URL.createObjectURL(new Blob([data], { type: 'text/csv;charset=utf-8;' }));
       const a = document.createElement('a');
       a.href = url;
-      a.download = `products-export-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      a.download = `products-export-${new Date().toISOString().slice(0, 10)}.csv`;
       a.click();
       URL.revokeObjectURL(url);
+      toast.success('Export downloaded! Opens in Excel or any spreadsheet app.');
     } catch {
       toast.error('Could not export products.');
     }

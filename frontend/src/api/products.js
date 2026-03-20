@@ -15,7 +15,7 @@ export const bulkImportProducts = (file, mode = 'append') => {
 };
 export const downloadImportTemplate = () => api.get('/products/import-template', { responseType: 'blob' });
 export const downloadCsvTemplate    = () => api.get('/products/csv-template',    { responseType: 'blob' });
-export const exportProductsExcel   = () => api.get('/products/export-excel',     { responseType: 'blob' });
+export const exportProductsExcel   = (params) => api.get('/products/export-excel', { params, responseType: 'blob' });
 export const quickUpdateProduct  = (id, data) => api.patch(`/products/${id}/quick-update`, data);
 export const getAdminProducts    = (params)    => api.get('/products/admin/list', { params });
 export const bulkUpdateProducts  = (data)      => api.patch('/products/bulk-update', data);

@@ -292,13 +292,33 @@ router.get('/import-template', requireAuth, requireAdmin, async (req, res, next)
   try {
     const categories = await query('SELECT slug, name FROM categories WHERE is_deleted = 0 ORDER BY ord ASC, name ASC', []);
     const wb = XLSX.utils.book_new();
+    // Column headers MUST match what the import column-detector expects
     const wsProducts = XLSX.utils.aoa_to_sheet([
-      ['name', 'brand', 'salt', 'description', 'side_effects', 'category', 'mrp', 'price', 'stock', 'requiresPrescription', 'code', 'pack', 'batchNumber'],
-      ['Paracetamol 650 Tablet', 'Cipla', 'Paracetamol 650mg', 'Fever, headache, and mild pain relief.', 'Nausea, rash (rare)', 'caps-tabs', 35, 30, 120, 'false', 'PARA650-01', '10 tablets strip', 'BATCH-2026-01'],
+      ['name', 'brand', 'salt', 'description', 'side_effects', 'category', 'mrp', 'price', 'stock', 'requiresPrescription', 'code', 'pack', 'batchNumber', 'isActive'],
+      ['Paracetamol 650 Tablet', 'Cipla', 'Paracetamol 650mg', 'Fever, headache, and mild pain relief.', 'Nausea, rash (rare)', 'caps-tabs', 35, 30, 120, 'false', 'PARA650-01', '10 tablets strip', 'BATCH-2026-01', 'true'],
+      ['Amoxicillin 500mg Capsule', 'Sun Pharma', 'Amoxicillin 500mg', 'Antibiotic for bacterial infections.', 'Diarrhoea, rash (rare)', 'caps-tabs', 95, 85, 50, 'true', 'AMOX500-01', '10 capsules strip', 'BATCH-2026-02', 'true'],
     ]);
     const wsCategories = XLSX.utils.aoa_to_sheet([['slug', 'name'], ...categories.map((row) => [row.slug, row.name])]);
+    const wsGuide = XLSX.utils.aoa_to_sheet([
+      ['Column', 'Required', 'Notes'],
+      ['name', 'YES', 'Product name (max 200 chars)'],
+      ['brand', 'no', 'Manufacturer / brand name'],
+      ['salt', 'no', 'Active ingredient + strength'],
+      ['description', 'no', 'One-line description'],
+      ['side_effects', 'no', 'Known side effects'],
+      ['category', 'no', 'Slug from the Categories sheet (e.g. caps-tabs, syrups, surgicals)'],
+      ['mrp', 'no', 'Maximum Retail Price (numeric)'],
+      ['price', 'no', 'Sale / discounted price (numeric, defaults to mrp if blank)'],
+      ['stock', 'no', 'Stock quantity (numeric, default 0)'],
+      ['requiresPrescription', 'no', 'true or false'],
+      ['code', 'no', 'Product barcode / SKU'],
+      ['pack', 'no', 'Pack size label (e.g. 10 tablets strip)'],
+      ['batchNumber', 'no', 'Batch / lot number'],
+      ['isActive', 'no', 'true = visible on site, false = hidden (default true)'],
+    ]);
     XLSX.utils.book_append_sheet(wb, wsProducts, 'Products');
     XLSX.utils.book_append_sheet(wb, wsCategories, 'Categories');
+    XLSX.utils.book_append_sheet(wb, wsGuide, 'Guide');
     const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', 'attachment; filename="products-template.xlsx"');
@@ -314,40 +334,52 @@ router.get('/csv-template', requireAuth, requireAdmin, (req, res) => {
   res.send(`${header}\n${example}\n`);
 });
 
+// Export as CSV — much lighter than xlsx for large catalogs (250k+ products)
+// Supports optional filters: ?search=&category=&brand=&status=&stockFilter=
 router.get('/export-excel', requireAuth, requireAdmin, async (req, res, next) => {
   try {
+    const categoryIds = await resolveCategoryIds(req.query.category);
+    const { whereSql, values } = buildProductWhere({
+      admin: true,
+      params: req.query,
+      categoryIds: categoryIds || [],
+    });
+
     const rows = await query(
-      `SELECT p.*, c.slug AS category_slug, c.name AS category_name
+      `SELECT p.id, p.name, p.brand, p.salt, p.description, p.side_effects,
+              c.slug AS category_slug, p.mrp, p.price, p.stock,
+              p.requires_prescription, p.code, p.pack, p.batch_number,
+              p.is_active, p.slug
        FROM products p
        LEFT JOIN categories c ON c.id = p.category_id
-       WHERE p.is_deleted = 0
-       ORDER BY p.created_at DESC`,
-      []
+       ${whereSql}
+       ORDER BY p.created_at DESC
+       LIMIT 50000`,
+      values
     );
 
-    const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(rows.map((row) => ({
-      name: row.name,
-      brand: row.brand || '',
-      salt: row.salt || '',
-      description: row.description || '',
-      side_effects: row.side_effects || '',
-      category: row.category_slug || '',
-      mrp: Number(row.mrp || 0),
-      price: Number(row.price || 0),
-      stock: Number(row.stock || 0),
-      requiresPrescription: Boolean(row.requires_prescription),
-      code: row.code || '',
-      pack: row.pack || '',
-      batchNumber: row.batch_number || '',
-      isActive: Boolean(row.is_active),
-      slug: row.slug,
-    })));
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Products');
-    const buf = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', `attachment; filename="products-export-${Date.now()}.xlsx"`);
-    res.send(buf);
+    // Build CSV (no in-memory xlsx — safe for large datasets)
+    const header = 'name,brand,salt,description,side_effects,category,mrp,price,stock,requiresPrescription,code,pack,batchNumber,isActive,slug';
+    const escCsv = (v) => {
+      const s = String(v ?? '');
+      return (s.includes(',') || s.includes('"') || s.includes('\n')) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csvRows = rows.map((r) => [
+      escCsv(r.name), escCsv(r.brand || ''), escCsv(r.salt || ''),
+      escCsv(r.description || ''), escCsv(r.side_effects || ''),
+      escCsv(r.category_slug || ''),
+      r.mrp, r.price, r.stock,
+      r.requires_prescription ? 'true' : 'false',
+      escCsv(r.code || ''), escCsv(r.pack || ''), escCsv(r.batch_number || ''),
+      r.is_active ? 'true' : 'false',
+      escCsv(r.slug || ''),
+    ].join(','));
+
+    const csv = [header, ...csvRows].join('\n');
+    const filename = `products-export-${new Date().toISOString().slice(0, 10)}.csv`;
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send('\uFEFF' + csv); // UTF-8 BOM so Excel opens it correctly
   } catch (err) { next(err); }
 });
 
@@ -451,16 +483,20 @@ router.post(
       const headers = Object.keys(rows[0]);
       const C = {
         name:   _col(headers, 'name', 'itemname', 'item', 'productname', 'medicine', 'medicinename'),
-        price:  _col(headers, 'price', 'mrp', 'rate', 'saleprice'),
+        mrp:    _col(headers, 'mrp', 'maxretailprice', 'originalprice'),
+        price:  _col(headers, 'price', 'saleprice', 'discountedprice', 'rate'),
         brand:  _col(headers, 'manufacturername', 'manufacturer', 'brand', 'company'),
         pack:   _col(headers, 'packsizelabel', 'pack', 'packing', 'unit'),
         salt:   _col(headers, 'saltcomposition', 'salt', 'composition', 'shortcomposition1'),
         desc:   _col(headers, 'medicinedesc', 'description', 'desc'),
         se:     _col(headers, 'sideeffects', 'sideeffect'),
-        disc:   _col(headers, 'isdiscontinued', 'discontinued', 'isactive'),
+        active: _col(headers, 'isactive', 'active', 'status'),
+        disc:   _col(headers, 'isdiscontinued', 'discontinued'),
         type:   _col(headers, 'type', 'itemcategory', 'category'),
         stock:  _col(headers, 'stock', 'qty', 'quantity'),
         code:   _col(headers, 'code', 'barcode', 'itemcode'),
+        rx:     _col(headers, 'requiresprescription', 'prescription', 'rx'),
+        batch:  _col(headers, 'batchnumber', 'batch', 'lotnumber'),
       };
 
       if (C.name < 0) return res.status(400).json({ message: 'Could not find a "name" column in the uploaded file.' });
@@ -501,9 +537,16 @@ router.post(
           const name = cell(row, C.name).substring(0, 200);
           if (!name) { skipped++; continue; }
 
-          const priceRaw = parseFloat(cell(row, C.price)) || 0;
-          const discRaw  = cell(row, C.disc).toLowerCase();
-          const isActive = (discRaw === 'true' || discRaw === '1') ? 0 : 1;
+          const mrpRaw   = parseFloat(cell(row, C.mrp))   || parseFloat(cell(row, C.price)) || 0;
+          const priceRaw = parseFloat(cell(row, C.price)) || mrpRaw;
+          // isActive: read from isActive/active column first, then invert isdiscontinued
+          let isActive = 1;
+          const activeRaw = cell(row, C.active).toLowerCase();
+          const discRaw   = cell(row, C.disc).toLowerCase();
+          if (activeRaw)       isActive = (activeRaw === 'true' || activeRaw === '1') ? 1 : 0;
+          else if (discRaw)    isActive = (discRaw   === 'true' || discRaw   === '1') ? 0 : 1;
+          const rxRaw    = cell(row, C.rx).toLowerCase();
+          const requiresRx = (rxRaw === 'true' || rxRaw === '1') ? 1 : 0;
           const typeSlug = _TYPE_SLUG[cell(row, C.type).toLowerCase()] || 'caps-tabs';
           const catId    = catMap[typeSlug] || fallbackCatId;
           if (!catId) { skipped++; continue; }
@@ -516,13 +559,13 @@ router.post(
             cell(row, C.brand).substring(0, 100),
             cell(row, C.desc) || null,
             cell(row, C.pack).substring(0, 100),
-            priceRaw,   // mrp
-            priceRaw,   // price
+            mrpRaw,     // mrp
+            priceRaw,   // sale price
             parseInt(cell(row, C.stock)) || 0,
-            0,          // requires_prescription
+            requiresRx, // requires_prescription
             null,       // images_json
             null,       // expiry_date
-            '',         // batch_number
+            cell(row, C.batch).substring(0, 100) || '', // batch_number
             cell(row, C.salt).substring(0, 500),
             cell(row, C.se).substring(0, 1000),
             isActive,
