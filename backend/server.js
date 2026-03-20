@@ -11,6 +11,7 @@ const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const { verifySmtpConnection } = require('./utils/mailer');
 const { ensureCoreSchema } = require('./db/schema');
+const { monitorUnauthorizedResponses } = require('./middleware/securityLogger');
 
 const authRoutes         = require('./routes/auth');
 const productRoutes      = require('./routes/products');
@@ -119,7 +120,8 @@ app.use('/api/', rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 }));
-
+// ── Monitor 401/403 patterns per IP (anomaly detection, must be before routes)
+app.use(monitorUnauthorizedResponses);
 // ── Force HTTPS in production ─────────────────────────────────────────────────
 if (process.env.NODE_ENV === 'production') {
   app.use((req, res, next) => {
@@ -150,16 +152,15 @@ app.use('/api/geocode',        geocodeRoutes);
 app.use('/api/delivery',       deliveryRoutes);
 app.use('/api/coupons',        couponRoutes);
 
-// ── Health check ──────────────────────────────────────────────────────────────
-app.get('/health', (req, res) => {
-  const { getGeminiKey } = require('./utils/gemini');
-  const key = getGeminiKey();
+// ── Health check (admin-only to prevent info disclosure) ─────────────────────
+const requireAuthMiddle  = require('./middleware/requireAuth');
+const requireAdminMiddle = require('./middleware/requireAdmin');
+app.get('/health', requireAuthMiddle, requireAdminMiddle, (req, res) => {
   res.json({
     status: 'ok',
     version: '2026-03-20',
     db: process.env.MYSQL_DATABASE ? 'mysql' : 'missing-mysql-config',
-    gemini: key ? 'configured' : 'NOT configured',
-    keyLen: key ? key.length : 0,
+    gemini: process.env.GEMINI_API_KEY ? 'configured' : 'NOT configured',
   });
 });
 

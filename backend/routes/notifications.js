@@ -79,7 +79,23 @@ router.patch('/:id/read', requireAuth, [param('id').isInt({ min: 1 })], async (r
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
-    await execute('UPDATE notifications SET is_read = 1 WHERE id = ?', [req.params.id]);
+
+    const isAdmin = req.user.role === 'admin' || req.user.role === 'superadmin';
+    let result;
+    if (isAdmin) {
+      // Admins can only mark admin notifications as read
+      result = await execute(
+        'UPDATE notifications SET is_read = 1 WHERE id = ? AND is_admin = 1',
+        [req.params.id]
+      );
+    } else {
+      // Customers can only mark their own notifications as read
+      result = await execute(
+        'UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?',
+        [req.params.id, req.user.id]
+      );
+    }
+    if (result.affectedRows === 0) return res.status(403).json({ message: 'Not authorized.' });
     res.json({ message: 'Marked as read.' });
   } catch (err) { next(err); }
 });
@@ -101,7 +117,21 @@ router.delete('/:id', requireAuth, [param('id').isInt({ min: 1 })], async (req, 
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
-    await execute('DELETE FROM notifications WHERE id = ?', [req.params.id]);
+
+    const isAdmin = req.user.role === 'admin' || req.user.role === 'superadmin';
+    let result;
+    if (isAdmin) {
+      result = await execute(
+        'DELETE FROM notifications WHERE id = ? AND is_admin = 1',
+        [req.params.id]
+      );
+    } else {
+      result = await execute(
+        'DELETE FROM notifications WHERE id = ? AND user_id = ?',
+        [req.params.id, req.user.id]
+      );
+    }
+    if (result.affectedRows === 0) return res.status(403).json({ message: 'Not authorized.' });
     res.json({ message: 'Notification deleted.' });
   } catch (err) { next(err); }
 });

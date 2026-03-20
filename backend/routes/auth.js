@@ -29,6 +29,7 @@ const {
   sendEmailVerificationOtp,
   verifySmtpConnection,
 } = require('../utils/mailer');
+const { logSecurityEvent } = require('../middleware/securityLogger');
 
 const router = express.Router();
 
@@ -236,12 +237,25 @@ router.post('/login', loginLimiter, authLimiter, [
       user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
       if (user.failedLoginAttempts >= 5) user.lockUntil = new Date(Date.now() + 30 * 60 * 1000);
       await updateUser(user);
+      logSecurityEvent('LOGIN_FAIL', {
+        email: req.body.email,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+        details: { attempts: user.failedLoginAttempts },
+      });
       return res.status(401).json({ message: 'Invalid email or password.' });
     }
 
     user.failedLoginAttempts = 0;
     user.lockUntil = null;
     const saved = await updateUser(user);
+
+    logSecurityEvent('LOGIN_SUCCESS', {
+      userId: saved.id,
+      email: saved.email,
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
 
     const accessToken = signAccessToken(saved._id);
     const refreshToken = await signRefreshToken(saved._id);
@@ -465,6 +479,13 @@ router.post('/forgot-password', authLimiter, [body('email').isEmail().normalizeE
     user.resetOtpExpiry = new Date(Date.now() + 15 * 60 * 1000);
     await updateUser(user);
 
+    logSecurityEvent('PASSWORD_RESET_REQUEST', {
+      userId: user.id,
+      email: user.email,
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
     try {
       await sendPasswordResetOtp(user.email, user.name, otp);
     } catch {
@@ -498,6 +519,13 @@ router.post('/reset-password', authLimiter, [
     user.emailVerified = true;
     await updateUser(user);
     await deleteRefreshTokensForUser(user._id);
+
+    logSecurityEvent('PASSWORD_RESET_SUCCESS', {
+      userId: user.id,
+      email: user.email,
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
 
     res.json({ message: 'Password reset successful. You can now log in with your new password.' });
   } catch (err) { next(err); }

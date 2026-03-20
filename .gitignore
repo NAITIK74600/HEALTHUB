@@ -9,7 +9,10 @@ package-lock.json
 .env
 .env.local
 .env.production
+.env.development
 .env.development.local
+.env.production.local
+.env.*.local
 
 # Build output
 backend/dist/

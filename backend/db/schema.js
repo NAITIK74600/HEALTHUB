@@ -369,6 +369,24 @@ async function ensureCoreSchema() {
   await execute(`ALTER TABLE prescriptions ADD COLUMN notes TEXT NULL`).catch(() => {});
   await execute(`ALTER TABLE prescriptions ADD COLUMN address_json JSON NULL`).catch(() => {});
 
+  // ── Security events log ─────────────────────────────────────────────────
+  await execute(`
+    CREATE TABLE IF NOT EXISTS security_events (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      event_type VARCHAR(80) NOT NULL,
+      user_id BIGINT UNSIGNED NULL,
+      email VARCHAR(190) NULL,
+      ip VARCHAR(100) NULL,
+      user_agent VARCHAR(500) NULL,
+      details JSON NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      KEY idx_security_events_type_created (event_type, created_at),
+      KEY idx_security_events_ip (ip),
+      KEY idx_security_events_user (user_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
   await seedDefaultLabTests();
   await ensureSuperAdmin();
   initialized = true;

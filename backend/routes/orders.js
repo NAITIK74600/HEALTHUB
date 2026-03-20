@@ -330,12 +330,32 @@ router.patch('/:id/status', requireAuth, requireAdmin, [param('id').isInt({ min:
 });
 
 // POST /api/orders/:id/verify-otp
+// Only the admin, superadmin, or the delivery boy assigned to this order may verify the OTP.
 router.post('/:id/verify-otp', requireAuth, [param('id').isInt({ min: 1 })], async (req, res, next) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+
     const { otp } = req.body;
-    const rows = await query('SELECT delivery_otp FROM orders WHERE id = ?', [req.params.id]);
+    const rows = await query(
+      'SELECT delivery_otp, delivery_boy_id, user_id FROM orders WHERE id = ? AND is_deleted = 0',
+      [req.params.id]
+    );
     if (!rows.length) return res.status(404).json({ message: 'Order not found.' });
-    if (rows[0].delivery_otp !== otp) return res.status(400).json({ message: 'Invalid OTP.' });
+
+    const order = rows[0];
+    const isAdmin = req.user.role === 'admin' || req.user.role === 'superadmin';
+    const isAssignedDeliveryBoy = order.delivery_boy_id !== null &&
+      Number(order.delivery_boy_id) === req.user.id;
+
+    if (!isAdmin && !isAssignedDeliveryBoy) {
+      return res.status(403).json({ message: 'Not authorized.' });
+    }
+
+    if (!otp || order.delivery_otp !== String(otp)) {
+      return res.status(400).json({ message: 'Invalid OTP.' });
+    }
+
     await execute("UPDATE orders SET status = 'delivered' WHERE id = ?", [req.params.id]);
     res.json({ message: 'Order delivered.' });
   } catch (err) { next(err); }

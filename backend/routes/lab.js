@@ -283,7 +283,8 @@ router.get('/bookings/:id', requireAuth, async (req, res) => {
   try {
     const rows = await query('SELECT * FROM lab_bookings WHERE id = ?', [req.params.id]);
     if (!rows[0]) return res.status(404).json({ message: 'Booking not found' });
-    if (rows[0].user_id !== req.user.id && req.user.role === 'customer')
+    const isAdmin = req.user.role === 'admin' || req.user.role === 'superadmin';
+    if (!isAdmin && rows[0].user_id !== req.user.id)
       return res.status(403).json({ message: 'Forbidden' });
     res.json({ booking: mapBooking(rows[0]) });
   } catch (err) {
