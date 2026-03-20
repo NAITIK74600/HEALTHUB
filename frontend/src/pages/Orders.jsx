@@ -128,9 +128,9 @@ export default function Orders() {
                   </div>
                   <div className="order-history-card__footer">
                     <span className="order-history-card__payment">
-                      {order.payment.method === 'cod'
+                      {(!order.razorpayOrderId && order.paymentStatus !== 'paid') || order.paymentStatus === 'cod'
                         ? 'Cash on Delivery'
-                        : order.payment.method === 'paytm'
+                        : order.paymentStatus === 'paytm'
                           ? 'Paytm'
                           : 'Razorpay'} · {order.items.length} item{order.items.length !== 1 ? 's' : ''}
                     </span>

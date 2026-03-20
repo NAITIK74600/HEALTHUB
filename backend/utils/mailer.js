@@ -93,9 +93,9 @@ async function sendMail(to, subject, html) {
   const from = process.env.MAIL_FROM || '"Batla Medicos" <ordersupport@batlamedicos.shop>';
 
   // Embed logo as inline CID attachment so email clients show it without blocking
-  const logoPath = path.resolve(__dirname, '../email-logo.png');
+  const logoPath = path.resolve(__dirname, '../email-logo.jpg');
   const attachments = [{
-    filename: 'logo.png',
+    filename: 'logo.jpg',
     path: logoPath,
     cid: LOGO_CID,
   }];

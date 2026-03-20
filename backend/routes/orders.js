@@ -403,10 +403,10 @@ router.get('/:id/receipt', requireAuth, [param('id').isInt({ min: 1 })], async (
     doc.rect(0, 0, 595, 100).fill(GREEN);
 
     // Logo (left side of header)
-    const logoPath = path.join(__dirname, '..', 'email-logo.png');
+    const logoPath = path.join(__dirname, '..', 'email-logo.jpg');
     try {
       doc.image(logoPath, L, 10, { width: 72, height: 72 });
-    } catch { /* logo missing — skip silently */ }
+    } catch (imgErr) { console.error('[receipt] logo load failed:', imgErr.message); }
 
     // Store name + contact (right of logo)
     const textX = L + 82;
