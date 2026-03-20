@@ -1,4 +1,7 @@
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const XLSX = require('xlsx');
 const { param, body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const { query, execute } = require('../db/mysql');
@@ -254,17 +257,99 @@ router.delete('/orders/clear', requireAuth, requireSuperAdmin,
 );
 
 router.post('/sync-csv', requireAuth, requireSuperAdmin, async (req, res) => {
-  syncStatus = {
-    running: false,
-    done: true,
-    matched: 0,
-    updated: 0,
-    skipped: 0,
-    error: 'CSV sync is not available after Mongo removal. Use MySQL import scripts.',
-    startedAt: new Date().toISOString(),
-    finishedAt: new Date().toISOString(),
-  };
-  res.status(503).json({ message: syncStatus.error, status: syncStatus });
+  if (syncStatus.running) {
+    return res.status(409).json({ message: 'Sync already running.', status: syncStatus });
+  }
+
+  // Find the data file — support CSV and Excel (.xlsx, .xls)
+  const ROOT = path.join(__dirname, '..', '..');
+  const candidates = [
+    'paid_indian_medicine_data.xlsx',
+    'paid_indian_medicine_data.csv',
+    'medicine_data.xlsx',
+    'medicine_data.csv',
+  ].map(f => path.join(ROOT, f));
+
+  const filePath = candidates.find(f => fs.existsSync(f));
+  if (!filePath) {
+    return res.status(503).json({
+      message: 'Data file not found. Place paid_indian_medicine_data.csv or .xlsx in the project root directory.',
+    });
+  }
+
+  syncStatus = { running: true, done: false, matched: 0, updated: 0, skipped: 0, added: 0, error: null, startedAt: new Date().toISOString(), finishedAt: null };
+  res.json({ message: 'Product sync started.', status: syncStatus });
+
+  // Run asynchronously after response
+  setImmediate(async () => {
+    try {
+      const wb = XLSX.readFile(filePath, { raw: false });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+      for (const row of rows) {
+        const rawName  = String(row['name'] || row['Name'] || row['medicine_name'] || '').trim();
+        const rawPrice = parseFloat(row['price'] || row['Price'] || row['mrp'] || 0);
+        const rawDescr = String(row['medicine_desc'] || row['description'] || row['short_composition1'] || '').trim().slice(0, 2000);
+        const rawType  = String(row['type'] || row['Type'] || 'allopathic').trim().toLowerCase();
+        const rawMfg   = String(row['manufacturer_name'] || row['manufacturer'] || '').trim().slice(0, 200);
+        const packSize = String(row['pack_size_label'] || row['pack_size'] || '').trim().slice(0, 200);
+        const saltComp = String(row['salt_composition'] || row['composition'] || '').trim().slice(0, 500);
+
+        if (!rawName || rawName.length < 2) { syncStatus.skipped++; continue; }
+
+        const price = isNaN(rawPrice) || rawPrice <= 0 ? null : rawPrice;
+
+        // Try to match existing product by name (case-insensitive, partial OK)
+        const existing = await query(
+          'SELECT id, price, description FROM products WHERE LOWER(name) = LOWER(?) LIMIT 1',
+          [rawName]
+        );
+
+        if (existing.length > 0) {
+          syncStatus.matched++;
+          const updates = [];
+          const vals    = [];
+          if (price !== null && Math.abs(Number(existing[0].price) - price) > 0.01) {
+            updates.push('price = ?'); vals.push(price);
+          }
+          if (rawDescr && !existing[0].description) {
+            updates.push('description = ?'); vals.push(rawDescr);
+          }
+          if (updates.length > 0) {
+            vals.push(existing[0].id);
+            await execute(`UPDATE products SET ${updates.join(', ')}, updated_at = NOW() WHERE id = ?`, vals);
+            syncStatus.updated++;
+          } else {
+            syncStatus.skipped++;
+          }
+        } else {
+          // Insert new product with minimal required fields
+          try {
+            const slugBase = rawName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            const slug = slugBase + '-' + Date.now() % 100000;
+            await execute(
+              `INSERT INTO products (name, slug, price, description, brand, stock, is_active, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, 0, 1, NOW(), NOW())`,
+              [rawName, slug, price || 0, rawDescr || (saltComp ? `${saltComp}. ${packSize}`.trim() : rawMfg), rawMfg]
+            );
+            syncStatus.added++;
+          } catch (insertErr) {
+            syncStatus.skipped++;
+          }
+        }
+      }
+
+      syncStatus.running   = false;
+      syncStatus.done      = true;
+      syncStatus.finishedAt = new Date().toISOString();
+    } catch (err) {
+      syncStatus.running   = false;
+      syncStatus.done      = true;
+      syncStatus.error     = err.message;
+      syncStatus.finishedAt = new Date().toISOString();
+    }
+  });
 });
 
 router.get('/sync-csv/status', requireAuth, requireAdmin, async (req, res) => {

@@ -3,10 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { getLabTests, createLabBooking } from '../api/lab';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import api from '../api/axios';
+import { getGeoPosition, GEO_ERROR_MESSAGES } from '../utils/geo';
 import {
   FlaskConical, Droplets, Search, ShoppingCart, X, CheckCircle,
   Clock, Home, MapPin, ChevronRight, ChevronLeft, Minus, Plus,
   Shield, UserCheck, FileText, Microscope, TestTube, Activity,
+  Navigation, Loader, LocateFixed,
 } from 'lucide-react';
 
 const FEATURES = [
@@ -59,6 +62,7 @@ export default function LabTests() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [booked,     setBooked]     = useState(null);
+  const [locLoading, setLocLoading] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -84,8 +88,39 @@ export default function LabTests() {
 
   const openWizard = () => {
     if (!user) { navigate('/login'); return; }
-    setForm(f => ({ ...f, patientName: f.patientName || user.name || '', phone: f.phone || user.phone || '' }));
+    // Pre-fill saved address and patient details from profile
+    const savedAddr = user.addresses?.[0];
+    setForm(f => ({
+      ...f,
+      patientName: f.patientName || user.name || '',
+      phone: f.phone || user.phone || '',
+      address: savedAddr ? {
+        line1:   savedAddr.line1   || f.address.line1,
+        city:    savedAddr.city    || f.address.city,
+        pincode: savedAddr.pincode || f.address.pincode,
+      } : f.address,
+    }));
     setStep(1);
+  };
+
+  const handleLabAutoFillAddress = async () => {
+    setLocLoading(true);
+    const { position, error } = await getGeoPosition();
+    if (error) { setLocLoading(false); toast.error(GEO_ERROR_MESSAGES[error]); return; }
+    const { latitude: lat, longitude: lng } = position.coords;
+    try {
+      const { data } = await api.get('/geocode/reverse', { params: { lat, lng } });
+      const { line1, line2, city, pincode } = data;
+      if (!line1 && !city) throw new Error('Empty address');
+      setForm(f => ({ ...f, address: {
+        line1:   line1   || f.address.line1,
+        city:    city    || f.address.city,
+        pincode: (pincode && /^\d{6}$/.test(pincode)) ? pincode : f.address.pincode,
+      }}));
+      toast.success('Address auto-filled from GPS!');
+    } catch (e) {
+      toast.error(e.response?.data?.message || 'Could not fetch address. Please fill manually.');
+    } finally { setLocLoading(false); }
   };
 
   const handleBooking = async () => {
@@ -385,6 +420,14 @@ export default function LabTests() {
 
                 {form.collectionType === 'home' && (
                   <div style={{ marginTop: 14 }}>
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+                      <button type="button" className="btn-use-location" onClick={handleLabAutoFillAddress} disabled={locLoading}
+                        style={{ fontSize: 12, padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {locLoading
+                          ? <><Loader size={13} className="spin" /> Detecting&hellip;</>
+                          : <><LocateFixed size={13} /> Auto-fill from GPS</>}
+                      </button>
+                    </div>
                     <div className="form-group">
                       <label>Address *</label>
                       <input value={form.address.line1} onChange={e => setAddr('line1', e.target.value)} placeholder="House/Flat no., Street, Area" />

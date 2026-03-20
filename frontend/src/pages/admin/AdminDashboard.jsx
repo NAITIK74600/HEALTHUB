@@ -96,7 +96,7 @@ export default function AdminDashboard() {
               disabled={syncState?.running}
             >
               <RefreshCw size={14} className={syncState?.running ? 'spin' : ''} />
-              {syncState?.running ? 'Syncing…' : 'Sync Categories from CSV'}
+              {syncState?.running ? 'Syncing…' : 'Sync Products from CSV/Excel'}
             </button>
           </div>
         )}

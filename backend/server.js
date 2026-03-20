@@ -3,6 +3,7 @@ const _savedPort = process.env.PORT;
 require('dotenv').config({ path: require('path').join(__dirname, '.env'), override: true });
 if (_savedPort) process.env.PORT = _savedPort;
 const path = require('path');
+const fs = require('fs');
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
@@ -155,11 +156,25 @@ app.get('/health', (req, res) => {
   const key = getGeminiKey();
   res.json({
     status: 'ok',
-    version: '2026-03-19b',
+    version: '2026-03-20',
     db: process.env.MYSQL_DATABASE ? 'mysql' : 'missing-mysql-config',
     gemini: key ? 'configured' : 'NOT configured',
     keyLen: key ? key.length : 0,
   });
+});
+
+// ── sitemap.xml + robots.txt (SEO) ────────────────────────────────────────────
+app.get('/sitemap.xml', (req, res) => {
+  const sitemapPath = path.join(__dirname, '..', 'frontend', 'dist', 'sitemap.xml');
+  if (fs.existsSync(sitemapPath)) {
+    res.setHeader('Content-Type', 'application/xml');
+    return res.sendFile(sitemapPath);
+  }
+  res.status(404).send('Not found');
+});
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain');
+  res.send('User-agent: *\nAllow: /\nSitemap: https://batlamedicos.shop/sitemap.xml\n');
 });
 
 // ── Serve uploaded files ───────────────────────────────────────────────────
@@ -177,7 +192,6 @@ app.use('/uploads', (req, res, next) => {
 
 // ── Serve React frontend (production build) ────────────────────────────
 const DIST = path.join(__dirname, '..', 'frontend', 'dist');
-const fs = require('fs');
 // Always register static + SPA fallback; check dist existence at request time
 // so Passenger doesn't need a restart after the first build
 app.use(express.static(DIST, {
