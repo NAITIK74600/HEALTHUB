@@ -80,8 +80,7 @@ async function main() {
 
   while (offset < Number(total)) {
     const [rows] = await conn.execute(
-      `SELECT id, name, brand, salt FROM products ${whereClause} ORDER BY id ASC LIMIT ? OFFSET ?`,
-      [BATCH, offset]
+      `SELECT id, name, brand, salt FROM products ${whereClause} ORDER BY id ASC LIMIT ${BATCH} OFFSET ${offset}`
     );
 
     if (!rows.length) break;
