@@ -48,12 +48,15 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      imgSrc:     ["'self'", 'data:', 'blob:', 'https:', 'http:'],  // allow all image sources for product images
-      scriptSrc:  ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://checkout.razorpay.com', 'https://accounts.google.com', 'https://apis.google.com', 'https://www.gstatic.com'],
+      imgSrc:     ["'self'", 'data:', 'blob:', 'https:', 'http:'],
+      scriptSrc:  ["'self'", "'unsafe-inline'", "'unsafe-eval'",
+                   'https://checkout.razorpay.com', 'https://cdn.razorpay.com',
+                   'https://accounts.google.com', 'https://apis.google.com', 'https://www.gstatic.com'],
       styleSrc:   ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://accounts.google.com'],
       connectSrc: ["'self'", 'https://batlamedicos.shop', 'https://www.batlamedicos.shop',
                    'https://en.wikipedia.org', 'https://world.openfoodfacts.org',
                    'https://api.razorpay.com', 'https://lumberjack.razorpay.com',
+                   'https://cdn.razorpay.com',
                    'https://accounts.google.com', 'https://www.googleapis.com'],
       fontSrc:    ["'self'", 'data:', 'https://fonts.gstatic.com'],
       frameSrc:   ["'self'", 'https://www.google.com', 'https://maps.google.com',
@@ -67,7 +70,8 @@ app.use(helmet({
 
 // Extra headers not covered by Helmet defaults
 app.use((req, res, next) => {
-  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self)');
+  // Allow geolocation for all origins so the frontend SPA can use GPS
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=*');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   next();
 });
