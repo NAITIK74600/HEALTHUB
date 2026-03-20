@@ -3,12 +3,6 @@ import { getAdminBrands, createBrand, updateBrand, deleteBrand } from '../../api
 import toast from 'react-hot-toast';
 import { Plus, Pencil, Trash2, X, Star, Leaf, Tag, HeartHandshake } from 'lucide-react';
 
-const resolveImageUrl = (url) => {
-  if (!url) return '';
-  if (/^https?:\/\//i.test(url)) return url;
-  return url; // /uploads/... served by same origin in prod; proxied in dev
-};
-
 const EMPTY = { name: '', category: 'featured', ord: 0, logoUrl: '', gradient: '', isActive: true };
 
 const CAT_LABEL = { featured: 'Featured', ayurvedic: 'Ayurvedic', general: 'General', personal_care: 'Personal Care' };
@@ -164,7 +158,7 @@ export default function AdminBrands() {
                 <div key={b._id} className={`brand-admin-card ${!b.isActive ? 'brand-admin-card--inactive' : ''}`}>
                   <div className="brand-admin-card__logo" style={{ background: b.gradient || 'linear-gradient(135deg,#8BC34A,#5D9E3F)' }}>
                     {b.logoUrl
-                      ? <img src={resolveImageUrl(b.logoUrl)} alt={b.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'cover', borderRadius: 8 }} />
+                      ? <img src={b.logoUrl} alt={b.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'cover', borderRadius: 8 }} />
                       : <span style={{ fontSize: 22 }}>🌿</span>
                     }
                   </div>
@@ -213,7 +207,7 @@ export default function AdminBrands() {
                   <div key={b._id} className={`brand-admin-card ${!b.isActive ? 'brand-admin-card--inactive' : ''}`}>
                     <div className="brand-admin-card__logo">
                       {b.logoUrl
-                        ? <img src={resolveImageUrl(b.logoUrl)} alt={b.name} />
+                        ? <img src={b.logoUrl} alt={b.name} />
                         : <span style={{ fontSize: 28, color: 'var(--gray-300)' }}>🏷</span>
                       }
                     </div>
@@ -251,7 +245,7 @@ export default function AdminBrands() {
               <div style={{ textAlign: 'center' }}>
                 <div style={{ width: 120, height: 80, margin: '0 auto 10px', border: '1.5px dashed var(--border)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', background: form.category === 'personal_care' && form.gradient ? form.gradient : '#fafafa' }}>
                   {preview
-                    ? <img src={resolveImageUrl(preview)} alt="preview" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: form.category === 'personal_care' ? 'cover' : 'contain' }} />
+                    ? <img src={preview} alt="preview" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: form.category === 'personal_care' ? 'cover' : 'contain' }} />
                     : <span style={{ color: form.category === 'personal_care' ? 'rgba(255,255,255,0.7)' : 'var(--gray-300)', fontSize: 28 }}>{form.category === 'personal_care' ? '🌿' : '🏷'}</span>
                   }
                 </div>
