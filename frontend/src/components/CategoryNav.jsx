@@ -16,112 +16,17 @@ const CATEGORIES = [
       { label: 'High Value Medicines',       slug: 'high-value' },
     ],
   },
-  {
-    label: 'Hair Care',
-    slug: 'hair-care',
-    children: [
-      { label: 'Hair Oils & Lotions',          slug: 'hair-care' },
-      { label: 'Shampoos & Products',          slug: 'hair-care' },
-      { label: 'Hair Creams & Serums',         slug: 'hair-care' },
-      { label: 'Hair Growth Tablets',          slug: 'hair-care' },
-    ],
-  },
-  {
-    label: 'Fitness & Health',
-    slug: 'fitness-health',
-    children: [
-      { label: 'Protein & Supplement Powders', slug: 'fitness-health' },
-      { label: 'Vitamin Capsules',             slug: 'fitness-health' },
-      { label: 'Softgel Supplements',          slug: 'fitness-health' },
-      { label: 'Health Drinks & Syrups',       slug: 'fitness-health' },
-    ],
-  },
-  {
-    label: 'Sexual Wellness',
-    slug: 'sexual-wellness',
-    children: [
-      { label: 'Contraceptives & Wellness',    slug: 'sexual-wellness' },
-      { label: 'Wellness Tablets',             slug: 'sexual-wellness' },
-    ],
-  },
-  {
-    label: 'Vitamins & Nutrition',
-    slug: 'vitamins-nutrition',
-    children: [
-      { label: 'Vitamin Tablets & Capsules',   slug: 'vitamins-nutrition' },
-      { label: 'Vitamin Syrups',               slug: 'vitamins-nutrition' },
-      { label: 'Nutrition Powders',            slug: 'vitamins-nutrition' },
-      { label: 'Softgel Vitamins',             slug: 'vitamins-nutrition' },
-      { label: 'Nutritional Drops',            slug: 'vitamins-nutrition' },
-    ],
-  },
-  {
-    label: 'Supports & Braces',
-    slug: 'supports-braces',
-    children: [
-      { label: 'Surgical Supports',            slug: 'supports-braces' },
-      { label: 'Medical Equipment',            slug: 'supports-braces' },
-      { label: 'Devices & Containers',         slug: 'supports-braces' },
-    ],
-  },
-  {
-    label: 'Immunity Boosters',
-    slug: 'immunity-boosters',
-    children: [
-      { label: 'Immunity Tablets',             slug: 'immunity-boosters' },
-      { label: 'Immunity Syrups',              slug: 'immunity-boosters' },
-      { label: 'Health Powders',               slug: 'immunity-boosters' },
-    ],
-  },
-  {
-    label: 'Homeopathy',
-    slug: 'homeopathy',
-    children: [
-      { label: 'Homeopathic Drops',            slug: 'homeopathy' },
-      { label: 'Homeopathic Syrups',           slug: 'homeopathy' },
-      { label: 'Homeopathic Tablets',          slug: 'homeopathy' },
-      { label: 'Homeopathic Powders',          slug: 'homeopathy' },
-    ],
-  },
-  {
-    label: 'Ayurveda',
-    slug: 'ayurveda',
-    children: [
-      { label: 'Ayurvedic Tablets',            slug: 'ayurveda' },
-      { label: 'Ayurvedic Syrups & Tonics',    slug: 'ayurveda' },
-      { label: 'Ayurvedic Oils & Lotions',     slug: 'ayurveda' },
-      { label: 'Ayurvedic Powders',            slug: 'ayurveda' },
-      { label: 'Herbal Creams',                slug: 'ayurveda' },
-    ],
-  },
-  {
-    label: 'Skin Care',
-    slug: 'skin-care',
-    children: [
-      { label: 'Creams & Ointments',           slug: 'skin-care' },
-      { label: 'Lotions & Moisturizers',       slug: 'skin-care' },
-      { label: 'Skin Care Products',           slug: 'skin-care' },
-    ],
-  },
-  {
-    label: 'Baby Care',
-    slug: 'baby-care',
-    children: [
-      { label: 'Baby Drops',                   slug: 'baby-care' },
-      { label: 'Baby Powders',                 slug: 'baby-care' },
-      { label: 'Baby Creams & Lotions',        slug: 'baby-care' },
-    ],
-  },
-  {
-    label: 'Diabetes Care',
-    slug: 'diabetes-care',
-    children: [
-      { label: 'Diabetes Tablets',             slug: 'diabetes-care' },
-      { label: 'Insulin & Injections',         slug: 'diabetes-care' },
-      { label: 'Strips & Devices',             slug: 'diabetes-care' },
-      { label: 'Diabetes Drops',               slug: 'diabetes-care' },
-    ],
-  },
+  { label: 'Hair Care',            slug: 'hair-care' },
+  { label: 'Fitness & Health',     slug: 'fitness-health' },
+  { label: 'Sexual Wellness',      slug: 'sexual-wellness' },
+  { label: 'Vitamins & Nutrition', slug: 'vitamins-nutrition' },
+  { label: 'Supports & Braces',    slug: 'supports-braces' },
+  { label: 'Immunity Boosters',    slug: 'immunity-boosters' },
+  { label: 'Homeopathy',           slug: 'homeopathy' },
+  { label: 'Ayurveda',             slug: 'ayurveda' },
+  { label: 'Skin Care',            slug: 'skin-care' },
+  { label: 'Baby Care',            slug: 'baby-care' },
+  { label: 'Diabetes Care',        slug: 'diabetes-care' },
 ];
 
 export default function CategoryNav() {
