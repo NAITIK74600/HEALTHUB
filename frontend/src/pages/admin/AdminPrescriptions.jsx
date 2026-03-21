@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { createOrderFromPrescription, getAllPrescriptions, updatePrescriptionStatus } from '../../api/prescriptions';
+import { createOrderFromPrescription, getAllPrescriptions, updatePrescriptionStatus, exportPrescriptions, clearPrescriptions } from '../../api/prescriptions';
 import { getAdminProducts } from '../../api/products';
+import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
-import { CheckCircle, XCircle, Clock, Eye, Filter, X, Plus, Trash2 } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Eye, Filter, X, Plus, Trash2, Download, FileSpreadsheet } from 'lucide-react';
 
 function fmt(d) {
   return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -30,6 +31,30 @@ export default function AdminPrescriptions() {
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [placing, setPlacing] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [clearModal, setClearModal] = useState({ open: false, password: '' });
+  const { isSuperAdmin } = useAuth();
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const { data } = await exportPrescriptions({ status: statusFilter || undefined });
+      const url = URL.createObjectURL(new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+      const a = document.createElement('a'); a.href = url; a.download = `prescriptions-${new Date().toISOString().slice(0,10)}.xlsx`; a.click(); URL.revokeObjectURL(url);
+      toast.success('Prescriptions exported!');
+    } catch { toast.error('Export failed.'); }
+    finally { setExporting(false); }
+  };
+
+  const handleClear = async () => {
+    if (!clearModal.password) { toast.error('Enter your password.'); return; }
+    try {
+      const { data } = await clearPrescriptions(clearModal.password);
+      toast.success(data.message);
+      setClearModal({ open: false, password: '' });
+      load();
+    } catch (err) { toast.error(err.response?.data?.message || 'Failed to clear.'); }
+  };
 
   const load = async () => {
     setLoading(true);
@@ -165,8 +190,20 @@ export default function AdminPrescriptions() {
   return (
     <section className="admin-rx">
       <div className="admin-section-header">
-        <h2>Prescriptions</h2>
-        <span className="admin-count">{total} total</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <h2>Prescriptions</h2>
+          <span className="admin-count">{total} total</span>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button className="btn btn--outline btn--sm" onClick={handleExport} disabled={exporting}>
+            <Download size={14} /> {exporting ? 'Exporting…' : 'Export XLSX'}
+          </button>
+          {isSuperAdmin && (
+            <button className="btn btn--outline btn--sm" style={{ color: '#ef4444', borderColor: '#ef4444' }} onClick={() => setClearModal({ open: true, password: '' })}>
+              <Trash2 size={14} /> Clear All
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Filter bar */}
@@ -391,6 +428,32 @@ export default function AdminPrescriptions() {
               <button className="btn btn--primary" type="button" disabled={placing} onClick={placeOrder}>
                 {placing ? 'Creating…' : 'Create Order'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Clear prescriptions modal ── */}
+      {clearModal.open && (
+        <div className="import-modal-overlay" onClick={() => setClearModal({ open: false, password: '' })}>
+          <div className="import-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 420 }}>
+            <button className="import-modal__close" onClick={() => setClearModal({ open: false, password: '' })}><X size={18} /></button>
+            <h2 style={{ marginBottom: 10, color: '#ef4444' }}>⚠️ Clear All Prescriptions</h2>
+            <p style={{ fontSize: '0.85rem', color: 'var(--gray-500)', marginBottom: 18 }}>
+              This will permanently delete <strong>all prescriptions</strong>. Enter your password to confirm.
+            </p>
+            <input
+              type="password"
+              autoFocus
+              placeholder="Your admin password"
+              value={clearModal.password}
+              onChange={e => setClearModal(m => ({ ...m, password: e.target.value }))}
+              onKeyDown={e => e.key === 'Enter' && handleClear()}
+              style={{ width: '100%', padding: '10px 13px', border: '1.5px solid #ef4444', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', marginBottom: 16 }}
+            />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="btn btn--primary" style={{ background: '#ef4444', borderColor: '#ef4444', flex: 1 }} onClick={handleClear}>Delete All</button>
+              <button className="btn btn--outline" onClick={() => setClearModal({ open: false, password: '' })}>Cancel</button>
             </div>
           </div>
         </div>

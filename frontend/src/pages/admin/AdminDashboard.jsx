@@ -1,13 +1,15 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ShoppingBag, Users, TrendingUp, Package, AlertTriangle, Clock, XCircle,
-  CalendarDays, RefreshCw, Tag, CheckCircle, Database, Zap,
+  CalendarDays, Tag, CheckCircle, Download, FileSpreadsheet,
 } from 'lucide-react';
-import { getDashboardStats, triggerCsvSync, getCsvSyncStatus } from '../../api/admin';
+import { getDashboardStats } from '../../api/admin';
 import { getOfferStats } from '../../api/offers';
+import { exportProductsExcel } from '../../api/products';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+import api from '../../api/axios';
 
 function StatCard({ icon: Icon, label, value, color, sub, to }) {
   const card = (
@@ -87,39 +89,31 @@ export default function AdminDashboard() {
   const { user, isSuperAdmin } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [syncState, setSyncState] = useState(null);
   const [offerStats, setOfferStats] = useState(null);
-  const pollRef = useRef(null);
+  const [exporting, setExporting] = useState('');
 
-  const pollStatus = () => {
-    pollRef.current = setInterval(async () => {
-      try {
-        const { data } = await getCsvSyncStatus();
-        setSyncState(data);
-        if (!data.running) {
-          clearInterval(pollRef.current);
-          if (data.error) toast.error('Sync failed: ' + data.error);
-          else toast.success(`Sync complete! Updated ${data.updated}, added ${data.added}.`);
-        }
-      } catch { clearInterval(pollRef.current); }
-    }, 2000);
-  };
-
-  const handleSync = async () => {
+  const handleExport = async (type) => {
+    setExporting(type);
     try {
-      const { data } = await triggerCsvSync();
-      setSyncState(data.status);
-      toast.success('Product sync started…');
-      pollStatus();
-    } catch (e) {
-      toast.error(e.response?.data?.message || 'Failed to start sync.');
-    }
+      if (type === 'orders') {
+        const { data } = await api.get('/admin/export/orders', { responseType: 'blob' });
+        const url = URL.createObjectURL(new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+        const a = document.createElement('a'); a.href = url; a.download = `orders-${new Date().toISOString().slice(0,10)}.xlsx`; a.click(); URL.revokeObjectURL(url);
+        toast.success('Orders exported!');
+      } else if (type === 'inventory') {
+        const { data } = await exportProductsExcel({ status: 'active' });
+        const url = URL.createObjectURL(new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+        const a = document.createElement('a'); a.href = url; a.download = `inventory-${new Date().toISOString().slice(0,10)}.xlsx`; a.click(); URL.revokeObjectURL(url);
+        toast.success('Inventory exported!');
+      } else if (type === 'low-stock') {
+        const { data } = await exportProductsExcel({ stockFilter: 'low' });
+        const url = URL.createObjectURL(new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+        const a = document.createElement('a'); a.href = url; a.download = `low-stock-${new Date().toISOString().slice(0,10)}.xlsx`; a.click(); URL.revokeObjectURL(url);
+        toast.success('Low stock export downloaded!');
+      }
+    } catch { toast.error(`Export failed.`); }
+    finally { setExporting(''); }
   };
-
-  useEffect(() => {
-    getCsvSyncStatus().then(r => setSyncState(r.data)).catch(() => {});
-    return () => clearInterval(pollRef.current);
-  }, []);
 
   useEffect(() => {
     getDashboardStats()
@@ -148,16 +142,23 @@ export default function AdminDashboard() {
           <h1 className="dash-header__greeting">{greeting()}, {user?.name?.split(' ')[0]} 👋</h1>
           <p className="dash-header__date">{today}</p>
         </div>
-        {isSuperAdmin && (
-          <div className="dash-header__actions">
-            <Link to="/admin/products" className="btn btn--outline btn--sm">
-              <Package size={14} /> Manage Products
-            </Link>
-            <Link to="/admin/orders" className="btn btn--outline btn--sm">
-              <ShoppingBag size={14} /> View Orders
-            </Link>
-          </div>
-        )}
+        <div className="dash-header__actions">
+          <Link to="/admin/products" className="btn btn--outline btn--sm">
+            <Package size={14} /> Products
+          </Link>
+          <Link to="/admin/orders" className="btn btn--outline btn--sm">
+            <ShoppingBag size={14} /> Orders
+          </Link>
+          <button className="btn btn--outline btn--sm" onClick={() => handleExport('orders')} disabled={!!exporting}>
+            <FileSpreadsheet size={14} /> {exporting === 'orders' ? 'Exporting…' : 'Export Orders'}
+          </button>
+          <button className="btn btn--outline btn--sm" onClick={() => handleExport('inventory')} disabled={!!exporting}>
+            <Download size={14} /> {exporting === 'inventory' ? 'Exporting…' : 'Export Inventory'}
+          </button>
+          <button className="btn btn--outline btn--sm" onClick={() => handleExport('low-stock')} disabled={!!exporting}>
+            <AlertTriangle size={14} /> {exporting === 'low-stock' ? 'Exporting…' : 'Low Stock'}
+          </button>
+        </div>
       </div>
 
       {/* ── Orders & Revenue ────────────────────────────────────────── */}
@@ -181,14 +182,6 @@ export default function AdminDashboard() {
         <StatCard icon={Tag}           label="Active Offers" value={offerStats?.active ?? 0}     color="#D97706"
           sub={`${offerStats?.totalClicks ?? 0} total clicks`} to="/admin/offers" />
       </div>
-
-      {/* ── Product Sync (superAdmin only) ──────────────────────────── */}
-      {isSuperAdmin && (
-        <>
-          <p className="dash-section-label" style={{ marginTop: 24 }}>Data Management</p>
-          <SyncCard syncState={syncState} onSync={handleSync} />
-        </>
-      )}
 
       {/* ── Low Stock Alert table ───────────────────────────────────── */}
       {stats?.lowStock?.length > 0 && (

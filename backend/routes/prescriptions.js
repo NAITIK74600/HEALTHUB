@@ -2,11 +2,14 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
-const { query: queryValidator, param, validationResult } = require('express-validator');
-const requireAuth = require('../middleware/requireAuth');
+const XLSX = require('xlsx');
+const { query: queryValidator, param, body, validationResult } = require('express-validator');
+const requireAuth  = require('../middleware/requireAuth');
 const requireAdmin = require('../middleware/requireAdmin');
-const upload = require('../middleware/upload');
+const requireSuperAdmin = require('../middleware/requireSuperAdmin');
+const upload       = require('../middleware/upload');
 const { query, execute } = require('../db/mysql');
+const { findUserById } = require('../db/users');
 
 const router = express.Router();
 
@@ -337,5 +340,63 @@ router.delete('/:id', requireAuth, [param('id').isInt({ min: 1 })], async (req, 
     res.json({ message: 'Prescription deleted.' });
   } catch (err) { next(err); }
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ADMIN — export prescriptions as XLSX
+// GET /api/prescriptions/export
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/export', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const status = req.query.status || '';
+    const conditions = ['1=1'];
+    const params = [];
+    if (status) { conditions.push('p.status = ?'); params.push(status); }
+    const rows = await query(
+      `SELECT p.id, p.patient_name, p.doctor_name, p.notes, p.status, p.admin_notes,
+              p.image_url, p.created_at,
+              u.name AS user_name, u.email AS user_email, u.phone AS user_phone
+       FROM prescriptions p
+       LEFT JOIN users u ON u.id = p.user_id
+       WHERE ${conditions.join(' AND ')}
+       ORDER BY p.created_at DESC
+       LIMIT 10000`,
+      params
+    );
+    const sheetData = [
+      ['ID','Patient Name','Doctor Name','Customer Name','Email','Phone','Status','Admin Notes','Notes','Image URL','Created At'],
+      ...rows.map(r => [r.id, r.patient_name||'', r.doctor_name||'', r.user_name||'', r.user_email||'', r.user_phone||'',
+                        r.status, r.admin_notes||'', r.notes||'', r.image_url||'',
+                        r.created_at ? new Date(r.created_at).toLocaleString('en-IN') : '']),
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
+    ws['!cols'] = [{ wch:6 },{ wch:20 },{ wch:20 },{ wch:20 },{ wch:28 },{ wch:14 },{ wch:12 },{ wch:30 },{ wch:30 },{ wch:50 },{ wch:18 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Prescriptions');
+    const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    const filename = `prescriptions-${new Date().toISOString().slice(0,10)}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(buf);
+  } catch (err) { next(err); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUPERADMIN — clear prescriptions
+// DELETE /api/prescriptions/clear
+// ─────────────────────────────────────────────────────────────────────────────
+router.delete('/clear', requireAuth, requireSuperAdmin,
+  [body('password').notEmpty().withMessage('Password is required.')],
+  async (req, res, next) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) return res.status(422).json({ message: errors.array()[0].msg });
+      const me = await findUserById(req.user._id);
+      const ok = await me.comparePassword(req.body.password);
+      if (!ok) return res.status(401).json({ message: 'Incorrect password.' });
+      const result = await execute('DELETE FROM prescriptions', []);
+      res.json({ message: `${result.affectedRows} prescriptions deleted.`, deletedCount: result.affectedRows });
+    } catch (err) { next(err); }
+  }
+);
 
 module.exports = router;

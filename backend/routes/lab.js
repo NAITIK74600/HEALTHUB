@@ -1,9 +1,14 @@
 'use strict';
 const express   = require('express');
 const router    = express.Router();
+const XLSX      = require('xlsx');
+const { body, validationResult } = require('express-validator');
+const bcrypt    = require('bcryptjs');
 const { query, execute } = require('../db/mysql');
 const requireAuth       = require('../middleware/requireAuth');
 const requireAdmin      = require('../middleware/requireAdmin');
+const requireSuperAdmin = require('../middleware/requireSuperAdmin');
+const { findUserById }  = require('../db/users');
 
 // ── helpers ────────────────────────────────────────────────────────────────────
 function mapTest(row) {
@@ -388,5 +393,111 @@ router.patch('/bookings/:id/report', requireAuth, requireAdmin, async (req, res)
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ADMIN — export lab bookings as XLSX
+// GET /api/lab/bookings/export
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/bookings/export', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const status = req.query.status || '';
+    const search = req.query.search || '';
+    const dateF  = req.query.date   || '';
+    const conditions = [];
+    const params = [];
+    if (status) { conditions.push('b.status = ?'); params.push(status); }
+    if (search) { conditions.push('(b.patient_name LIKE ? OR b.phone LIKE ?)'); params.push(`%${search}%`, `%${search}%`); }
+    if (dateF)  { conditions.push('DATE(b.booking_date) = ?'); params.push(dateF); }
+    const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+    const rows = await query(
+      `SELECT b.id, b.patient_name, b.patient_age, b.patient_gender, b.phone,
+              b.collection_type, b.booking_date, b.slot, b.status,
+              b.total_amount, b.test_snapshots_json, b.address_json,
+              b.report_url, b.created_at,
+              u.email AS user_email, u.name AS user_name
+       FROM lab_bookings b
+       LEFT JOIN users u ON u.id = b.user_id
+       ${where}
+       ORDER BY b.created_at DESC
+       LIMIT 10000`,
+      params
+    );
+
+    const sheetData = [
+      ['ID','Patient','Age','Gender','Phone','User Email','Collection','Booking Date','Slot','Status','Amount','Tests','Report URL','Created At'],
+      ...rows.map(r => {
+        const snaps = (() => { try { return JSON.parse(r.test_snapshots_json || '[]'); } catch { return []; } })();
+        const testNames = snaps.map(s => s.name).join('; ');
+        return [r.id, r.patient_name, r.patient_age, r.patient_gender, r.phone, r.user_email || '',
+                r.collection_type, r.booking_date ? new Date(r.booking_date).toLocaleDateString('en-IN') : '',
+                r.slot, r.status, Number(r.total_amount), testNames, r.report_url || '',
+                r.created_at ? new Date(r.created_at).toLocaleString('en-IN') : ''];
+      }),
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
+    ws['!cols'] = [{ wch:6 },{ wch:22 },{ wch:5 },{ wch:8 },{ wch:12 },{ wch:28 },{ wch:12 },
+                   { wch:14 },{ wch:12 },{ wch:18 },{ wch:10 },{ wch:40 },{ wch:40 },{ wch:18 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Lab Bookings');
+    const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    const filename = `lab-bookings-${new Date().toISOString().slice(0,10)}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(buf);
+  } catch (err) {
+    console.error('GET /lab/bookings/export', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ADMIN — export lab tests as XLSX
+// GET /api/lab/tests/export
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/tests/export', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const rows = await query('SELECT * FROM lab_tests ORDER BY id ASC');
+    const sheetData = [
+      ['ID','Name','Category','Sample Type','Turnaround Time','MRP','Price','Home Collection','Active','Description'],
+      ...rows.map(r => [r.id, r.name, r.category, r.sample_type, r.turnaround_time,
+                        Number(r.mrp)||0, Number(r.price), r.home_collection ? 'Yes':'No',
+                        r.is_active ? 'Yes':'No', r.description||'']),
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
+    ws['!cols'] = [{ wch:6 },{ wch:35 },{ wch:16 },{ wch:16 },{ wch:16 },{ wch:8 },{ wch:8 },{ wch:16 },{ wch:8 },{ wch:50 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Lab Tests');
+    const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    const filename = `lab-tests-${new Date().toISOString().slice(0,10)}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(buf);
+  } catch (err) {
+    console.error('GET /lab/tests/export', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUPERADMIN — clear all lab bookings
+// DELETE /api/lab/bookings/clear
+// ─────────────────────────────────────────────────────────────────────────────
+router.delete('/bookings/clear', requireAuth, requireSuperAdmin,
+  [body('password').notEmpty().withMessage('Password is required.')],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) return res.status(422).json({ message: errors.array()[0].msg });
+      const me = await findUserById(req.user._id);
+      const ok = await me.comparePassword(req.body.password);
+      if (!ok) return res.status(401).json({ message: 'Incorrect password.' });
+      const result = await execute('DELETE FROM lab_bookings', []);
+      res.json({ message: `${result.affectedRows} lab bookings deleted.`, deletedCount: result.affectedRows });
+    } catch (err) {
+      console.error('DELETE /lab/bookings/clear', err);
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
 
 module.exports = router;

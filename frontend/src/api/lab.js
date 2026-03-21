@@ -20,3 +20,6 @@ export const cancelLabBooking  = (id)    => api.delete(`/lab/bookings/${id}`);
 export const getAdminLabBookings    = (params) => api.get('/lab/bookings', { params });
 export const updateLabBookingStatus = (id, status) => api.patch(`/lab/bookings/${id}/status`, { status });
 export const uploadLabReport        = (id, data)   => api.patch(`/lab/bookings/${id}/report`, data);
+export const exportLabBookings      = (params) => api.get('/lab/bookings/export', { params, responseType: 'blob' });
+export const clearLabBookings       = (password) => api.delete('/lab/bookings/clear', { data: { password } });
+export const exportLabTests         = () => api.get('/lab/tests/export', { responseType: 'blob' });

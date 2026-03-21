@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { getAdminLabBookings, updateLabBookingStatus, uploadLabReport } from '../../api/lab';
+import { getAdminLabBookings, updateLabBookingStatus, uploadLabReport, exportLabBookings, clearLabBookings } from '../../api/lab';
+import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
-import { FlaskConical, Calendar, Clock, Home, MapPin, FileText, Upload, X, ChevronDown } from 'lucide-react';
+import { FlaskConical, Calendar, Clock, Home, MapPin, FileText, Upload, X, ChevronDown, Download, Trash2 } from 'lucide-react';
 
 const STATUS_LIST = ['pending','confirmed','sample_collected','processing','report_ready','completed','cancelled'];
 const STATUS_LABEL = {
@@ -33,6 +34,9 @@ export default function AdminLabBookings() {
 
   // report modal
   const [reportModal, setReportModal] = useState({ open: false, id: null, url: '', notes: '' });
+  const [exporting, setExporting] = useState(false);
+  const [clearModal, setClearModal] = useState({ open: false, password: '' });
+  const { isSuperAdmin } = useAuth();
 
   useEffect(() => {
     setLoading(true);
@@ -65,12 +69,43 @@ export default function AdminLabBookings() {
     } catch (err) { toast.error(err?.response?.data?.message || 'Error.'); }
   };
 
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const { data } = await exportLabBookings({ status: statusF !== 'all' ? statusF : undefined, search: search || undefined, date: dateF || undefined });
+      const url = URL.createObjectURL(new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+      const a = document.createElement('a'); a.href = url; a.download = `lab-bookings-${new Date().toISOString().slice(0,10)}.xlsx`; a.click(); URL.revokeObjectURL(url);
+      toast.success('Lab bookings exported!');
+    } catch { toast.error('Export failed.'); }
+    finally { setExporting(false); }
+  };
+
+  const handleClear = async () => {
+    if (!clearModal.password) { toast.error('Enter your password.'); return; }
+    try {
+      const { data } = await clearLabBookings(clearModal.password);
+      toast.success(data.message);
+      setClearModal({ open: false, password: '' });
+      refresh();
+    } catch (err) { toast.error(err.response?.data?.message || 'Failed to clear.'); }
+  };
+
   return (
     <div className="admin-page">
       <div className="admin-page__header">
         <div>
           <h1 className="admin-page__title"><FlaskConical size={20} /> Lab Bookings</h1>
           <p className="admin-page__sub">{total} total bookings</p>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button className="btn btn--outline" onClick={handleExport} disabled={exporting}>
+            <Download size={15} /> {exporting ? 'Exporting…' : 'Export XLSX'}
+          </button>
+          {isSuperAdmin && (
+            <button className="btn btn--outline" style={{ color: '#ef4444', borderColor: '#ef4444' }} onClick={() => setClearModal({ open: true, password: '' })}>
+              <Trash2 size={15} /> Clear All Bookings
+            </button>
+          )}
         </div>
       </div>
 
@@ -200,6 +235,31 @@ export default function AdminLabBookings() {
             <div style={{ display: 'flex', gap: 8 }}>
               <button className="btn btn--primary" style={{ flex: 1 }} onClick={handleReport}><Upload size={14} /> Save Report</button>
               <button className="btn btn--outline" onClick={() => setReportModal({ open: false, id: null, url: '', notes: '' })}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ── Clear confirmation modal ── */}
+      {clearModal.open && (
+        <div className="import-modal-overlay" onClick={() => setClearModal({ open: false, password: '' })}>
+          <div className="import-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 420 }}>
+            <button className="import-modal__close" onClick={() => setClearModal({ open: false, password: '' })}><X size={18} /></button>
+            <h2 style={{ marginBottom: 10, color: '#ef4444' }}>⚠️ Clear All Lab Bookings</h2>
+            <p style={{ fontSize: '0.85rem', color: 'var(--gray-500)', marginBottom: 18 }}>
+              This will permanently delete <strong>all lab bookings</strong>. Enter your password to confirm.
+            </p>
+            <input
+              type="password"
+              autoFocus
+              placeholder="Your admin password"
+              value={clearModal.password}
+              onChange={e => setClearModal(m => ({ ...m, password: e.target.value }))}
+              onKeyDown={e => e.key === 'Enter' && handleClear()}
+              style={{ width: '100%', padding: '10px 13px', border: '1.5px solid #ef4444', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', marginBottom: 16 }}
+            />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="btn btn--primary" style={{ background: '#ef4444', borderColor: '#ef4444', flex: 1 }} onClick={handleClear}>Delete All</button>
+              <button className="btn btn--outline" onClick={() => setClearModal({ open: false, password: '' })}>Cancel</button>
             </div>
           </div>
         </div>

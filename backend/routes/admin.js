@@ -426,4 +426,41 @@ router.get('/sync-csv/status', requireAuth, requireAdmin, async (req, res) => {
   res.json(syncStatus);
 });
 
+// ── GET /admin/export/orders — Excel export of all orders ────────────────────
+router.get('/export/orders', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const rows = await query(
+      `SELECT o.id, o.total, o.status, o.payment_status, o.created_at,
+              u.name AS user_name, u.email AS user_email, u.phone AS user_phone,
+              o.address_json, o.coupon_code, o.discount, o.delivery_charge, o.notes
+       FROM orders o
+       LEFT JOIN users u ON u.id = o.user_id
+       WHERE o.is_deleted = 0
+       ORDER BY o.created_at DESC LIMIT 50000`,
+      []
+    );
+    const sheetData = [
+      ['Order ID','Customer','Email','Phone','Total','Status','Payment','Coupon','Discount','Delivery Charge','Notes','Address','Created At'],
+      ...rows.map(r => {
+        let addr = '';
+        try { const a = JSON.parse(r.address_json || '{}'); addr = [a.line1, a.line2, a.city, a.pincode].filter(Boolean).join(', '); } catch {}
+        return [
+          r.id, r.user_name || '', r.user_email || '', r.user_phone || '',
+          Number(r.total), r.status, r.payment_status, r.coupon_code || '',
+          Number(r.discount || 0), Number(r.delivery_charge || 0), r.notes || '',
+          addr, r.created_at ? new Date(r.created_at).toLocaleString('en-IN') : '',
+        ];
+      }),
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Orders');
+    const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    const filename = `orders-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(buf);
+  } catch (err) { next(err); }
+});
+
 module.exports = router;
