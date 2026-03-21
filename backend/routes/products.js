@@ -812,7 +812,8 @@ router.get('/import-template', requireAuth, requireAdmin, async (req, res, next)
       query(
         `SELECT p.id, p.name, p.brand, p.salt,
                 c.slug AS category_slug, p.mrp, p.price, p.stock,
-                p.requires_prescription, p.code, p.pack, p.batch_number, p.is_active
+                p.requires_prescription, p.code, p.pack, p.batch_number, p.is_active,
+                p.secondary_category_ids
          FROM products p
          LEFT JOIN categories c ON c.id = p.category_id
          WHERE p.is_deleted = 0
@@ -820,19 +821,36 @@ router.get('/import-template', requireAuth, requireAdmin, async (req, res, next)
          LIMIT 50000`,
         []
       ),
-      query('SELECT slug, name FROM categories WHERE is_deleted = 0 ORDER BY ord ASC, name ASC', []),
+      query('SELECT id, slug, name FROM categories WHERE is_deleted = 0 ORDER BY ord ASC, name ASC', []),
     ]);
+
+    // Build id → slug map for secondary categories
+    const catIdToSlug = {};
+    for (const c of categories) catIdToSlug[c.id] = c.slug;
 
     const wb = XLSX.utils.book_new();
 
     // Products sheet — id first so rows with id = UPDATE, rows without id = INSERT NEW
     const headers = ['id', 'name', 'brand', 'salt', 'category', 'mrp', 'price', 'stock', 'requiresPrescription', 'code', 'pack', 'batchNumber', 'isActive'];
-    const dataRows = products.map(r => [
+    const dataRows = products.map(r => {
+      // Build comma-separated category string: primary, secondary1, secondary2...
+      let catStr = r.category_slug || '';
+      if (r.secondary_category_ids) {
+        try {
+          const arr = typeof r.secondary_category_ids === 'string'
+            ? JSON.parse(r.secondary_category_ids) : r.secondary_category_ids;
+          if (Array.isArray(arr) && arr.length) {
+            const secSlugs = arr.map(id => catIdToSlug[id]).filter(Boolean);
+            if (secSlugs.length) catStr += ', ' + secSlugs.join(', ');
+          }
+        } catch {}
+      }
+      return [
       r.id,
       r.name || '',
       r.brand || '',
       r.salt || '',
-      r.category_slug || '',
+      catStr,
       r.mrp,
       r.price,
       r.stock,
@@ -841,7 +859,7 @@ router.get('/import-template', requireAuth, requireAdmin, async (req, res, next)
       r.pack || '',
       r.batch_number || '',
       r.is_active ? 'true' : 'false',
-    ]);
+    ]; });
 
     // Add 5 empty rows at the bottom for new products (leave id blank to insert as new)
     for (let i = 0; i < 5; i++) {
@@ -872,7 +890,7 @@ router.get('/import-template', requireAuth, requireAdmin, async (req, res, next)
       ['name', 'YES', 'Product name (max 200 chars)'],
       ['brand', 'no', 'Manufacturer / brand name'],
       ['salt', 'no', 'Active ingredient + strength'],
-      ['category', 'no', 'Slug from the Categories sheet (e.g. caps-tabs, fmcg, ayurvedic)'],
+      ['category', 'no', 'Slug from Categories sheet. Use commas for multiple: caps-tabs, ayurvedic (first = primary)'],
       ['mrp', 'no', 'Maximum Retail Price (numeric)'],
       ['price', 'no', 'Selling price (numeric, defaults to mrp if blank)'],
       ['stock', 'no', 'Stock quantity (numeric, default 0)'],
@@ -1156,9 +1174,17 @@ router.post(
           else if (discRaw)    isActive = (discRaw   === 'true' || discRaw   === '1') ? 0 : 1;
           const rxRaw      = cell(row, C.rx).toLowerCase();
           const requiresRx = (rxRaw === 'true' || rxRaw === '1') ? 1 : 0;
-          const typeSlug = _TYPE_SLUG[cell(row, C.type).toLowerCase()] || 'caps-tabs';
-          const catId    = catMap[typeSlug] || fallbackCatId;
+          // Support comma-separated categories: first = primary, rest = secondary
+          const rawCat = cell(row, C.type);
+          const catSlugs = rawCat ? rawCat.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
+          const firstSlug = catSlugs[0] || '';
+          const resolvedPrimary = catMap[firstSlug] ? firstSlug : (_TYPE_SLUG[firstSlug] || 'caps-tabs');
+          const catId = catMap[resolvedPrimary] || fallbackCatId;
           if (!catId) { skipped++; continue; }
+          const secondaryCatIds = catSlugs.slice(1)
+            .map(s => catMap[s] || catMap[_TYPE_SLUG[s] || ''] || null)
+            .filter(id => id && id !== catId);
+          const secondaryJson = secondaryCatIds.length ? JSON.stringify(secondaryCatIds) : null;
 
           // ── UPDATE existing product by id ────────────────────────────────
           const rowId = C_id >= 0 ? parseInt(cell(row, C_id)) : NaN;
@@ -1182,7 +1208,10 @@ router.post(
               if (C.batch  >= 0) { setClauses.push('batch_number = ?');setVals.push(cell(row, C.batch).substring(0, 100)); }
               if (C.rx     >= 0) { setClauses.push('requires_prescription = ?'); setVals.push(requiresRx); }
               if (C.active >= 0 || C.disc >= 0) { setClauses.push('is_active = ?'); setVals.push(isActive); }
-              if (C.type   >= 0) { setClauses.push('category_id = ?'); setVals.push(catId); }
+              if (C.type   >= 0) {
+                setClauses.push('category_id = ?'); setVals.push(catId);
+                setClauses.push('secondary_category_ids = ?'); setVals.push(secondaryJson);
+              }
               setVals.push(rowId);
               await execute(`UPDATE products SET ${setClauses.join(', ')} WHERE id = ?`, setVals);
               updated++;
@@ -1211,6 +1240,7 @@ router.post(
             cell(row, C.se).substring(0, 1000),
             isActive,
             0,          // is_deleted
+            secondaryJson, // secondary_category_ids
           ]);
         }
 
@@ -1219,7 +1249,8 @@ router.post(
             `INSERT IGNORE INTO products
               (code,name,slug,category_id,brand,description,pack,
                mrp,price,stock,requires_prescription,images_json,
-               expiry_date,batch_number,salt,side_effects,is_active,is_deleted)
+               expiry_date,batch_number,salt,side_effects,is_active,is_deleted,
+               secondary_category_ids)
              VALUES ?`,
             [insertValues]
           );
