@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { Bell, X, Check, CheckCheck, Package, Truck, ShoppingBag, AlertTriangle } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Bell, BellRing, X, Check, CheckCheck, Package, Truck, ShoppingBag, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getMyNotifications, getAdminNotifications, markNotifRead, markAllNotifsRead, deleteNotif } from '../api/notifications';
 
@@ -27,8 +27,17 @@ export default function NotificationBell({ adminMode = false }) {
   const [notifs, setNotifs] = useState([]);
   const [unread, setUnread] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [notifPerm, setNotifPerm] = useState(
+    typeof Notification !== 'undefined' ? Notification.permission : 'denied'
+  );
   const dropRef = useRef(null);
   const prevUnreadRef = useRef(0);
+
+  const requestPermission = useCallback(async () => {
+    if (typeof Notification === 'undefined') return;
+    const perm = await Notification.requestPermission();
+    setNotifPerm(perm);
+  }, []);
 
   const fetchNotifs = async () => {
     try {
@@ -57,12 +66,12 @@ export default function NotificationBell({ adminMode = false }) {
     }
   };
 
-  // Request browser notification permission once on mount (non-intrusively)
+  // Sync permission state if changed externally
   useEffect(() => {
-    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
-      Notification.requestPermission().catch(() => {});
+    if (typeof Notification !== 'undefined') {
+      setNotifPerm(Notification.permission);
     }
-  }, []);
+  }, [open]);
 
   useEffect(() => {
     fetchNotifs();
@@ -126,6 +135,18 @@ export default function NotificationBell({ adminMode = false }) {
               </button>
             )}
           </div>
+
+          {notifPerm !== 'granted' && (
+            <button
+              className="notif-perm-btn"
+              onClick={requestPermission}
+            >
+              <BellRing size={15} />
+              {notifPerm === 'denied'
+                ? 'Notifications blocked — allow in browser settings'
+                : 'Enable browser notifications'}
+            </button>
+          )}
 
           <div className="notif-dropdown__list">
             {loading && notifs.length === 0 && <p className="notif-dropdown__empty">Loading…</p>}

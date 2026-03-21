@@ -4872,6 +4872,26 @@ svg { flex-shrink: 0; }
 }
 .notif-dropdown__footer a { color: var(--primary); font-weight: 600; text-decoration: none; }
 
+/* Enable notifications banner inside dropdown */
+.notif-perm-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #fef3cd, #fff8e1);
+  border: none;
+  border-bottom: 1px solid #f0e6c0;
+  color: #856404;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.notif-perm-btn:hover {
+  background: linear-gradient(135deg, #fce9a0, #fef3cd);
+}
+
 /* == Notification items =============================================== */
 .notif-item {
   display: flex;
