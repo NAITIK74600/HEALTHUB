@@ -467,7 +467,8 @@ async function autoSeedBaseCategories() {
 
   // Soft-delete lifestyle slugs that were mistakenly added as DB categories
   const LIFESTYLE_ONLY = [
-    'sexual-wellness', 'skin-care', 'hair-care', 'baby-care',
+    'sexual-wellness', 'oral-care', 'women-care', 'men-grooming', 'elderly-care',
+    'skin-care', 'hair-care', 'baby-care',
     'fitness-health', 'vitamins-nutrition', 'diabetes-care',
     'supports-braces', 'immunity-boosters',
   ];
