@@ -875,28 +875,63 @@ router.get('/export-excel', requireAuth, requireAdmin, async (req, res, next) =>
       values
     );
 
-    // Build CSV (no in-memory xlsx — safe for large datasets)
-    const header = 'name,brand,salt,description,side_effects,category,mrp,price,stock,requiresPrescription,code,pack,batchNumber,isActive,slug';
-    const escCsv = (v) => {
-      const s = String(v ?? '');
-      return (s.includes(',') || s.includes('"') || s.includes('\n')) ? `"${s.replace(/"/g, '""')}"` : s;
-    };
-    const csvRows = rows.map((r) => [
-      escCsv(r.name), escCsv(r.brand || ''), escCsv(r.salt || ''),
-      escCsv(r.description || ''), escCsv(r.side_effects || ''),
-      escCsv(r.category_slug || ''),
-      r.mrp, r.price, r.stock,
-      r.requires_prescription ? 'true' : 'false',
-      escCsv(r.code || ''), escCsv(r.pack || ''), escCsv(r.batch_number || ''),
-      r.is_active ? 'true' : 'false',
-      escCsv(r.slug || ''),
-    ].join(','));
+    // Build real .xlsx with id as first column so imported rows can UPDATE by id
+    const sheetData = [
+      ['id', 'name', 'brand', 'salt', 'description', 'side_effects', 'category', 'mrp', 'price', 'stock', 'requiresPrescription', 'code', 'pack', 'batchNumber', 'isActive'],
+      ...rows.map(r => [
+        r.id,
+        r.name || '',
+        r.brand || '',
+        r.salt || '',
+        r.description || '',
+        r.side_effects || '',
+        r.category_slug || '',
+        r.mrp,
+        r.price,
+        r.stock,
+        r.requires_prescription ? 'true' : 'false',
+        r.code || '',
+        r.pack || '',
+        r.batch_number || '',
+        r.is_active ? 'true' : 'false',
+      ]),
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
+    // Freeze the header row and auto-set column widths
+    ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+    ws['!cols'] = [{ wch: 8 }, { wch: 40 }, { wch: 20 }, { wch: 25 }, { wch: 50 }, { wch: 30 },
+                   { wch: 18 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 20 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 10 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Products');
 
-    const csv = [header, ...csvRows].join('\n');
-    const filename = `products-export-${new Date().toISOString().slice(0, 10)}.csv`;
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    // Guide sheet
+    const guideData = [
+      ['Column', 'Description'],
+      ['id', 'Product ID from database. Keep it to UPDATE that product on re-import. Clear/leave blank to INSERT as new product.'],
+      ['name', 'Product name (required)'],
+      ['brand', 'Brand name'],
+      ['salt', 'Active ingredient / salt composition'],
+      ['description', 'Product description'],
+      ['side_effects', 'Side effects'],
+      ['category', 'Category slug (e.g. caps-tabs, fmcg, cream-ointment, ayurvedic)'],
+      ['mrp', 'Maximum retail price'],
+      ['price', 'Selling price (must be <= mrp)'],
+      ['stock', 'Stock quantity'],
+      ['requiresPrescription', 'true / false'],
+      ['code', 'Barcode / item code'],
+      ['pack', 'Pack size (e.g. 10 Tablets, 100ml)'],
+      ['batchNumber', 'Batch / lot number'],
+      ['isActive', 'true = visible on site, false = hidden'],
+    ];
+    const wsGuide = XLSX.utils.aoa_to_sheet(guideData);
+    wsGuide['!cols'] = [{ wch: 22 }, { wch: 80 }];
+    XLSX.utils.book_append_sheet(wb, wsGuide, 'Guide');
+
+    const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    const filename = `products-export-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.send('\uFEFF' + csv); // UTF-8 BOM so Excel opens it correctly
+    res.send(buf);
   } catch (err) { next(err); }
 });
 
@@ -981,7 +1016,7 @@ router.post(
       if (!req.file) return res.status(400).json({ message: 'No file uploaded.' });
 
       const ext = (req.file.originalname || '').split('.').pop().toLowerCase();
-      const mode = req.body.mode === 'replace' ? 'replace' : 'append'; // default: append
+      const mode = req.body.mode === 'replace' ? 'replace' : req.body.mode === 'update' ? 'update' : 'append'; // default: append
 
       // ── Parse file buffer → array of row objects ────────────────────────
       let rows = [];
@@ -1021,6 +1056,9 @@ router.post(
 
       if (C.name < 0) return res.status(400).json({ message: 'Could not find a "name" column in the uploaded file.' });
 
+      // Check if the file has an `id` column — used for update-by-id mode
+      const C_id = _col(headers, 'id', 'productid', 'product_id');
+
       // Helper to get a cell value by column index
       const cell = (row, idx) => idx >= 0 ? String(row[headers[idx]] ?? '').trim() : '';
 
@@ -1037,7 +1075,7 @@ router.post(
 
       // ── Insert in batches of 500 ────────────────────────────────────────
       const BATCH = 500;
-      let inserted = 0, skipped = 0;
+      let inserted = 0, updated = 0, skipped = 0;
 
       function makeSlug(name, idx) {
         const base = name.toLowerCase()
@@ -1048,7 +1086,7 @@ router.post(
 
       for (let i = 0; i < rows.length; i += BATCH) {
         const chunk = rows.slice(i, i + BATCH);
-        const values = [];
+        const insertValues = [];
 
         for (let j = 0; j < chunk.length; j++) {
           const row = chunk[j];
@@ -1059,19 +1097,50 @@ router.post(
 
           const mrpRaw   = parseFloat(cell(row, C.mrp))   || parseFloat(cell(row, C.price)) || 0;
           const priceRaw = parseFloat(cell(row, C.price)) || mrpRaw;
-          // isActive: read from isActive/active column first, then invert isdiscontinued
           let isActive = 1;
           const activeRaw = cell(row, C.active).toLowerCase();
           const discRaw   = cell(row, C.disc).toLowerCase();
           if (activeRaw)       isActive = (activeRaw === 'true' || activeRaw === '1') ? 1 : 0;
           else if (discRaw)    isActive = (discRaw   === 'true' || discRaw   === '1') ? 0 : 1;
-          const rxRaw    = cell(row, C.rx).toLowerCase();
+          const rxRaw      = cell(row, C.rx).toLowerCase();
           const requiresRx = (rxRaw === 'true' || rxRaw === '1') ? 1 : 0;
           const typeSlug = _TYPE_SLUG[cell(row, C.type).toLowerCase()] || 'caps-tabs';
           const catId    = catMap[typeSlug] || fallbackCatId;
           if (!catId) { skipped++; continue; }
 
-          values.push([
+          // ── UPDATE existing product by id ────────────────────────────────
+          const rowId = C_id >= 0 ? parseInt(cell(row, C_id)) : NaN;
+          if (!isNaN(rowId) && rowId > 0 && mode !== 'append') {
+            // Only update if we can verify the product exists
+            const exists = await query('SELECT id FROM products WHERE id = ? AND is_deleted = 0 LIMIT 1', [rowId]);
+            if (exists.length) {
+              const setClauses = [];
+              const setVals = [];
+              // Only update columns that were present in the file
+              setClauses.push('name = ?');      setVals.push(name);
+              if (C.brand  >= 0) { setClauses.push('brand = ?');       setVals.push(cell(row, C.brand).substring(0, 100)); }
+              if (C.salt   >= 0) { setClauses.push('salt = ?');        setVals.push(cell(row, C.salt).substring(0, 500)); }
+              if (C.desc   >= 0) { setClauses.push('description = ?'); setVals.push(cell(row, C.desc) || null); }
+              if (C.se     >= 0) { setClauses.push('side_effects = ?');setVals.push(cell(row, C.se).substring(0, 1000)); }
+              if (C.mrp    >= 0) { setClauses.push('mrp = ?');         setVals.push(mrpRaw); }
+              if (C.price  >= 0) { setClauses.push('price = ?');       setVals.push(priceRaw); }
+              if (C.stock  >= 0) { setClauses.push('stock = ?');       setVals.push(parseInt(cell(row, C.stock)) || 0); }
+              if (C.pack   >= 0) { setClauses.push('pack = ?');        setVals.push(cell(row, C.pack).substring(0, 100)); }
+              if (C.code   >= 0) { setClauses.push('code = ?');        setVals.push(cell(row, C.code).substring(0, 50)); }
+              if (C.batch  >= 0) { setClauses.push('batch_number = ?');setVals.push(cell(row, C.batch).substring(0, 100)); }
+              if (C.rx     >= 0) { setClauses.push('requires_prescription = ?'); setVals.push(requiresRx); }
+              if (C.active >= 0 || C.disc >= 0) { setClauses.push('is_active = ?'); setVals.push(isActive); }
+              if (C.type   >= 0) { setClauses.push('category_id = ?'); setVals.push(catId); }
+              setVals.push(rowId);
+              await execute(`UPDATE products SET ${setClauses.join(', ')} WHERE id = ?`, setVals);
+              updated++;
+              continue;
+            }
+            // id not found → fall through to insert
+          }
+
+          // ── INSERT new product ───────────────────────────────────────────
+          insertValues.push([
             cell(row, C.code).substring(0, 50),
             name,
             makeSlug(name, rowIdx),
@@ -1079,13 +1148,13 @@ router.post(
             cell(row, C.brand).substring(0, 100),
             cell(row, C.desc) || null,
             cell(row, C.pack).substring(0, 100),
-            mrpRaw,     // mrp
-            priceRaw,   // sale price
+            mrpRaw,
+            priceRaw,
             parseInt(cell(row, C.stock)) || 0,
-            requiresRx, // requires_prescription
+            requiresRx,
             null,       // images_json
             null,       // expiry_date
-            cell(row, C.batch).substring(0, 100) || '', // batch_number
+            cell(row, C.batch).substring(0, 100) || '',
             cell(row, C.salt).substring(0, 500),
             cell(row, C.se).substring(0, 1000),
             isActive,
@@ -1093,20 +1162,20 @@ router.post(
           ]);
         }
 
-        if (values.length) {
+        if (insertValues.length) {
           await query(
             `INSERT IGNORE INTO products
               (code,name,slug,category_id,brand,description,pack,
                mrp,price,stock,requires_prescription,images_json,
                expiry_date,batch_number,salt,side_effects,is_active,is_deleted)
              VALUES ?`,
-            [values]
+            [insertValues]
           );
-          inserted += values.length;
+          inserted += insertValues.length;
         }
       }
 
-      res.json({ mode, inserted, skipped, total: rows.length });
+      res.json({ mode, inserted, updated, skipped, total: rows.length });
     } catch (err) { next(err); }
   }
 );

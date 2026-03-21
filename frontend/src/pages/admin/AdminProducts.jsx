@@ -73,8 +73,9 @@ export default function AdminProducts() {
   const [showForm,       setShowForm]       = useState(false);
 
   /* ── Import ── */
-  const [importing,    setImporting]    = useState(false);
-  const [importResult, setImportResult] = useState(null);
+  const [importing,       setImporting]       = useState(false);
+  const [importResult,    setImportResult]    = useState(null);
+  const [importModeModal, setImportModeModal] = useState({ open: false, file: null });
   const csvInputRef = useRef(null);
 
   /* ── Inline image upload ── */
@@ -333,18 +334,29 @@ export default function AdminProducts() {
   };
 
   /* ── CSV / Excel import ── */
-  const handleExcelImport = async (e) => {
+  const handleExcelImport = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     e.target.value = '';
     const ext = file.name.split('.').pop().toLowerCase();
     if (!['xlsx', 'xls', 'csv'].includes(ext)) { toast.error('Upload .xlsx, .xls, or .csv file.'); return; }
-    const confirmReplace = confirm('This will REMOVE old products and import fresh data from this file. Continue?');
-    if (!confirmReplace) return;
+    // Show mode picker modal instead of auto-replacing
+    setImportModeModal({ open: true, file });
+  };
+
+  const runImport = async (mode) => {
+    const { file } = importModeModal;
+    setImportModeModal({ open: false, file: null });
+    if (!file) return;
+    if (mode === 'replace' && !confirm('⚠️ This will DELETE ALL existing products and replace with this file. Are you sure?')) return;
     setImporting(true);
     try {
-      const { data } = await bulkImportProducts(file, 'replace');
-      toast.success(`Import done (${data.mode}): ${data.inserted} added, ${data.skipped} skipped.`);
+      const { data } = await bulkImportProducts(file, mode);
+      const parts = [];
+      if (data.updated)  parts.push(`${data.updated} updated`);
+      if (data.inserted) parts.push(`${data.inserted} added`);
+      if (data.skipped)  parts.push(`${data.skipped} skipped`);
+      toast.success(`Import done: ${parts.join(', ') || 'no changes'}.`);
       setImportResult(data);
       refresh();
     } catch (err) { toast.error(err.response?.data?.message || 'Import failed.'); }
@@ -354,13 +366,13 @@ export default function AdminProducts() {
   const handleExportExcel = async () => {
     try {
       const { data } = await exportProductsExcel({ search, category: catFilter || undefined, brand: brandFilter || undefined, status: statusFilter, stockFilter });
-      const url = URL.createObjectURL(new Blob([data], { type: 'text/csv;charset=utf-8;' }));
+      const url = URL.createObjectURL(new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
       const a = document.createElement('a');
       a.href = url;
-      a.download = `products-export-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = `products-export-${new Date().toISOString().slice(0, 10)}.xlsx`;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success('Export downloaded! Opens in Excel or any spreadsheet app.');
+      toast.success('Excel export downloaded! Edit and re-import to update products.');
     } catch {
       toast.error('Could not export products.');
     }
@@ -601,6 +613,33 @@ export default function AdminProducts() {
         </div>
       )}
 
+      {/* ── Import Mode Modal ── */}
+      {importModeModal.open && (
+        <div className="import-modal-overlay" onClick={() => setImportModeModal({ open: false, file: null })}>
+          <div className="import-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 460 }}>
+            <button className="import-modal__close" onClick={() => setImportModeModal({ open: false, file: null })}><X size={18} /></button>
+            <h2 style={{ marginBottom: '0.5rem' }}>Import Mode</h2>
+            <p style={{ fontSize: '0.85rem', color: 'var(--gray-500)', marginBottom: '1.25rem' }}>
+              File: <strong>{importModeModal.file?.name}</strong>
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <button className="btn btn--primary" onClick={() => runImport('update')}>
+                ✏️ Update existing products (by ID) + add new
+              </button>
+              <button className="btn btn--outline" onClick={() => runImport('append')}>
+                ➕ Add new products only (skip if name conflict)
+              </button>
+              <button className="btn btn--outline" style={{ color: '#ef4444', borderColor: '#ef4444' }} onClick={() => runImport('replace')}>
+                🗑️ Replace all — DELETE everything &amp; re-import
+              </button>
+            </div>
+            <p style={{ fontSize: '0.78rem', color: 'var(--gray-400)', marginTop: '1rem' }}>
+              Tip: Export Excel first → edit → re-import with &quot;Update existing&quot; to update prices, stock etc.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* ── Import Result Modal ── */}
       {importResult && (
         <div className="import-modal-overlay" onClick={() => setImportResult(null)}>
@@ -608,6 +647,9 @@ export default function AdminProducts() {
             <button className="import-modal__close" onClick={() => setImportResult(null)}><X size={18} /></button>
             <h2 style={{ marginBottom: '1rem' }}>Import Results</h2>
             <div className="import-modal__stats">
+              {(importResult.updated > 0) && (
+                <div className="import-stat import-stat--ok"><Pencil size={22} /><span className="import-stat__num">{importResult.updated}</span><span className="import-stat__lbl">Updated</span></div>
+              )}
               <div className="import-stat import-stat--ok"><CheckCircle size={22} /><span className="import-stat__num">{importResult.inserted}</span><span className="import-stat__lbl">Added</span></div>
               <div className="import-stat import-stat--skip"><AlertTriangle size={22} /><span className="import-stat__num">{importResult.skipped}</span><span className="import-stat__lbl">Skipped</span></div>
             </div>
