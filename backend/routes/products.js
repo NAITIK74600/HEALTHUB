@@ -76,8 +76,102 @@ const LIFESTYLE_SLUGS = new Set([
 
 // lifestyle_category is populated at import time (classifyLifestyle.js) and for existing
 // products via: node scripts/classifyProducts.js
-// Querying by this indexed column is fast; NO inline REGEXP fallback (MySQL 5.7 REGEXP on
-// complex alternation patterns over 169k rows returns unreliable results).
+// Each entry below is also a LIKE-keyword fallback so pages work IMMEDIATELY even before
+// classifyProducts.js has been run. Once the script runs, the indexed equality is hit first.
+// Rules: simple LIKE only (no REGEXP — MySQL 5.7 REGEXP on 169k rows is unreliable).
+// Values are hardcoded keywords — NOT user input — so no parameterised binding is needed.
+const LIFESTYLE_FALLBACK_WHERE = {
+  'oral-care': [
+    "p.name LIKE '%toothpaste%'",
+    "p.name LIKE '%tooth paste%'",
+    "p.name LIKE '%toothbrush%'",
+    "p.name LIKE '%tooth brush%'",
+    "p.name LIKE '%tooth powder%'",
+    "p.name LIKE '%tooth gel%'",
+    "p.name LIKE '%mouthwash%'",
+    "p.name LIKE '%mouth wash%'",
+    "p.name LIKE '%mouth rinse%'",
+    "p.name LIKE '%gum paint%'",
+    "p.name LIKE '%gum gel%'",
+    "p.name LIKE '%gum care%'",
+    "p.name LIKE '%dental floss%'",
+    "p.name LIKE '%tongue cleaner%'",
+    "p.brand LIKE '%Colgate%'",
+    "p.brand LIKE '%Sensodyne%'",
+    "p.brand LIKE '%Pepsodent%'",
+    "p.brand LIKE '%Oral-B%'",
+    "p.brand LIKE '%Listerine%'",
+    "p.brand LIKE '%Meswak%'",
+    "p.brand LIKE '%HiOra%'",
+    "p.brand LIKE '%CloseUp%'",
+    "p.brand LIKE '%Vicco%'",
+  ],
+  'women-care': [
+    "p.name LIKE '%sanitary pad%'",
+    "p.name LIKE '%sanitary napkin%'",
+    "p.name LIKE '%panty liner%'",
+    "p.name LIKE '%menstrual cup%'",
+    "p.name LIKE '%feminine hygiene%'",
+    "p.name LIKE '%vaginal wash%'",
+    "p.name LIKE '%intimate wash%'",
+    "p.name LIKE '%women hygiene%'",
+    "p.brand LIKE '%Sofy%'",
+    "p.brand LIKE '%Whisper%'",
+    "p.brand LIKE '%Stayfree%'",
+    "p.brand LIKE '%Carefree%'",
+    "p.brand LIKE '%Everteen%'",
+    "p.brand LIKE '%V Wash%'",
+    "p.brand LIKE '%Lactacyd%'",
+    "p.salt LIKE '%progesterone%'",
+    "p.salt LIKE '%oestrogen%'",
+    "p.salt LIKE '%norethisterone%'",
+    "p.salt LIKE '%levonorgestrel%'",
+    "p.salt LIKE '%clomiphene%'",
+    "p.salt LIKE '%letrozole%'",
+    "p.description LIKE '%gynaecolog%'",
+    "p.description LIKE '%menstrual%'",
+    "p.description LIKE '%leucorrhoea%'",
+    "p.name LIKE '%duphaston%'",
+    "p.name LIKE '%primolut%'",
+  ],
+  'men-grooming': [
+    "p.name LIKE '%shaving cream%'",
+    "p.name LIKE '%shaving foam%'",
+    "p.name LIKE '%shaving gel%'",
+    "p.name LIKE '%after shave%'",
+    "p.name LIKE '%aftershave%'",
+    "p.name LIKE '%beard oil%'",
+    "p.name LIKE '%beard balm%'",
+    "p.name LIKE '%beard wax%'",
+    "p.name LIKE '%beard serum%'",
+    "p.brand LIKE '%Gillette%'",
+    "p.brand LIKE '%Beardo%'",
+    "p.brand LIKE '%Ustraa%'",
+    "p.brand LIKE '%Bombay Shaving%'",
+    "p.brand LIKE '%Park Avenue%'",
+    "p.brand LIKE '%Old Spice%'",
+    "p.brand LIKE '%Brylcreem%'",
+  ],
+  'elderly-care': [
+    "p.name LIKE '%adult diaper%'",
+    "p.name LIKE '%adult brief%'",
+    "p.name LIKE '%adult absorbent%'",
+    "p.name LIKE '%adult pant%'",
+    "p.name LIKE '%incontinence pad%'",
+    "p.name LIKE '%incontinence brief%'",
+    "p.name LIKE '%pull up adult%'",
+    "p.name LIKE '%bedsore%'",
+    "p.name LIKE '%bed sore%'",
+    "p.name LIKE '%pressure sore%'",
+    "p.name LIKE '%geriatric%'",
+    "p.brand LIKE '%Friends Easy%'",
+    "p.brand LIKE '%Friends Premium%'",
+    "p.brand LIKE '%Dignity%'",
+    "p.brand LIKE '%Tena%'",
+    "p.brand LIKE '%Assure%'",
+    "p.brand LIKE '%Softmates%'",
+  ],
+};
 
 function normalizeCategorySlug(input = '') {
   const raw = String(input).trim().toLowerCase();
@@ -204,8 +298,15 @@ function buildProductWhere({ admin = false, params = {}, categoryIds = [] } = {}
   }
 
   if (params.lifestyleCategory) {
-    // Fast indexed equality — lifestyle_category populated by classifyProducts.js script.
-    where.push('p.lifestyle_category = ?');
+    // Primary: fast indexed equality (works after classifyProducts.js --all has been run)
+    // Fallback: LIKE keyword scan so the page shows products IMMEDIATELY even before
+    //   the classification script has run. MySQL 5.7-safe simple LIKE only.
+    const fallbacks = LIFESTYLE_FALLBACK_WHERE[params.lifestyleCategory] || [];
+    if (fallbacks.length) {
+      where.push(`(p.lifestyle_category = ? OR ${fallbacks.join(' OR ')})`);
+    } else {
+      where.push('p.lifestyle_category = ?');
+    }
     values.push(params.lifestyleCategory);
   } else if (params.search) {
     where.push('(p.name LIKE ? OR p.brand LIKE ? OR p.company LIKE ? OR p.description LIKE ? OR p.salt LIKE ?)');
