@@ -22,7 +22,6 @@ const CATEGORIES = [
   { label: 'Vitamins & Nutrition', slug: 'vitamins-nutrition' },
   { label: 'Supports & Braces',    slug: 'supports-braces' },
   { label: 'Immunity Boosters',    slug: 'immunity-boosters' },
-  { label: 'Homeopathy',           slug: 'homeopathy' },
   { label: 'Ayurveda',             slug: 'ayurveda' },
   { label: 'Skin Care',            slug: 'skin-care' },
   { label: 'Baby Care',            slug: 'baby-care' },
