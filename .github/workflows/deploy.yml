@@ -8,40 +8,16 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Trigger server restart via deploy webhook
-        # Calls POST /api/deploy on the live server with HMAC signature.
-        # DEPLOY_SECRET must be set in:
-        #   GitHub → Settings → Secrets → Actions → DEPLOY_SECRET
-        #   Server → backend/.env → DEPLOY_SECRET=<same value>
-        env:
-          DEPLOY_SECRET: ${{ secrets.DEPLOY_SECRET }}
-        run: |
-          BODY='{"ref":"refs/heads/master","event":"push"}'
-
-          # Compute HMAC-SHA256 — works on both old and new OpenSSL output formats
-          RAW_SIG=$(echo -n "$BODY" | openssl dgst -sha256 -hmac "$DEPLOY_SECRET" | awk '{print $NF}')
-          SIG="sha256=${RAW_SIG}"
-          echo "Signature prefix: ${SIG:0:20}..."
-
-          # -L  = follow redirects (http→https, non-www→www)
-          # --max-redirs 3 = safety limit
-          HTTP_STATUS=$(curl -sL --max-redirs 3 \
-            -o /tmp/deploy_response.txt \
-            -w "%{http_code}" \
-            -X POST https://www.batlamedicos.shop/api/deploy \
-            -H "Content-Type: application/json" \
-            -H "X-Deploy-Signature: $SIG" \
-            -d "$BODY")
-
-          echo "--- Server response (HTTP $HTTP_STATUS) ---"
-          cat /tmp/deploy_response.txt
-          echo ""
-
-          if [ "$HTTP_STATUS" != "200" ]; then
-            echo "::error::Deploy webhook returned HTTP $HTTP_STATUS"
-            exit 1
-          fi
-          echo "Deploy succeeded."
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASS }}
+          script: |
+            cd ~/batla-medicos
+            git pull origin master
+            mkdir -p tmp
+            touch tmp/restart.txt
+            echo "Deployed at $(date)"
