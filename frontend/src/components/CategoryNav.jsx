@@ -26,6 +26,7 @@ const CATEGORIES = [
   { label: 'Skin Care',            slug: 'skin-care' },
   { label: 'Baby Care',            slug: 'baby-care' },
   { label: 'Diabetes Care',        slug: 'diabetes-care' },
+  { label: 'Elderly Care',         slug: 'elderly-care' },
 ];
 
 export default function CategoryNav() {
