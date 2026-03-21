@@ -33,28 +33,14 @@ const PARENT_GROUPS = {
   allopathic:           ['allopathic', 'caps-tabs', 'liquids', 'cream-ointment', 'drop', 'powder',
                          'injection', 'inhaler', 'softgel-capsules', 'fluids', 'high-value',
                          'generic', 'fridge', 'vaccines', 'dental', 'otc'],
-  // Hair Care group
-  'hair-care':          ['lotion', 'fmcg', 'cream-ointment', 'caps-tabs'],
-  // Fitness & Health group
-  'fitness-health':     ['caps-tabs', 'softgel-capsules', 'powder', 'liquids'],
-  // Sexual Wellness group
-  'sexual-wellness':    ['fmcg', 'caps-tabs'],
-  // Vitamins & Nutrition group
-  'vitamins-nutrition': ['caps-tabs', 'softgel-capsules', 'powder', 'liquids', 'drop', 'nutrition'],
-  // Supports & Braces group
-  'supports-braces':    ['surgicals', 'container', 'pharma-misc'],
-  // Immunity Boosters group
-  'immunity-boosters':  ['caps-tabs', 'liquids', 'powder', 'drop'],
   // Homeopathy group
   homeopathy:           ['homeopathy', 'drop', 'liquids', 'caps-tabs', 'powder'],
   // Ayurveda group
   ayurveda:             ['ayurvedic', 'herbal', 'caps-tabs', 'liquids', 'lotion', 'powder', 'cream-ointment'],
-  // Skin Care group
-  'skin-care':          ['cream-ointment', 'lotion', 'fmcg'],
-  // Baby Care group
-  'baby-care':          ['drop', 'powder', 'lotion', 'nutrition'],
-  // Diabetes Care group
-  'diabetes-care':      ['caps-tabs', 'injection', 'surgicals', 'drop', 'fluids'],
+  // NOTE: All LIFESTYLE_SLUGS (hair-care, skin-care, baby-care, fitness-health,
+  // vitamins-nutrition, diabetes-care, supports-braces, immunity-boosters, sexual-wellness)
+  // are intentionally NOT in PARENT_GROUPS — they use LIFESTYLE_FALLBACK_WHERE keyword
+  // filtering which is far more precise than broad generic DB category IDs.
 
   // ── Legacy / alias parent slugs ─────────────────────────────────────────
   ayurvedic:            ['ayurvedic', 'herbal'],
@@ -81,6 +67,225 @@ const LIFESTYLE_SLUGS = new Set([
 // Rules: simple LIKE only (no REGEXP — MySQL 5.7 REGEXP on 169k rows is unreliable).
 // Values are hardcoded keywords — NOT user input — so no parameterised binding is needed.
 const LIFESTYLE_FALLBACK_WHERE = {
+  'sexual-wellness': [
+    "p.name LIKE '%condom%'",
+    "p.name LIKE '%contraceptive%'",
+    "p.name LIKE '%lubricant%'",
+    "p.name LIKE '%pregnancy test%'",
+    "p.name LIKE '%pregnancy kit%'",
+    "p.name LIKE '%ovulation%'",
+    "p.name LIKE '%ipill%'",
+    "p.name LIKE '%i-pill%'",
+    "p.name LIKE '%unwanted%'",
+    "p.name LIKE '%prega news%'",
+    "p.name LIKE '%pregaNews%'",
+    "p.name LIKE '%erectile%'",
+    "p.salt LIKE '%sildenafil%'",
+    "p.salt LIKE '%tadalafil%'",
+    "p.salt LIKE '%vardenafil%'",
+    "p.brand LIKE '%Durex%'",
+    "p.brand LIKE '%Manforce%'",
+    "p.brand LIKE '%Skore%'",
+    "p.brand LIKE '%KamaSutra%'",
+    "p.brand LIKE '%Moods%'",
+    "p.brand LIKE '%Kohinoor%'",
+    "p.description LIKE '%sexual wellness%'",
+    "p.description LIKE '%contraception%'",
+  ],
+  'hair-care': [
+    "p.name LIKE '%shampoo%'",
+    "p.name LIKE '%conditioner%'",
+    "p.name LIKE '%hair oil%'",
+    "p.name LIKE '%hair serum%'",
+    "p.name LIKE '%hair mask%'",
+    "p.name LIKE '%hair colour%'",
+    "p.name LIKE '%hair color%'",
+    "p.name LIKE '%hair dye%'",
+    "p.name LIKE '%hair fall%'",
+    "p.name LIKE '%hairfall%'",
+    "p.name LIKE '%dandruff%'",
+    "p.name LIKE '%scalp%'",
+    "p.name LIKE '%hair growth%'",
+    "p.name LIKE '%hair cream%'",
+    "p.name LIKE '%hair tonic%'",
+    "p.brand LIKE '%Pantene%'",
+    "p.brand LIKE '%Head & Shoulders%'",
+    "p.brand LIKE '%Dove%'",
+    "p.brand LIKE '%TRESemme%'",
+    "p.brand LIKE '%Garnier%'",
+    "p.brand LIKE '%Mamaearth%'",
+    "p.brand LIKE '%WOW%'",
+    "p.brand LIKE '%Kesh King%'",
+    "p.brand LIKE '%Parachute%'",
+    "p.brand LIKE '%Bajaj%'",
+    "p.brand LIKE '%Indulekha%'",
+    "p.brand LIKE '%Biotique%'",
+    "p.brand LIKE '%Emami%'",
+    "p.description LIKE '%hair care%'",
+  ],
+  'skin-care': [
+    "p.name LIKE '%moisturizer%'",
+    "p.name LIKE '%moisturiser%'",
+    "p.name LIKE '%sunscreen%'",
+    "p.name LIKE '%sun screen%'",
+    "p.name LIKE '%face wash%'",
+    "p.name LIKE '%face cream%'",
+    "p.name LIKE '%face pack%'",
+    "p.name LIKE '%face mask%'",
+    "p.name LIKE '%face serum%'",
+    "p.name LIKE '%toner%'",
+    "p.name LIKE '%lip balm%'",
+    "p.name LIKE '%body lotion%'",
+    "p.name LIKE '%body wash%'",
+    "p.name LIKE '%fairness%'",
+    "p.name LIKE '%glow cream%'",
+    "p.name LIKE '%anti aging%'",
+    "p.name LIKE '%anti-aging%'",
+    "p.name LIKE '%spf%'",
+    "p.brand LIKE '%Lotus%'",
+    "p.brand LIKE '%VLCC%'",
+    "p.brand LIKE '%Ponds%'",
+    "p.brand LIKE '%Cetaphil%'",
+    "p.brand LIKE '%Neutrogena%'",
+    "p.brand LIKE '%Lacto Calamine%'",
+    "p.brand LIKE '%Lakme%'",
+    "p.brand LIKE '%Nivea%'",
+    "p.brand LIKE '%Vaseline%'",
+    "p.description LIKE '%skin care%'",
+  ],
+  'baby-care': [
+    "p.name LIKE '%baby oil%'",
+    "p.name LIKE '%baby powder%'",
+    "p.name LIKE '%baby soap%'",
+    "p.name LIKE '%baby shampoo%'",
+    "p.name LIKE '%baby lotion%'",
+    "p.name LIKE '%baby cream%'",
+    "p.name LIKE '%baby wash%'",
+    "p.name LIKE '%baby drops%'",
+    "p.name LIKE '%diaper rash%'",
+    "p.name LIKE '%nappy rash%'",
+    "p.name LIKE '%gripe water%'",
+    "p.name LIKE '%infant%'",
+    "p.name LIKE '%teething%'",
+    "p.brand LIKE '%Johnson%'",
+    "p.brand LIKE '%Himalaya Baby%'",
+    "p.brand LIKE '%Mee Mee%'",
+    "p.brand LIKE '%Sebamed%'",
+    "p.brand LIKE '%Chicco%'",
+    "p.description LIKE '%baby care%'",
+  ],
+  'fitness-health': [
+    "p.name LIKE '%protein powder%'",
+    "p.name LIKE '%whey protein%'",
+    "p.name LIKE '%whey%'",
+    "p.name LIKE '%mass gainer%'",
+    "p.name LIKE '%pre workout%'",
+    "p.name LIKE '%pre-workout%'",
+    "p.name LIKE '%bcaa%'",
+    "p.name LIKE '%creatine%'",
+    "p.name LIKE '%energy drink%'",
+    "p.name LIKE '%gym supplement%'",
+    "p.name LIKE '%fitness%'",
+    "p.name LIKE '%sports nutrition%'",
+    "p.brand LIKE '%MuscleBlaze%'",
+    "p.brand LIKE '%Ensure%'",
+    "p.brand LIKE '%Protinex%'",
+    "p.brand LIKE '%HealthKart%'",
+    "p.brand LIKE '%Muscletech%'",
+    "p.brand LIKE '%GNC%'",
+    "p.description LIKE '%fitness%'",
+    "p.description LIKE '%muscle%'",
+  ],
+  'vitamins-nutrition': [
+    "p.name LIKE '%vitamin%'",
+    "p.name LIKE '%multivitamin%'",
+    "p.name LIKE '%multi vitamin%'",
+    "p.name LIKE '%omega%'",
+    "p.name LIKE '%fish oil%'",
+    "p.name LIKE '%calcium tablet%'",
+    "p.name LIKE '%iron tablet%'",
+    "p.name LIKE '%zinc supplement%'",
+    "p.name LIKE '%folic acid%'",
+    "p.name LIKE '%nutrition%'",
+    "p.salt LIKE '%ascorbic acid%'",
+    "p.salt LIKE '%cholecalciferol%'",
+    "p.salt LIKE '%cyanocobalamin%'",
+    "p.salt LIKE '%pyridoxine%'",
+    "p.salt LIKE '%thiamine%'",
+    "p.brand LIKE '%Revital%'",
+    "p.brand LIKE '%Supradyn%'",
+    "p.brand LIKE '%Becosules%'",
+    "p.brand LIKE '%Neurobion%'",
+    "p.brand LIKE '%Centrum%'",
+    "p.brand LIKE '%Berocca%'",
+    "p.description LIKE '%vitamin%'",
+  ],
+  'diabetes-care': [
+    "p.name LIKE '%glucometer%'",
+    "p.name LIKE '%glucose monitor%'",
+    "p.name LIKE '%glucose meter%'",
+    "p.name LIKE '%test strip%'",
+    "p.name LIKE '%lancet%'",
+    "p.name LIKE '%insulin syringe%'",
+    "p.name LIKE '%insulin needle%'",
+    "p.name LIKE '%blood glucose%'",
+    "p.name LIKE '%diabetic%'",
+    "p.name LIKE '%diabetes%'",
+    "p.salt LIKE '%metformin%'",
+    "p.salt LIKE '%glimepiride%'",
+    "p.salt LIKE '%sitagliptin%'",
+    "p.salt LIKE '%voglibose%'",
+    "p.salt LIKE '%gliclazide%'",
+    "p.salt LIKE '%glipizide%'",
+    "p.salt LIKE '%insulin%'",
+    "p.brand LIKE '%Accu-Chek%'",
+    "p.brand LIKE '%OneTouch%'",
+    "p.brand LIKE '%Dr. Morepen%'",
+    "p.description LIKE '%diabetes%'",
+    "p.description LIKE '%diabetic%'",
+  ],
+  'supports-braces': [
+    "p.name LIKE '%knee cap%'",
+    "p.name LIKE '%knee support%'",
+    "p.name LIKE '%knee brace%'",
+    "p.name LIKE '%elbow support%'",
+    "p.name LIKE '%wrist support%'",
+    "p.name LIKE '%ankle support%'",
+    "p.name LIKE '%lumbar belt%'",
+    "p.name LIKE '%cervical collar%'",
+    "p.name LIKE '%abdominal belt%'",
+    "p.name LIKE '%crepe bandage%'",
+    "p.name LIKE '%BP monitor%'",
+    "p.name LIKE '%blood pressure monitor%'",
+    "p.name LIKE '%nebulizer%'",
+    "p.name LIKE '%nebuliser%'",
+    "p.name LIKE '%thermometer%'",
+    "p.name LIKE '%pulse oximeter%'",
+    "p.name LIKE '%wheelchair%'",
+    "p.name LIKE '%walker%'",
+    "p.name LIKE '%crutch%'",
+    "p.brand LIKE '%Omron%'",
+    "p.brand LIKE '%Romsons%'",
+    "p.description LIKE '%orthopaedic%'",
+    "p.description LIKE '%orthopedic%'",
+  ],
+  'immunity-boosters': [
+    "p.name LIKE '%chyawanprash%'",
+    "p.name LIKE '%giloy%'",
+    "p.name LIKE '%ashwagandha%'",
+    "p.name LIKE '%tulsi%'",
+    "p.name LIKE '%turmeric%'",
+    "p.name LIKE '%immunity booster%'",
+    "p.name LIKE '%immune booster%'",
+    "p.name LIKE '%immunity%'",
+    "p.name LIKE '%elderberry%'",
+    "p.brand LIKE '%Dabur%'",
+    "p.brand LIKE '%Baidyanath%'",
+    "p.brand LIKE '%Patanjali%'",
+    "p.brand LIKE '%Zandu%'",
+    "p.description LIKE '%immunity%'",
+    "p.description LIKE '%immune%'",
+  ],
   'oral-care': [
     "p.name LIKE '%toothpaste%'",
     "p.name LIKE '%tooth paste%'",
@@ -383,14 +588,12 @@ router.get('/', [
     const limit = Number(req.query.limit || 20);
 
     const catSlug = req.query.category ? normalizeCategorySlug(req.query.category) : null;
-    // Prioritise PARENT_GROUPS (category-ID filtering) over LIFESTYLE_SLUGS when both match.
-    // LIFESTYLE_SLUGS alone (oral-care, women-care, men-grooming, elderly-care) still use the
-    // lifestyle_category column + LIKE keyword fallbacks which work on any DB state.
-    const isLifestyle = catSlug ? (LIFESTYLE_SLUGS.has(catSlug) && !PARENT_GROUPS[catSlug]) : false;
+    // LIFESTYLE_SLUGS always use keyword-based filtering (LIFESTYLE_FALLBACK_WHERE).
+    // This is more precise than PARENT_GROUPS which maps to broad generic DB categories.
+    const isLifestyle = catSlug ? LIFESTYLE_SLUGS.has(catSlug) : false;
 
     let categoryIds, lifestyleCategory;
     if (isLifestyle) {
-      // Lifestyle category → fast indexed lookup on lifestyle_category column
       categoryIds     = null;
       lifestyleCategory = catSlug;
     } else {
@@ -435,8 +638,7 @@ router.get('/admin/list', requireAuth, requireAdmin, async (req, res, next) => {
     const limit = Number(req.query.limit || 20);
 
     const catSlug = req.query.category ? normalizeCategorySlug(req.query.category) : null;
-    // Prioritise PARENT_GROUPS over LIFESTYLE_SLUGS when both match (same fix as public route).
-    const isLifestyle = catSlug ? (LIFESTYLE_SLUGS.has(catSlug) && !PARENT_GROUPS[catSlug]) : false;
+    const isLifestyle = catSlug ? LIFESTYLE_SLUGS.has(catSlug) : false;
 
     let categoryIds, lifestyleCategory;
     if (isLifestyle) {
