@@ -10,6 +10,7 @@ const requireSuperAdmin = require('../middleware/requireSuperAdmin');
 const upload       = require('../middleware/upload');
 const { query, execute } = require('../db/mysql');
 const { findUserById } = require('../db/users');
+const { sendPrescriptionUpdate } = require('../utils/mailer');
 
 const router = express.Router();
 
@@ -215,6 +216,20 @@ router.patch('/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })],
     if (!sets.length) return res.status(422).json({ message: 'Nothing to update.' });
     vals.push(req.params.id);
     await execute(`UPDATE prescriptions SET ${sets.join(', ')} WHERE id = ?`, vals);
+
+    // Send email on approval/rejection
+    if (status === 'approved' || status === 'rejected') {
+      try {
+        const rxRows = await query(
+          'SELECT p.user_id, u.email, u.name FROM prescriptions p LEFT JOIN users u ON u.id = p.user_id WHERE p.id = ?',
+          [req.params.id]
+        );
+        if (rxRows[0]?.email) {
+          await sendPrescriptionUpdate(rxRows[0].email, rxRows[0].name, req.params.id, status, adminNote || '');
+        }
+      } catch (emailErr) { console.error('[mailer] prescription status email failed:', emailErr.message); }
+    }
+
     res.json({ message: 'Prescription updated.' });
   } catch (err) { next(err); }
 });

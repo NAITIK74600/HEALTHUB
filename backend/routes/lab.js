@@ -9,6 +9,7 @@ const requireAuth       = require('../middleware/requireAuth');
 const requireAdmin      = require('../middleware/requireAdmin');
 const requireSuperAdmin = require('../middleware/requireSuperAdmin');
 const { findUserById }  = require('../db/users');
+const { sendLabBookingConfirmation, sendLabStatusUpdate } = require('../utils/mailer');
 
 // ── helpers ────────────────────────────────────────────────────────────────────
 function mapTest(row) {
@@ -256,6 +257,18 @@ router.post('/bookings', requireAuth, async (req, res) => {
     );
 
     const rows = await query('SELECT * FROM lab_bookings WHERE id = ?', [result.insertId]);
+
+    // Send booking confirmation email
+    try {
+      const userRows = await query('SELECT email, name FROM users WHERE id = ?', [req.user.id]);
+      if (userRows[0]?.email) {
+        await sendLabBookingConfirmation(userRows[0].email, userRows[0].name, {
+          _id: result.insertId, patientName: patientName.trim(), bookingDate, slot,
+          collectionType, testSnapshots: snapshots, totalAmount,
+        });
+      }
+    } catch (emailErr) { console.error('[mailer] lab booking confirmation failed:', emailErr.message); }
+
     res.status(201).json({ booking: mapBooking(rows[0]) });
   } catch (err) {
     console.error('POST /lab/bookings', err);
@@ -390,6 +403,17 @@ router.delete('/bookings/:id', requireAuth, async (req, res) => {
       return res.status(400).json({ message: 'Cannot cancel a completed booking' });
 
     await execute("UPDATE lab_bookings SET status = 'cancelled' WHERE id = ?", [req.params.id]);
+
+    // Send cancellation email
+    try {
+      const userRows = await query('SELECT email, name FROM users WHERE id = ?', [rows[0].user_id]);
+      if (userRows[0]?.email) {
+        await sendLabStatusUpdate(userRows[0].email, userRows[0].name, {
+          _id: req.params.id, patientName: rows[0].patient_name, bookingDate: rows[0].booking_date,
+        }, 'cancelled');
+      }
+    } catch (emailErr) { console.error('[mailer] lab cancel email failed:', emailErr.message); }
+
     res.json({ message: 'Booking cancelled' });
   } catch (err) {
     console.error('DELETE /lab/bookings/:id', err);
@@ -442,6 +466,18 @@ router.patch('/bookings/:id/status', requireAuth, requireAdmin, async (req, res)
     if (!rows[0]) return res.status(404).json({ message: 'Booking not found' });
 
     await execute('UPDATE lab_bookings SET status = ? WHERE id = ?', [status, req.params.id]);
+
+    // Send status update email
+    try {
+      const bookingRows = await query('SELECT b.*, u.email, u.name AS user_name FROM lab_bookings b LEFT JOIN users u ON u.id = b.user_id WHERE b.id = ?', [req.params.id]);
+      const b = bookingRows[0];
+      if (b?.email) {
+        await sendLabStatusUpdate(b.email, b.user_name, {
+          _id: req.params.id, patientName: b.patient_name, bookingDate: b.booking_date,
+        }, status);
+      }
+    } catch (emailErr) { console.error('[mailer] lab status email failed:', emailErr.message); }
+
     res.json({ message: 'Status updated' });
   } catch (err) {
     console.error('PATCH /lab/bookings/:id/status', err);
@@ -465,6 +501,18 @@ router.patch('/bookings/:id/report', requireAuth, requireAdmin, async (req, res)
       "UPDATE lab_bookings SET report_url = ?, status = 'report_ready' WHERE id = ?",
       [reportUrl, req.params.id]
     );
+
+    // Send report ready email
+    try {
+      const bookingRows = await query('SELECT b.*, u.email, u.name AS user_name FROM lab_bookings b LEFT JOIN users u ON u.id = b.user_id WHERE b.id = ?', [req.params.id]);
+      const b = bookingRows[0];
+      if (b?.email) {
+        await sendLabStatusUpdate(b.email, b.user_name, {
+          _id: req.params.id, patientName: b.patient_name, bookingDate: b.booking_date,
+        }, 'report_ready');
+      }
+    } catch (emailErr) { console.error('[mailer] lab report email failed:', emailErr.message); }
+
     res.json({ message: 'Report uploaded' });
   } catch (err) {
     console.error('PATCH /lab/bookings/:id/report', err);

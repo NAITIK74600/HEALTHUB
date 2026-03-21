@@ -7,6 +7,7 @@ const { query, execute } = require('../db/mysql');
 const { findUserByEmail, createUser } = require('../db/users');
 const requireAuth   = require('../middleware/requireAuth');
 const requireAdmin  = require('../middleware/requireAdmin');
+const { sendDeliveryAssignmentEmail, sendDeliveryBoyStatusEmail } = require('../utils/mailer');
 
 const router = express.Router();
 
@@ -181,6 +182,14 @@ router.patch('/admin/:id/status', requireAuth, requireAdmin, [
     );
     if (!result.affectedRows) return res.status(404).json({ message: 'Delivery boy not found.' });
     const rows = await query('SELECT * FROM delivery_boys WHERE id = ?', [req.params.id]);
+
+    // Send email on approval/suspension
+    if (req.body.status === 'active' || req.body.status === 'suspended') {
+      try {
+        await sendDeliveryBoyStatusEmail(rows[0].email, rows[0].name, req.body.status);
+      } catch (emailErr) { console.error('[mailer] delivery boy status email failed:', emailErr.message); }
+    }
+
     res.json(mapBoy(rows[0]));
   } catch (err) {
     next(err);
@@ -202,6 +211,16 @@ router.post('/admin/assign', requireAuth, requireAdmin, [
       [deliveryBoyId, orderId]
     );
     if (!result.affectedRows) return res.status(404).json({ message: 'Order not found.' });
+
+    // Send email to customer about delivery assignment
+    try {
+      const orderRows = await query('SELECT o.user_id, u.email, u.name FROM orders o LEFT JOIN users u ON u.id = o.user_id WHERE o.id = ?', [orderId]);
+      const boyRows = await query('SELECT name FROM delivery_boys WHERE id = ?', [deliveryBoyId]);
+      if (orderRows[0]?.email) {
+        await sendDeliveryAssignmentEmail(orderRows[0].email, orderRows[0].name, orderId, boyRows[0]?.name || '');
+      }
+    } catch (emailErr) { console.error('[mailer] delivery assignment email failed:', emailErr.message); }
+
     res.json({ message: 'Order assigned to delivery boy.' });
   } catch (err) {
     next(err);
