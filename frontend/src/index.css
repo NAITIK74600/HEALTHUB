@@ -464,7 +464,7 @@ svg { flex-shrink: 0; }
   box-shadow: var(--shadow-lg);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 992px) {
   .navbar__links { display: none; }
   .navbar__menu-btn { display: flex; }
   .navbar__inner {
