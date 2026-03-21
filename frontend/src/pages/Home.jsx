@@ -106,7 +106,7 @@ const PC_GRADIENT_BY_LABEL = Object.fromEntries(PERSONAL_CARE_CATS.map(c => [c.l
 const TRUST_FEATURES = [
   { icon: <Truck size={22} />,       bg: '#FEF2F2', color: '#C0392B', title: 'Free Delivery',           desc: 'On orders above ₹499' },
   { icon: <ShieldCheck size={22} />, bg: '#F0FBF4', color: '#1B8843', title: '100% Genuine',            desc: 'Licensed & verified sources' },
-  { icon: <Clock size={22} />,       bg: '#FEF2F2', color: '#C0392B', title: 'Open Until 9:30 PM',      desc: 'Monday to Sunday' },
+  { icon: <Clock size={22} />,       bg: '#FEF2F2', color: '#C0392B', title: 'Open 9 AM – 9:30 PM',     desc: 'Monday to Sunday' },
   { icon: <Stethoscope size={22} />, bg: '#F0FBF4', color: '#1B8843', title: 'Expert Pharmacists',      desc: 'Free consultation' },
   { icon: <Activity size={22} />,    bg: '#EFF6FF', color: '#2563EB', title: 'Lab Tests at Home',       desc: 'Up to 70% off' },
   { icon: <Users size={22} />,       bg: '#FFFBEB', color: '#D97706', title: '50,000+ Customers',       desc: 'Trusted since 2005' },
