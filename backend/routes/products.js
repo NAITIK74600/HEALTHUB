@@ -632,8 +632,9 @@ function buildProductWhere({ admin = false, params = {}, categoryIds = [] } = {}
   }
 
   if (params.brand) {
-    where.push('p.brand LIKE ?');
-    values.push(`%${params.brand}%`);
+    // Also match brands stored with apostrophes e.g. "L'Oreal" when user searches "LOREAL"
+    where.push("(p.brand LIKE ? OR REPLACE(p.brand, '''', '') LIKE ?)");
+    values.push(`%${params.brand}%`, `%${params.brand}%`);
   }
 
   if (params.lifestyleCategory) {
