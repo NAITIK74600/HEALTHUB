@@ -9,9 +9,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger deploy webhook
+        env:
+          DEPLOY_SECRET: ${{ secrets.DEPLOY_SECRET }}
         run: |
-          curl -s -X POST https://www.batlamedicos.shop/deploy.php \
-            -H "X-Deploy-Token: ${{ secrets.DEPLOY_SECRET }}" \
+          BODY='{"deploy":true}'
+          SIG="sha256=$(echo -n "$BODY" | openssl dgst -sha256 -hmac "$DEPLOY_SECRET" | awk '{print $NF}')"
+          curl -s -X POST https://www.batlamedicos.shop/api/deploy \
+            -H "Content-Type: application/json" \
+            -H "X-Deploy-Signature: $SIG" \
+            -d "$BODY" \
             --max-time 60 \
-            --retry 2 \
             -w "\nHTTP Status: %{http_code}\n"
