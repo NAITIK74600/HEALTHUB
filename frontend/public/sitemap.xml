@@ -1,28 +1,25 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-  <!-- ── Core pages ──────────────────────────────────────────────────── -->
+  <!-- Core pages -->
   <url>
     <loc>https://www.batlamedicos.shop/</loc>
     <lastmod>2026-03-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-
   <url>
     <loc>https://www.batlamedicos.shop/products</loc>
     <lastmod>2026-03-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
-
   <url>
     <loc>https://www.batlamedicos.shop/lab</loc>
     <lastmod>2026-03-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-
   <url>
     <loc>https://www.batlamedicos.shop/diseases</loc>
     <lastmod>2026-03-21</lastmod>
@@ -30,7 +27,7 @@
     <priority>0.7</priority>
   </url>
 
-  <!-- ── Medicine / Rx categories ────────────────────────────────────── -->
+  <!-- Medicine / Rx categories -->
   <url>
     <loc>https://www.batlamedicos.shop/products?category=allopathic</loc>
     <lastmod>2026-03-21</lastmod>
@@ -62,7 +59,7 @@
     <priority>0.7</priority>
   </url>
 
-  <!-- ── Wellness & Nutrition ─────────────────────────────────────────── -->
+  <!-- Wellness and Nutrition -->
   <url>
     <loc>https://www.batlamedicos.shop/products?category=vitamins-nutrition</loc>
     <lastmod>2026-03-21</lastmod>
@@ -82,7 +79,7 @@
     <priority>0.7</priority>
   </url>
 
-  <!-- ── Personal Care / Lifestyle ────────────────────────────────────── -->
+  <!-- Personal Care / Lifestyle -->
   <url>
     <loc>https://www.batlamedicos.shop/products?category=skin-care</loc>
     <lastmod>2026-03-21</lastmod>
@@ -132,7 +129,7 @@
     <priority>0.7</priority>
   </url>
 
-  <!-- ── Legal / Policy ───────────────────────────────────────────────── -->
+  <!-- Legal / Policy -->
   <url>
     <loc>https://www.batlamedicos.shop/privacy-policy</loc>
     <lastmod>2026-03-21</lastmod>
@@ -149,48 +146,6 @@
     <loc>https://www.batlamedicos.shop/refund-policy</loc>
     <lastmod>2026-03-21</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
-  </url>
-
-</urlset>
-
-    <loc>https://batlamedicos.shop/lab</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://batlamedicos.shop/lab/bookings</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://batlamedicos.shop/prescriptions</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://batlamedicos.shop/orders</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://batlamedicos.shop/checkout</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://batlamedicos.shop/diseases</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <url>
-    <loc>https://batlamedicos.shop/login</loc>
-    <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>
 
