@@ -121,7 +121,6 @@ const LIFESTYLE_FALLBACK_WHERE = {
     "p.brand LIKE '%Kesh King%'",
     "p.brand LIKE '%Indulekha%'",
     "p.brand LIKE '%Loreal%'",
-    "p.brand LIKE '%L\'Oreal%'",
     "p.brand LIKE '%LOreal%'",
   ],
   'skin-care': [
@@ -149,7 +148,6 @@ const LIFESTYLE_FALLBACK_WHERE = {
     "p.brand LIKE '%Ponds%'",
     "p.brand LIKE '%Lakme%'",
     "p.brand LIKE '%Loreal%'",
-    "p.brand LIKE '%L\'Oreal%'",
     "p.brand LIKE '%LOreal%'",
   ],
   'baby-care': [
