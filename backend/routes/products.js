@@ -807,38 +807,94 @@ router.get('/admin/list', requireAuth, requireAdmin, async (req, res, next) => {
 
 router.get('/import-template', requireAuth, requireAdmin, async (req, res, next) => {
   try {
-    const categories = await query('SELECT slug, name FROM categories WHERE is_deleted = 0 ORDER BY ord ASC, name ASC', []);
-    const wb = XLSX.utils.book_new();
-    // Column headers MUST match what the import column-detector expects
-    const wsProducts = XLSX.utils.aoa_to_sheet([
-      ['name', 'brand', 'salt', 'description', 'side_effects', 'category', 'mrp', 'price', 'stock', 'requiresPrescription', 'code', 'pack', 'batchNumber', 'isActive'],
-      ['Paracetamol 650 Tablet', 'Cipla', 'Paracetamol 650mg', 'Fever, headache, and mild pain relief.', 'Nausea, rash (rare)', 'caps-tabs', 35, 30, 120, 'false', 'PARA650-01', '10 tablets strip', 'BATCH-2026-01', 'true'],
-      ['Amoxicillin 500mg Capsule', 'Sun Pharma', 'Amoxicillin 500mg', 'Antibiotic for bacterial infections.', 'Diarrhoea, rash (rare)', 'caps-tabs', 95, 85, 50, 'true', 'AMOX500-01', '10 capsules strip', 'BATCH-2026-02', 'true'],
+    // Fetch all existing products with IDs so admin can edit inline and add new rows at the bottom
+    const [products, categories] = await Promise.all([
+      query(
+        `SELECT p.id, p.name, p.brand, p.salt, p.description, p.side_effects,
+                c.slug AS category_slug, p.mrp, p.price, p.stock,
+                p.requires_prescription, p.code, p.pack, p.batch_number, p.is_active
+         FROM products p
+         LEFT JOIN categories c ON c.id = p.category_id
+         WHERE p.is_deleted = 0
+         ORDER BY p.id ASC
+         LIMIT 50000`,
+        []
+      ),
+      query('SELECT slug, name FROM categories WHERE is_deleted = 0 ORDER BY ord ASC, name ASC', []),
     ]);
-    const wsCategories = XLSX.utils.aoa_to_sheet([['slug', 'name'], ...categories.map((row) => [row.slug, row.name])]);
+
+    const wb = XLSX.utils.book_new();
+
+    // Products sheet — id first so rows with id = UPDATE, rows without id = INSERT NEW
+    const headers = ['id', 'name', 'brand', 'salt', 'description', 'side_effects', 'category', 'mrp', 'price', 'stock', 'requiresPrescription', 'code', 'pack', 'batchNumber', 'isActive'];
+    const dataRows = products.map(r => [
+      r.id,
+      r.name || '',
+      r.brand || '',
+      r.salt || '',
+      r.description || '',
+      r.side_effects || '',
+      r.category_slug || '',
+      r.mrp,
+      r.price,
+      r.stock,
+      r.requires_prescription ? 'true' : 'false',
+      r.code || '',
+      r.pack || '',
+      r.batch_number || '',
+      r.is_active ? 'true' : 'false',
+    ]);
+
+    // Add 5 empty rows at the bottom for new products (leave id blank to insert as new)
+    for (let i = 0; i < 5; i++) {
+      dataRows.push(['', '', '', '', '', '', '', '', '', '', 'false', '', '', '', 'true']);
+    }
+
+    const wsProducts = XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
+    wsProducts['!freeze'] = { xSplit: 0, ySplit: 1 };
+    wsProducts['!cols'] = [{ wch: 8 }, { wch: 40 }, { wch: 20 }, { wch: 25 }, { wch: 50 }, { wch: 30 },
+                           { wch: 18 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 20 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 10 }];
+
+    const wsCategories = XLSX.utils.aoa_to_sheet([['slug', 'name'], ...categories.map(r => [r.slug, r.name])]);
+
     const wsGuide = XLSX.utils.aoa_to_sheet([
+      ['HOW TO USE THIS TEMPLATE', ''],
+      ['', ''],
+      ['OPTION 1 — Update existing + Add new', 'Use "Update existing + Add new" when importing'],
+      ['  • Rows WITH an id value  →  update that product (price, stock, brand, etc.)', ''],
+      ['  • Rows WITHOUT an id     →  insert as a NEW product', ''],
+      ['  • Add new products at the bottom of the sheet, leave the id column EMPTY', ''],
+      ['', ''],
+      ['OPTION 2 — Add new products only', 'Use "Add new products only" when importing'],
+      ['  • All rows are treated as new products regardless of id column', ''],
+      ['  • id column is ignored', ''],
+      ['', ''],
       ['Column', 'Required', 'Notes'],
+      ['id', 'Keep to update / blank to add new', 'Product ID from database — keep to UPDATE, clear to INSERT as new'],
       ['name', 'YES', 'Product name (max 200 chars)'],
       ['brand', 'no', 'Manufacturer / brand name'],
       ['salt', 'no', 'Active ingredient + strength'],
-      ['description', 'no', 'One-line description'],
+      ['description', 'no', 'Product description'],
       ['side_effects', 'no', 'Known side effects'],
-      ['category', 'no', 'Slug from the Categories sheet (e.g. caps-tabs, syrups, surgicals)'],
+      ['category', 'no', 'Slug from the Categories sheet (e.g. caps-tabs, fmcg, ayurvedic)'],
       ['mrp', 'no', 'Maximum Retail Price (numeric)'],
-      ['price', 'no', 'Sale / discounted price (numeric, defaults to mrp if blank)'],
+      ['price', 'no', 'Selling price (numeric, defaults to mrp if blank)'],
       ['stock', 'no', 'Stock quantity (numeric, default 0)'],
       ['requiresPrescription', 'no', 'true or false'],
       ['code', 'no', 'Product barcode / SKU'],
-      ['pack', 'no', 'Pack size label (e.g. 10 tablets strip)'],
+      ['pack', 'no', 'Pack size label (e.g. 10 tablets strip, 100ml)'],
       ['batchNumber', 'no', 'Batch / lot number'],
       ['isActive', 'no', 'true = visible on site, false = hidden (default true)'],
     ]);
+    wsGuide['!cols'] = [{ wch: 60 }, { wch: 45 }];
+
     XLSX.utils.book_append_sheet(wb, wsProducts, 'Products');
     XLSX.utils.book_append_sheet(wb, wsCategories, 'Categories');
     XLSX.utils.book_append_sheet(wb, wsGuide, 'Guide');
     const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    const filename = `products-template-${new Date().toISOString().slice(0, 10)}.xlsx`;
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename="products-template.xlsx"');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(buf);
   } catch (err) { next(err); }
 });

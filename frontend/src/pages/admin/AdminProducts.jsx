@@ -348,7 +348,6 @@ export default function AdminProducts() {
     const { file } = importModeModal;
     setImportModeModal({ open: false, file: null });
     if (!file) return;
-    if (mode === 'replace' && !confirm('⚠️ This will DELETE ALL existing products and replace with this file. Are you sure?')) return;
     setImporting(true);
     try {
       const { data } = await bulkImportProducts(file, mode);
@@ -513,10 +512,10 @@ export default function AdminProducts() {
           {total > 0 && <span className="admin-page__count">{total.toLocaleString()}</span>}
         </h1>
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <button className="btn btn--outline" onClick={handleDownloadTemplate} title="Download Excel template (.xlsx)">
+          <button className="btn btn--outline" onClick={handleDownloadTemplate} title="Download all products with IDs — edit inline, add new at the bottom, then re-import">
             <FileSpreadsheet size={16} /> Template
           </button>
-          <button className="btn btn--outline" onClick={handleExportExcel} title="Export products to Excel (.xlsx)">
+          <button className="btn btn--outline" onClick={handleExportExcel} title="Export filtered products to Excel (.xlsx)">
             <FileSpreadsheet size={16} /> Export Excel
           </button>
           <button className="btn btn--outline" onClick={() => csvInputRef.current?.click()} disabled={importing}>
@@ -616,25 +615,37 @@ export default function AdminProducts() {
       {/* ── Import Mode Modal ── */}
       {importModeModal.open && (
         <div className="import-modal-overlay" onClick={() => setImportModeModal({ open: false, file: null })}>
-          <div className="import-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 460 }}>
+          <div className="import-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
             <button className="import-modal__close" onClick={() => setImportModeModal({ open: false, file: null })}><X size={18} /></button>
-            <h2 style={{ marginBottom: '0.5rem' }}>Import Mode</h2>
-            <p style={{ fontSize: '0.85rem', color: 'var(--gray-500)', marginBottom: '1.25rem' }}>
+            <h2 style={{ marginBottom: '0.25rem' }}>Choose Import Option</h2>
+            <p style={{ fontSize: '0.83rem', color: 'var(--gray-500)', marginBottom: '1.25rem' }}>
               File: <strong>{importModeModal.file?.name}</strong>
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <button className="btn btn--primary" onClick={() => runImport('update')}>
-                ✏️ Update existing products (by ID) + add new
-              </button>
-              <button className="btn btn--outline" onClick={() => runImport('append')}>
-                ➕ Add new products only (skip if name conflict)
-              </button>
-              <button className="btn btn--outline" style={{ color: '#ef4444', borderColor: '#ef4444' }} onClick={() => runImport('replace')}>
-                🗑️ Replace all — DELETE everything &amp; re-import
-              </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+              {/* Option 1 */}
+              <div style={{ border: '2px solid var(--primary)', borderRadius: 8, padding: '0.85rem 1rem' }}>
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>1 — Update existing + Add new</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--gray-500)', marginBottom: 10 }}>
+                  Rows <strong>with ID</strong> → update that product (price, stock, brand…)<br />
+                  Rows <strong>without ID</strong> → insert as new product
+                </div>
+                <button className="btn btn--primary" style={{ width: '100%' }} onClick={() => runImport('update')}>
+                  ✏️ Update existing + Add new
+                </button>
+              </div>
+              {/* Option 2 */}
+              <div style={{ border: '1px solid var(--gray-200)', borderRadius: 8, padding: '0.85rem 1rem' }}>
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>2 — Add new products only</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--gray-500)', marginBottom: 10 }}>
+                  All rows are inserted as <strong>new products</strong> — ID column is ignored
+                </div>
+                <button className="btn btn--outline" style={{ width: '100%' }} onClick={() => runImport('append')}>
+                  ➕ Add new products only
+                </button>
+              </div>
             </div>
-            <p style={{ fontSize: '0.78rem', color: 'var(--gray-400)', marginTop: '1rem' }}>
-              Tip: Export Excel first → edit → re-import with &quot;Update existing&quot; to update prices, stock etc.
+            <p style={{ fontSize: '0.76rem', color: 'var(--gray-400)', marginTop: '1rem' }}>
+              💡 Download the <strong>Template</strong> to get all current products with IDs — edit inline and add new rows at the bottom, then import with Option 1.
             </p>
           </div>
         </div>
