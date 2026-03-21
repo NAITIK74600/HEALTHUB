@@ -152,6 +152,29 @@ app.use('/api/geocode',        geocodeRoutes);
 app.use('/api/delivery',       deliveryRoutes);
 app.use('/api/coupons',        couponRoutes);
 
+// ── GitHub webhook deploy endpoint ───────────────────────────────────────────
+// Called by GitHub Actions on every push to master. Runs git pull + restart.
+// Protected by DEPLOY_SECRET env var — reject if secret mismatches.
+const crypto = require('crypto');
+app.post('/api/deploy', express.json({ type: '*/*' }), (req, res) => {
+  const secret = process.env.DEPLOY_SECRET || '';
+  if (!secret) return res.status(503).json({ message: 'Deploy secret not configured on server' });
+
+  const sig = req.headers['x-deploy-signature'] || '';
+  const expected = 'sha256=' + crypto.createHmac('sha256', secret).update(JSON.stringify(req.body)).digest('hex');
+  if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
+    return res.status(401).json({ message: 'Invalid signature' });
+  }
+
+  // Touch Passenger restart file — works on cPanel Passenger hosting
+  const { exec } = require('child_process');
+  const restartPath = require('path').join(__dirname, '..', 'tmp', 'restart.txt');
+  exec(`mkdir -p "${require('path').dirname(restartPath)}" && touch "${restartPath}"`, (err) => {
+    if (err) return res.status(500).json({ message: 'Restart failed', error: err.message });
+    res.json({ message: 'Restart triggered', time: new Date().toISOString() });
+  });
+});
+
 // ── Health check (admin-only to prevent info disclosure) ─────────────────────
 const requireAuthMiddle  = require('./middleware/requireAuth');
 const requireAdminMiddle = require('./middleware/requireAdmin');

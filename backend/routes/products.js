@@ -298,16 +298,18 @@ function buildProductWhere({ admin = false, params = {}, categoryIds = [] } = {}
   }
 
   if (params.lifestyleCategory) {
-    // Primary: fast indexed equality (works after classifyProducts.js --all has been run)
-    // Fallback: LIKE keyword scan so the page shows products IMMEDIATELY even before
-    //   the classification script has run. MySQL 5.7-safe simple LIKE only.
     const fallbacks = LIFESTYLE_FALLBACK_WHERE[params.lifestyleCategory] || [];
     if (fallbacks.length) {
-      where.push(`(p.lifestyle_category = ? OR ${fallbacks.join(' OR ')})`);
+      // Use LIKE keyword scan ONLY — does NOT reference the lifestyle_category column.
+      // This works immediately on any DB state (column missing, column all-NULL, etc.).
+      // Column-based index query can be added here once classifyProducts.js --all is run.
+      where.push(`(${fallbacks.join(' OR ')})`);
     } else {
+      // Slugs with no LIKE fallbacks (skin-care, hair-care, etc.) — rely on column.
+      // These require classifyProducts.js to have run.
       where.push('p.lifestyle_category = ?');
+      values.push(params.lifestyleCategory);
     }
-    values.push(params.lifestyleCategory);
   } else if (params.search) {
     where.push('(p.name LIKE ? OR p.brand LIKE ? OR p.company LIKE ? OR p.description LIKE ? OR p.salt LIKE ?)');
     values.push(`%${params.search}%`, `%${params.search}%`, `%${params.search}%`, `%${params.search}%`, `%${params.search}%`);

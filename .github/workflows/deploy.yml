@@ -1,0 +1,32 @@
+name: Deploy to cPanel
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Trigger server restart via deploy webhook
+        # Calls POST /api/deploy on the live server with HMAC signature.
+        # DEPLOY_SECRET must be set in:
+        #   GitHub → Settings → Secrets → Actions → DEPLOY_SECRET
+        #   Server → backend/.env → DEPLOY_SECRET=<same value>
+        run: |
+          BODY='{"ref":"refs/heads/master","event":"push"}'
+          SIG="sha256=$(echo -n "$BODY" | openssl dgst -sha256 -hmac "${{ secrets.DEPLOY_SECRET }}" | sed 's/SHA2-256(stdin)= //' | sed 's/.*= //')"
+          HTTP_STATUS=$(curl -s -o /tmp/deploy_response.txt -w "%{http_code}" \
+            -X POST https://batlamedicos.shop/api/deploy \
+            -H "Content-Type: application/json" \
+            -H "X-Deploy-Signature: $SIG" \
+            -d "$BODY")
+          echo "Server response ($HTTP_STATUS):"
+          cat /tmp/deploy_response.txt
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "Deploy webhook returned HTTP $HTTP_STATUS"
+            exit 1
+          fi
