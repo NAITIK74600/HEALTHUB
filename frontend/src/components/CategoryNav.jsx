@@ -78,20 +78,6 @@ export default function CategoryNav() {
     closeTimer.current = setTimeout(() => setActiveIdx(null), 150);
   };
 
-  const toggle = (idx, hasChildren, e) => {
-    if (!hasChildren) return; // no children → let the Link navigate normally
-    e.preventDefault();
-    if (activeIdx === idx) {
-      setActiveIdx(null);
-    } else {
-      openAt(idx);
-    }
-  };
-
-  const handleChildClick = () => {
-    setActiveIdx(null);
-  };
-
   const activeCat = activeIdx !== null ? CATEGORIES[activeIdx] : null;
 
   return (
@@ -100,21 +86,21 @@ export default function CategoryNav() {
         <div className="cat-nav__scroll">
           {CATEGORIES.map((cat, idx) => {
             const hasChildren = cat.children?.length > 0;
-            const isActive = activeIdx === idx;
+            const isDropOpen = hasChildren && activeIdx === idx;
             return (
               <div
                 key={cat.slug}
                 className={`cat-nav__item${
-                  isActive || browsingIdx === idx ? ' cat-nav__item--active' : ''
-                }${browsingIdx === idx && activeIdx !== idx ? ' cat-nav__item--browsing' : ''}`}
+                  isDropOpen ? ' cat-nav__item--active' : ''
+                }${browsingIdx === idx ? ' cat-nav__item--browsing' : ''}`}
                 ref={el => { itemRefs.current[idx] = el; }}
-                onMouseEnter={() => openAt(idx)}
+                onMouseEnter={() => hasChildren ? openAt(idx) : scheduleClose()}
                 onMouseLeave={scheduleClose}
               >
                 <Link
                   to={cat.path || `/products?category=${cat.slug}`}
                   className="cat-nav__label"
-                  onClick={(e) => toggle(idx, hasChildren, e)}
+                  onClick={() => setActiveIdx(null)}
                 >
                   {cat.label}
                   {hasChildren && (
@@ -145,7 +131,7 @@ export default function CategoryNav() {
                 key={child.path || child.label}
                 to={child.path || `/products?category=${child.slug}`}
                 className={`cat-nav__dropdown-item${isChildActive ? ' cat-nav__dropdown-item--active' : ''}`}
-                onClick={handleChildClick}
+                onClick={() => setActiveIdx(null)}
               >
                 {child.label}
               </Link>
