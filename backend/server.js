@@ -156,23 +156,32 @@ app.use('/api/coupons',        couponRoutes);
 // Called by GitHub Actions on every push to master. Runs git pull + restart.
 // Protected by DEPLOY_SECRET env var — reject if secret mismatches.
 const crypto = require('crypto');
-app.post('/api/deploy', express.json({ type: '*/*' }), (req, res) => {
+// Use raw body so HMAC is computed on the exact bytes sent, not re-serialized JSON
+app.post('/api/deploy', express.raw({ type: '*/*' }), (req, res) => {
   const secret = process.env.DEPLOY_SECRET || '';
   if (!secret) return res.status(503).json({ message: 'Deploy secret not configured on server' });
 
+  const rawBody = req.body instanceof Buffer ? req.body : Buffer.from(req.body || '');
   const sig = req.headers['x-deploy-signature'] || '';
-  const expected = 'sha256=' + crypto.createHmac('sha256', secret).update(JSON.stringify(req.body)).digest('hex');
-  if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
-    return res.status(401).json({ message: 'Invalid signature' });
-  }
+  const expectedHex = 'sha256=' + crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
 
-  // Touch Passenger restart file — works on cPanel Passenger hosting
+  // timingSafeEqual requires same-length buffers — length mismatch means invalid sig
+  const sigBuf = Buffer.from(sig);
+  const expBuf = Buffer.from(expectedHex);
+  const valid = sigBuf.length === expBuf.length && crypto.timingSafeEqual(sigBuf, expBuf);
+  if (!valid) return res.status(401).json({ message: 'Invalid signature' });
+
+  // git pull then touch Passenger restart file
   const { exec } = require('child_process');
-  const restartPath = require('path').join(__dirname, '..', 'tmp', 'restart.txt');
-  exec(`mkdir -p "${require('path').dirname(restartPath)}" && touch "${restartPath}"`, (err) => {
-    if (err) return res.status(500).json({ message: 'Restart failed', error: err.message });
-    res.json({ message: 'Restart triggered', time: new Date().toISOString() });
-  });
+  const repoRoot = require('path').join(__dirname, '..');
+  const restartPath = require('path').join(repoRoot, 'tmp', 'restart.txt');
+  exec(
+    `cd "${repoRoot}" && git pull --ff-only origin master && mkdir -p "${require('path').dirname(restartPath)}" && touch "${restartPath}"`,
+    (err, stdout, stderr) => {
+      if (err) return res.status(500).json({ message: 'Deploy failed', error: err.message, stderr });
+      res.json({ message: 'Deployed', stdout: stdout.trim(), time: new Date().toISOString() });
+    }
+  );
 });
 
 // ── Health check (admin-only to prevent info disclosure) ─────────────────────
