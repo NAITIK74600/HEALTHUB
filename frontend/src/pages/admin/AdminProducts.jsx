@@ -3,14 +3,14 @@ import { useLocation } from 'react-router-dom';
 import {
   getAdminProducts, quickUpdateProduct, createProduct, updateProduct, updateProductImages,
   deleteProduct, bulkImportProducts, downloadImportTemplate, bulkUpdateProducts, bulkDiscountProducts,
-  aiFillProduct, aiFillBulk, getMissingInfoCount, exportProductsExcel,
+  exportProductsExcel,
 } from '../../api/products';
 import { uploadImage } from '../../api/upload';
 import { getCategories } from '../../api/categories';
 import toast from 'react-hot-toast';
 import {
   Plus, Pencil, Trash2, Upload, ToggleLeft, ToggleRight, Camera, X, Link,
-  FileSpreadsheet, CheckCircle, AlertTriangle, Search, Package, Percent, Zap, Sparkles,
+  FileSpreadsheet, CheckCircle, AlertTriangle, Search, Package, Percent, Zap,
 } from 'lucide-react';
 
 const EMPTY = { name: '', category: '', secondaryCategoryIds: [], brand: '', company: '', salt: '', description: '', mrp: '', price: '', stock: '', requiresPrescription: false };
@@ -101,22 +101,9 @@ export default function AdminProducts() {
   /* ── Bulk discount modal ── */
   const [discountModal, setDiscountModal] = useState({ open: false, pct: '' });
 
-  /* ── AI Fill state ── */
-  const [aiFilling,      setAiFilling]      = useState(new Set());        // per-row loading
-  const [aiModal,        setAiModal]        = useState({ open: false });   // bulk AI modal
-  const [aiProgress,     setAiProgress]     = useState([]);                // bulk results
-  const [aiRunning,      setAiRunning]      = useState(false);
-  const [missingFilter,  setMissingFilter]  = useState(false);             // show only missing
-  const [missingCount,   setMissingCount]   = useState(null);
-
   /* ── Refresh trigger ── */
   const [trigger, setTrigger] = useState(0);
   const refresh = () => setTrigger(t => t + 1);
-
-  /* ── Fetch missing count on mount ── */
-  useEffect(() => {
-    getMissingInfoCount().then(r => setMissingCount(r.data.count)).catch(() => {});
-  }, [trigger]);
 
   /* ── Fetch ── */
   useEffect(() => {
@@ -377,57 +364,6 @@ export default function AdminProducts() {
     }
   };
 
-  /* ── AI fill handlers ── */
-  const handleAiFillOne = async (productId) => {
-    setAiFilling(s => new Set(s).add(productId));
-    try {
-      const res = await aiFillProduct(productId);
-      setProducts(prev => prev.map(p =>
-        p._id === productId ? { ...p, salt: res.data.salt ?? p.salt, description: res.data.description ?? p.description } : p
-      ));
-      getMissingInfoCount().then(r => setMissingCount(r.data.count)).catch(() => {});
-      toast.success('AI filled salt & description!');
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'AI fill failed.');
-    } finally {
-      setAiFilling(s => { const n = new Set(s); n.delete(productId); return n; });
-    }
-  };
-
-  const handleAiFillSelected = () => {
-    if (!selectedIds.size) return;
-    setAiProgress([]);
-    setAiModal({ open: true, ids: [...selectedIds] });
-  };
-
-  const handleAiFillMissing = () => {
-    setAiProgress([]);
-    setAiModal({ open: true, ids: null });
-  };
-
-  const runAiBulk = async (ids) => {
-    if (!ids || ids.length === 0) return;
-    setAiRunning(true);
-    const BATCH = 20;
-    const allResults = [];
-    for (let i = 0; i < ids.length; i += BATCH) {
-      const batch = ids.slice(i, i + BATCH);
-      try {
-        const res = await aiFillBulk(batch);
-        allResults.push(...res.data.results);
-        setAiProgress([...allResults]);
-      } catch (err) {
-        const msg = err.response?.data?.message || err.message || 'Request failed';
-        allResults.push(...batch.map(id => ({ _id: id, success: false, error: msg })));
-        setAiProgress([...allResults]);
-      }
-    }
-    setAiRunning(false);
-    getMissingInfoCount().then(r => setMissingCount(r.data.count)).catch(() => {});
-    refresh();
-    toast.success(`AI filled ${allResults.filter(r => r.success).length} products!`);
-  };
-
   const handleDownloadTemplate = async () => {
     try {
       const { data } = await downloadImportTemplate();
@@ -522,95 +458,11 @@ export default function AdminProducts() {
             <Upload size={16} /> {importing ? 'Importing...' : 'Import CSV/Excel'}
           </button>
           <input ref={csvInputRef} type="file" accept=".xlsx,.xls,.csv" style={{ display: 'none' }} onChange={handleExcelImport} />
-          <button
-            className="btn btn--ai"
-            onClick={handleAiFillMissing}
-            title="Auto-fill description & composition with Gemini AI for all products missing this info"
-          >
-            <Sparkles size={16} /> AI Fill Missing
-            {missingCount !== null && missingCount > 0 && (
-              <span className="ai-badge">{missingCount.toLocaleString()}</span>
-            )}
-          </button>
           <button className="btn btn--primary" onClick={() => { setShowForm(!showForm); setEditing(null); setForm(EMPTY); setExistingImages([]); setRemoveImages([]); setImages([]); setImgPreviews([]); }}>
             <Plus size={16} /> {showForm && !editing ? 'Cancel' : 'Add Product'}
           </button>
         </div>
       </div>
-
-      {/* ── AI Fill Modal ── */}
-      {aiModal.open && (
-        <div className="import-modal-overlay" onClick={() => !aiRunning && setAiModal({ open: false })}>
-          <div className="import-modal ai-fill-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 560 }}>
-            {!aiRunning && (
-              <button className="import-modal__close" onClick={() => setAiModal({ open: false })}><X size={18} /></button>
-            )}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-              <Sparkles size={22} style={{ color: '#7c3aed' }} />
-              <h2 style={{ margin: 0 }}>AI Auto-Fill</h2>
-            </div>
-            <p style={{ fontSize: '0.85rem', color: 'var(--gray-500)', marginBottom: '1rem' }}>
-              {aiModal.ids
-                ? <>Filling <strong>{aiModal.ids.length}</strong> selected products with Gemini AI.</>
-                : <>Filling <strong>all products</strong> that are missing salt or description — <strong>{missingCount?.toLocaleString() ?? '…'}</strong> products.</>}
-              {' '}Each product gets a composed description and salt/composition string.
-            </p>
-
-            {!aiRunning && aiProgress.length === 0 && (
-              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                <button
-                  className="btn btn--primary btn--full"
-                  style={{ background: '#7c3aed', borderColor: '#7c3aed' }}
-                  onClick={() => {
-                    if (aiModal.ids) {
-                      runAiBulk(aiModal.ids);
-                    } else {
-                      // fetch first 200 missing IDs via the admin list
-                      getAdminProducts({ page: 1, limit: 200, missingInfo: '1' })
-                        .then(r => runAiBulk(r.data.products.map(p => p._id)))
-                        .catch(() => toast.error('Could not fetch missing products.'));
-                    }
-                  }}
-                >
-                  <Sparkles size={15} /> Start AI Fill
-                </button>
-                <button className="btn btn--outline" onClick={() => setAiModal({ open: false })}>Cancel</button>
-              </div>
-            )}
-
-            {(aiRunning || aiProgress.length > 0) && (
-              <div className="ai-progress">
-                <div className="ai-progress__bar-wrap">
-                  <div
-                    className="ai-progress__bar"
-                    style={{ width: aiRunning && aiModal.ids ? `${Math.round(aiProgress.length / (aiModal.ids?.length || 1) * 100)}%` : '100%' }}
-                  />
-                </div>
-                <p style={{ fontSize: '0.82rem', color: 'var(--gray-500)', marginTop: 6, marginBottom: 10 }}>
-                  {aiRunning
-                    ? `Processing… ${aiProgress.length} done`
-                    : `Done — ${aiProgress.filter(r => r.success).length} filled, ${aiProgress.filter(r => !r.success).length} failed`}
-                </p>
-                <div className="ai-progress__list">
-                  {aiProgress.slice().reverse().map((r, i) => (
-                    <div key={i} className={`ai-progress__item${r.success ? ' ai-progress__item--ok' : ' ai-progress__item--err'}`}>
-                      {r.success ? <CheckCircle size={13} /> : <AlertTriangle size={13} />}
-                      <span className="ai-progress__name">{r.name || r._id}</span>
-                      {r.salt && <span className="ai-progress__salt">{r.salt}</span>}
-                      {r.error && <span className="ai-progress__err">{r.error}</span>}
-                    </div>
-                  ))}
-                </div>
-                {!aiRunning && (
-                  <button className="btn btn--primary" style={{ marginTop: 12, width: '100%' }} onClick={() => setAiModal({ open: false })}>
-                    Close
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* ── Import Mode Modal ── */}
       {importModeModal.open && (
@@ -1028,14 +880,6 @@ export default function AdminProducts() {
               onClick={() => setDiscountModal({ open: true, pct: '' })}>
               <Percent size={14} /> Discount
             </button>
-            <button
-              className="btn btn--sm btn--outline"
-              onClick={handleAiFillSelected}
-              style={{ background: '#7c3aed', borderColor: '#7c3aed', color: '#fff' }}
-              title="AI auto-fill description & composition for selected products"
-            >
-              <Sparkles size={13} /> AI Fill
-            </button>
             <button className="btn btn--sm btn--danger" onClick={handleBulkDelete}><Trash2 size={14} /> Delete</button>
             <button className="btn btn--sm btn--outline" onClick={() => { setSelectedIds(new Set()); setSelectAllMatching(false); }}><X size={13} /></button>
           </div>
@@ -1169,15 +1013,6 @@ export default function AdminProducts() {
                 <td>{p.requiresPrescription ? <span style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '0.78rem' }}>Rx</span> : '-'}</td>
                   <td>
                     <div style={{ display: 'flex', gap: 4 }}>
-                      <button
-                        className="btn btn--sm btn--outline"
-                        onClick={() => handleAiFillOne(p._id)}
-                        disabled={aiFilling.has(p._id)}
-                        title="AI auto-fill description & composition"
-                        style={{ color: aiFilling.has(p._id) ? '#9ca3af' : '#7c3aed', borderColor: '#7c3aed', padding: '2px 6px' }}
-                      >
-                        {aiFilling.has(p._id) ? <span style={{ fontSize: '0.7rem' }}>…</span> : <Sparkles size={13} />}
-                      </button>
                       <button className="btn btn--sm btn--outline" onClick={() => startEdit(p)} title="Edit"><Pencil size={14} /></button>
                       <button className="btn btn--sm btn--danger" onClick={() => handleDelete(p._id)} title="Delete"><Trash2 size={14} /></button>
                     </div>

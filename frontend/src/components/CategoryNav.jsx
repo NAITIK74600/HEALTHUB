@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 
 // path = direct route link; slug = /products?category=slug
@@ -36,6 +36,15 @@ export default function CategoryNav() {
   const dropdownRef = useRef(null);
   const itemRefs = useRef([]);
   const closeTimer = useRef(null);
+  const navigate = useNavigate();
+
+  // Detect touch device
+  const isTouchDevice = useRef(false);
+  useEffect(() => {
+    const onTouch = () => { isTouchDevice.current = true; };
+    window.addEventListener('touchstart', onTouch, { once: true, passive: true });
+    return () => window.removeEventListener('touchstart', onTouch);
+  }, []);
 
   // ── URL-based "currently browsing" highlight ──────────────────────────────
   const location = useLocation();
@@ -100,7 +109,15 @@ export default function CategoryNav() {
                 <Link
                   to={cat.path || `/products?category=${cat.slug}`}
                   className="cat-nav__label"
-                  onClick={() => setActiveIdx(null)}
+                  onClick={(e) => {
+                    if (hasChildren) {
+                      e.preventDefault();
+                      if (activeIdx === idx) setActiveIdx(null);
+                      else openAt(idx);
+                    } else {
+                      setActiveIdx(null);
+                    }
+                  }}
                 >
                   {cat.label}
                   {hasChildren && (

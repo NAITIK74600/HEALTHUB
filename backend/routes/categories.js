@@ -22,8 +22,17 @@ function mapCategory(row) {
 
 router.get('/', async (req, res, next) => {
   try {
-    const rows = await query('SELECT * FROM categories WHERE is_deleted = 0 ORDER BY ord ASC, name ASC', []);
-    res.json({ categories: rows.map(mapCategory) });
+    const rows = await query(
+      `SELECT c.*, COALESCE(pc.cnt, 0) AS product_count
+       FROM categories c
+       LEFT JOIN (
+         SELECT category_id, COUNT(*) AS cnt FROM products WHERE is_deleted = 0 GROUP BY category_id
+       ) pc ON pc.category_id = c.id
+       WHERE c.is_deleted = 0
+       ORDER BY c.ord ASC, c.name ASC`,
+      []
+    );
+    res.json({ categories: rows.map(r => ({ ...mapCategory(r), productCount: Number(r.product_count) })) });
   } catch (err) { next(err); }
 });
 

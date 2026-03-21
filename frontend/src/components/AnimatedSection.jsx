@@ -23,6 +23,9 @@ const ANIMATION_CLASSES = {
   rotateIn: 'anim--rotate-in',
   bounceIn: 'anim--bounce-in',
   glowIn: 'anim--glow-in',
+  flip3d: 'anim--3d-flip-up',
+  tilt3d: 'anim--3d-tilt-in',
+  zoom3d: 'anim--3d-zoom-perspective',
   none: '',
 };
 

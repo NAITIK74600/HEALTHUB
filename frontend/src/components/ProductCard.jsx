@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { ShoppingCart, FileText, Heart, Plus, Minus, Trash2, Star, Check } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -69,6 +69,28 @@ export default function ProductCard({ product }) {
   const cartItem = items.find(i => i.productId === product._id);
   const inCart = !!cartItem;
   const [added, setAdded] = useState(false);
+  const cardRef = useRef(null);
+  const rafId = useRef(0);
+
+  /* 3D tilt on mouse move */
+  const handleTilt = useCallback((e) => {
+    cancelAnimationFrame(rafId.current);
+    rafId.current = requestAnimationFrame(() => {
+      const el = cardRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      const rotateY = (x - 0.5) * 10;
+      const rotateX = (0.5 - y) * 8;
+      el.style.transform = `perspective(700px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.03,1.03,1.03)`;
+    });
+  }, []);
+  const handleTiltReset = useCallback(() => {
+    cancelAnimationFrame(rafId.current);
+    const el = cardRef.current;
+    if (el) el.style.transform = '';
+  }, []);
 
   const { rating, count } = pseudoRating(product);
 
@@ -113,7 +135,7 @@ export default function ProductCard({ product }) {
   }, [toggle, product]);
 
   return (
-    <div className="product-card">
+    <div className="product-card" ref={cardRef} onMouseMove={handleTilt} onMouseLeave={handleTiltReset}>
       <Link to={`/products/${product.slug}`}>
         {/* Wishlist heart — top right */}
         <button

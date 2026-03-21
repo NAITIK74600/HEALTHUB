@@ -645,7 +645,6 @@ svg { flex-shrink: 0; }
   .cat-nav { top: var(--nav-h, 64px); }
   .cat-nav__label { padding: 9px 10px; font-size: 11.5px; }
   .cat-nav__scroll { padding: 0 6px; }
-  .cat-nav__chevron { display: none; }
 }
 
 /* ================================================================
@@ -9309,6 +9308,37 @@ svg { flex-shrink: 0; }
   100% { opacity: 1; transform: perspective(800px) translateY(0) translateZ(0) scale(1); filter: brightness(1) blur(0px); }
 }
 
+/* ── 3D Immersive Section Reveals ── */
+.anim--3d-flip-up {
+  transform: perspective(800px) rotateX(-15deg) translateY(40px);
+  opacity: 0;
+}
+.anim--3d-flip-up.anim--visible {
+  animation-name: anim-3d-flipUp;
+  animation-duration: 0.75s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.anim--3d-tilt-in {
+  transform: perspective(800px) rotateY(8deg) translateX(-30px);
+  opacity: 0;
+}
+.anim--3d-tilt-in.anim--visible {
+  animation-name: anim-3d-tiltIn;
+  animation-duration: 0.75s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.anim--3d-zoom-perspective {
+  transform: perspective(1000px) translateZ(-100px) scale(0.9);
+  opacity: 0;
+}
+.anim--3d-zoom-perspective.anim--visible {
+  animation-name: anim-3d-zoomPerspective;
+  animation-duration: 0.75s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 /* Ripple Click Effect */
 .ripple-btn { position: relative; overflow: hidden; }
 .ripple-effect {
@@ -10285,5 +10315,490 @@ input:focus, select:focus, textarea:focus {
 }
 @media (max-width: 540px) {
   .lab-home-grid { grid-template-columns: 1fr; }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   3D IMMERSIVE DESIGN SYSTEM
+   Pure CSS 3D depth, glassmorphism, floating shapes, perspective cards
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Global 3D perspective container ── */
+main {
+  perspective: 1200px;
+  perspective-origin: 50% 0%;
+}
+
+/* ── Hero 3D enhancements ── */
+.hero {
+  transform-style: preserve-3d;
+  isolation: isolate;
+}
+
+/* Glassmorphism overlay strip at bottom of hero */
+.hero__layout {
+  transform-style: preserve-3d;
+}
+
+.hero__content {
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Hero floating 3D geometric shapes ── */
+.hero__shapes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hero__shape {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.12;
+  animation: shape-float 8s ease-in-out infinite;
+}
+
+.hero__shape--1 {
+  width: 120px; height: 120px;
+  top: 10%; right: 8%;
+  background: radial-gradient(circle, rgba(255,215,0,0.6), transparent 70%);
+  animation-delay: 0s;
+  animation-duration: 7s;
+}
+.hero__shape--2 {
+  width: 80px; height: 80px;
+  top: 60%; left: 5%;
+  background: radial-gradient(circle, rgba(168,230,207,0.6), transparent 70%);
+  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  animation-delay: -2s;
+  animation-duration: 9s;
+}
+.hero__shape--3 {
+  width: 60px; height: 60px;
+  bottom: 15%; right: 15%;
+  background: radial-gradient(circle, rgba(192,57,43,0.4), transparent 70%);
+  border-radius: 50% 20% 50% 20%;
+  animation-delay: -4s;
+  animation-duration: 6s;
+}
+.hero__shape--4 {
+  width: 90px; height: 90px;
+  top: 25%; left: 18%;
+  background: radial-gradient(circle, rgba(255,255,255,0.15), transparent 70%);
+  border-radius: 20% 80% 20% 80%;
+  animation-delay: -1s;
+  animation-duration: 10s;
+}
+.hero__shape--5 {
+  width: 50px; height: 50px;
+  top: 45%; right: 25%;
+  background: radial-gradient(circle, rgba(147,51,234,0.3), transparent 70%);
+  border-radius: 70% 30%;
+  animation-delay: -3s;
+  animation-duration: 8s;
+}
+
+@keyframes shape-float {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  25% { transform: translate3d(15px, -20px, 0) rotate(90deg); }
+  50% { transform: translate3d(-10px, -35px, 0) rotate(180deg); }
+  75% { transform: translate3d(20px, -15px, 0) rotate(270deg); }
+}
+
+/* ── Hero tag glassmorphism upgrade ── */
+.hero__tag {
+  background: rgba(255,255,255,0.10) !important;
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  border: 1px solid rgba(255,255,255,0.20) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
+/* ── Hero search glassmorphism ── */
+.hero-search__form {
+  background: rgba(255,255,255,0.85) !important;
+  backdrop-filter: blur(20px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(200%) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15),
+              0 0 0 1px rgba(255,255,255,0.25),
+              inset 0 1px 0 rgba(255,255,255,0.5) !important;
+}
+
+/* ── Trust strip 3D cards ── */
+.trust-strip__item {
+  transform-style: preserve-3d;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s !important;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.trust-strip__item:hover {
+  transform: perspective(600px) rotateX(4deg) translateY(-6px) scale(1.03) !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.12), 0 0 0 1px rgba(192,57,43,0.08) !important;
+}
+.trust-strip__icon {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.trust-strip__item:hover .trust-strip__icon {
+  transform: scale(1.2) rotateY(15deg) !important;
+}
+
+/* ── 3D Product cards — perspective tilt on hover ── */
+.product-card {
+  transform-style: preserve-3d;
+}
+.product-card:hover {
+  transform: perspective(800px) rotateX(2deg) rotateY(-2deg) translateY(-8px) scale(1.02) !important;
+  box-shadow:
+    0 25px 60px rgba(0,0,0,0.12),
+    0 8px 20px rgba(0,0,0,0.06),
+    0 0 0 1px rgba(192,57,43,0.1) !important;
+}
+
+/* Product card image 3D parallax scroll */
+.product-card__image-wrap {
+  transform-style: preserve-3d;
+}
+.product-card:hover .product-card__image-wrap img {
+  transform: scale(1.08) translate3d(0, -2px, 20px) !important;
+}
+
+/* 3D discount badge */
+.product-card__badge--discount {
+  transform: perspective(400px) rotateY(-5deg);
+  box-shadow: 0 4px 12px rgba(192,57,43,0.3);
+}
+
+/* ── 3D Category tiles ── */
+.cat-tile {
+  transform-style: preserve-3d;
+  position: relative;
+}
+.cat-tile:hover {
+  transform: perspective(600px) rotateX(6deg) translateY(-6px) scale(1.04) !important;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.12), 0 0 0 1px rgba(192,57,43,0.12) !important;
+  background: linear-gradient(145deg, #fff7f7, #fff) !important;
+}
+.cat-tile__icon {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.cat-tile:hover .cat-tile__icon {
+  transform: scale(1.3) translateY(-4px) rotateZ(-8deg) !important;
+}
+
+/* ── 3D Personal care cards ── */
+.pc-cat-card {
+  transform-style: preserve-3d;
+}
+.pc-cat-card:hover {
+  transform: perspective(600px) rotateY(4deg) translateY(-8px) scale(1.04) !important;
+  box-shadow: 0 24px 50px rgba(0,0,0,0.22) !important;
+}
+
+/* ── 3D Why-choose cards ── */
+.why-card {
+  transform-style: preserve-3d;
+  position: relative;
+  overflow: hidden;
+}
+.why-card::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(192,57,43,0.04) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+.why-card:hover::before { opacity: 1; }
+.why-card:hover {
+  transform: perspective(600px) rotateX(3deg) rotateY(-3deg) translateY(-8px) scale(1.02) !important;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04) !important;
+}
+.why-card__icon {
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.why-card:hover .why-card__icon {
+  transform: scale(1.25) rotateY(20deg) rotateZ(5deg) !important;
+}
+
+/* ── 3D Deal card ── */
+.deal-card {
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  position: relative;
+  overflow: hidden;
+}
+.deal-card::after {
+  content: '';
+  position: absolute;
+  top: -100%; left: -100%;
+  width: 300%; height: 300%;
+  background: conic-gradient(from 0deg, transparent 0%, rgba(255,255,255,0.08) 25%, transparent 50%);
+  animation: deal-shimmer 6s linear infinite;
+  pointer-events: none;
+}
+@keyframes deal-shimmer {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ── Deal timer 3D flip digits ── */
+.deal-card__timer-unit span {
+  display: inline-block;
+  transform-style: preserve-3d;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* ── 3D Brand cards ── */
+.brand-circle-card {
+  transform-style: preserve-3d;
+}
+.brand-circle-card:hover {
+  transform: perspective(600px) rotateY(8deg) translateY(-6px) scale(1.06) !important;
+}
+.brand-circle-card:hover .brand-circle-card__ring {
+  box-shadow: 0 10px 30px rgba(192,57,43,0.25), 0 0 0 2px rgba(192,57,43,0.15) !important;
+  transform: scale(1.06) rotateY(-5deg) !important;
+}
+
+.brand-ayur-card {
+  transform-style: preserve-3d;
+}
+.brand-ayur-card:hover {
+  transform: perspective(600px) rotateY(-6deg) translateY(-5px) scale(1.05) !important;
+}
+
+/* ── 3D Lab test cards ── */
+.lab-home-card {
+  transform-style: preserve-3d;
+}
+.lab-home-card:hover {
+  transform: perspective(600px) rotateX(3deg) translateY(-5px) scale(1.02) !important;
+}
+.lab-home-card:hover .lab-home-card__icon {
+  transform: scale(1.25) rotateY(15deg) rotateZ(-10deg) !important;
+}
+
+/* ── 3D Buttons — press depth effect ── */
+.btn--primary {
+  transform-style: preserve-3d;
+  position: relative;
+}
+.btn--primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 -3px 0 rgba(0,0,0,0.2);
+  pointer-events: none;
+  transition: box-shadow 0.15s;
+}
+.btn--primary:active::before {
+  box-shadow: inset 0 2px 0 rgba(0,0,0,0.15);
+}
+.btn--primary:hover {
+  transform: perspective(600px) translateY(-3px) translateZ(5px) scale(1.03) !important;
+  box-shadow: 0 12px 35px rgba(192,57,43,0.4), 0 4px 12px rgba(0,0,0,0.1) !important;
+}
+.btn--primary:active {
+  transform: perspective(600px) translateY(1px) translateZ(-2px) scale(0.98) !important;
+}
+
+.btn--ghost, .btn--outline-white {
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s !important;
+}
+.btn--ghost:hover, .btn--outline-white:hover {
+  transform: translateY(-2px) scale(1.02) !important;
+  box-shadow: 0 8px 24px rgba(255,255,255,0.2) !important;
+}
+
+/* ── Section 3D reveal animations ── */
+@keyframes anim-3d-flipUp {
+  from {
+    opacity: 0;
+    transform: perspective(800px) rotateX(-15deg) translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(800px) rotateX(0deg) translateY(0);
+  }
+}
+@keyframes anim-3d-tiltIn {
+  from {
+    opacity: 0;
+    transform: perspective(800px) rotateY(8deg) translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(800px) rotateY(0deg) translateX(0);
+  }
+}
+@keyframes anim-3d-zoomPerspective {
+  from {
+    opacity: 0;
+    transform: perspective(1000px) translateZ(-100px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(1000px) translateZ(0) scale(1);
+  }
+}
+
+.anim-section.anim--visible {
+  animation-fill-mode: both;
+}
+
+/* ── Glassmorphism utility classes ── */
+.glass {
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.3);
+}
+.glass-dark {
+  background: rgba(0,0,0,0.25);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ── Enhanced depth shadow system ── */
+.shadow-3d-sm {
+  box-shadow:
+    0 1px 2px rgba(0,0,0,0.06),
+    0 4px 8px rgba(0,0,0,0.04),
+    0 8px 16px rgba(0,0,0,0.03);
+}
+.shadow-3d-md {
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.06),
+    0 8px 16px rgba(0,0,0,0.06),
+    0 16px 32px rgba(0,0,0,0.04);
+}
+.shadow-3d-lg {
+  box-shadow:
+    0 4px 8px rgba(0,0,0,0.06),
+    0 12px 24px rgba(0,0,0,0.08),
+    0 24px 48px rgba(0,0,0,0.06),
+    0 48px 80px rgba(0,0,0,0.04);
+}
+
+/* ── Map strip 3D hover ── */
+.map-strip {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s !important;
+}
+.map-strip:hover {
+  transform: perspective(800px) rotateX(2deg) translateY(-3px) !important;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.1) !important;
+}
+
+/* ── Health ticker 3D depth ── */
+.health-ticker {
+  box-shadow: 0 4px 20px rgba(27,136,67,0.3), 0 1px 0 rgba(255,255,255,0.1) inset !important;
+}
+
+/* ── Navbar glassmorphism enhancement ── */
+.navbar {
+  backdrop-filter: blur(20px) saturate(200%);
+  -webkit-backdrop-filter: blur(20px) saturate(200%);
+}
+
+/* ── Scroll row arrows 3D ── */
+.scroll-row-btn {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.scroll-row-btn:hover {
+  transform: scale(1.15) translateZ(5px) !important;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15) !important;
+}
+
+/* ── Section title 3D text depth ── */
+.section__title {
+  text-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+.hero__content h1 {
+  text-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 1px 4px rgba(0,0,0,0.2);
+}
+
+/* ── Cursor glow effect on hero ── */
+.hero::before {
+  transition: opacity 0.3s;
+}
+
+/* ── 3D perspective on search dropdown ── */
+.hero-search__dropdown {
+  transform-origin: top center;
+  animation: search-drop-3d 0.25s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+@keyframes search-drop-3d {
+  from {
+    opacity: 0;
+    transform: perspective(600px) rotateX(-10deg) translateY(-10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(600px) rotateX(0deg) translateY(0) scale(1);
+  }
+}
+
+/* ── Cart drawer 3D slide ── */
+.cart-drawer {
+  box-shadow: -8px 0 40px rgba(0,0,0,0.15), -2px 0 8px rgba(0,0,0,0.05);
+}
+
+/* ── Product grid staggered 3D entrance ── */
+.product-grid .product-card {
+  animation: card-3d-entrance 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes card-3d-entrance {
+  from {
+    opacity: 0;
+    transform: perspective(800px) rotateX(-8deg) translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(800px) rotateX(0deg) translateY(0) scale(1);
+  }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .hero__shapes,
+  .hero__shape { display: none; }
+  .hero__content,
+  .trust-strip__item,
+  .product-card,
+  .cat-tile,
+  .why-card,
+  .deal-card,
+  .brand-circle-card,
+  .brand-ayur-card,
+  .lab-home-card,
+  .btn--primary {
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ── Mobile: reduce 3D intensity for performance ── */
+@media (max-width: 768px) {
+  main { perspective: none; }
+  .hero__shapes { display: none; }
+  .product-card:hover,
+  .cat-tile:hover,
+  .why-card:hover,
+  .trust-strip__item:hover {
+    transform: translateY(-4px) scale(1.01) !important;
+  }
+  .brand-circle-card:hover,
+  .brand-ayur-card:hover {
+    transform: translateY(-3px) scale(1.03) !important;
+  }
+  .deal-card::after { display: none; }
 }
 

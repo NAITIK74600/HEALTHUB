@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getCategories, createCategory, updateCategory, deleteCategory } from '../../api/categories';
 import toast from 'react-hot-toast';
-import { Plus, Pencil, Trash2, X, FolderOpen, GripVertical } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, FolderOpen, Package } from 'lucide-react';
 
 const EMPTY = { name: '', icon: '', order: 0 };
 
@@ -23,6 +23,8 @@ export default function AdminCategories() {
   };
 
   useEffect(() => { load(); }, []);
+
+  const totalProducts = categories.reduce((s, c) => s + (c.productCount || 0), 0);
 
   const openAdd = () => { setForm(EMPTY); setEditId(null); setModal('add'); };
   const openEdit = (c) => {
@@ -56,13 +58,18 @@ export default function AdminCategories() {
       await deleteCategory(id);
       toast.success('Category deleted.');
       load();
-    } catch { toast.error('Failed to delete category.'); }
+    } catch (err) { toast.error(err?.response?.data?.message || 'Failed to delete category.'); }
   };
 
   return (
     <div className="admin-page">
       <div className="admin-page__header">
-        <h1><FolderOpen size={22} /> Categories</h1>
+        <div>
+          <h1><FolderOpen size={22} /> Categories</h1>
+          <p style={{ fontSize: '0.82rem', color: '#6b7280', marginTop: 4 }}>
+            {categories.length} categories · {totalProducts.toLocaleString()} total products
+          </p>
+        </div>
         <button className="btn btn--primary" onClick={openAdd}><Plus size={16} /> Add Category</button>
       </div>
 
@@ -78,6 +85,7 @@ export default function AdminCategories() {
                 <th style={{ width: 50 }}>#</th>
                 <th>Name</th>
                 <th>Slug</th>
+                <th style={{ width: 100 }}>Products</th>
                 <th style={{ width: 80 }}>Order</th>
                 <th style={{ width: 120 }}>Actions</th>
               </tr>
@@ -86,13 +94,27 @@ export default function AdminCategories() {
               {categories.map((c, i) => (
                 <tr key={c._id}>
                   <td>{i + 1}</td>
-                  <td style={{ fontWeight: 500 }}>{c.name}</td>
-                  <td style={{ color: '#6b7280', fontSize: '0.82rem' }}>{c.slug}</td>
+                  <td style={{ fontWeight: 500 }}>
+                    {c.icon && <span style={{ marginRight: 6 }}>{c.icon}</span>}
+                    {c.name}
+                  </td>
+                  <td><code style={{ color: '#6b7280', fontSize: '0.82rem', background: '#f3f4f6', padding: '2px 6px', borderRadius: 4 }}>{c.slug}</code></td>
+                  <td>
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 4,
+                      fontSize: '0.8rem', fontWeight: 600,
+                      color: c.productCount > 0 ? 'var(--green)' : '#9ca3af',
+                    }}>
+                      <Package size={13} /> {c.productCount || 0}
+                    </span>
+                  </td>
                   <td>{c.order}</td>
                   <td>
                     <div style={{ display: 'flex', gap: 6 }}>
                       <button className="btn btn--sm btn--outline" title="Edit" onClick={() => openEdit(c)}><Pencil size={14} /></button>
-                      <button className="btn btn--sm btn--outline" title="Delete" style={{ color: '#dc2626' }} onClick={() => handleDelete(c._id, c.name)}><Trash2 size={14} /></button>
+                      <button className="btn btn--sm btn--outline" title="Delete" style={{ color: '#dc2626' }}
+                        onClick={() => handleDelete(c._id, c.name)} disabled={c.productCount > 0}
+                      ><Trash2 size={14} /></button>
                     </div>
                   </td>
                 </tr>

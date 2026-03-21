@@ -1719,9 +1719,11 @@ router.patch('/bulk-discount', requireAuth, requireAdmin, async (req, res, next)
 
     if (applyToAll) {
       // Safety guard: require at least one meaningful filter to prevent accidental mass price changes
+      // Exception: 0% discount (reset to MRP) is always safe — multiplier = 1.0
       const hasMeaningfulFilter = filterParams.category || filterParams.search || filterParams.brand
-        || filterParams.status || filterParams.stockFilter;
-      if (!hasMeaningfulFilter) {
+        || (filterParams.status && filterParams.status !== 'all')
+        || (filterParams.stockFilter && filterParams.stockFilter !== 'all');
+      if (!hasMeaningfulFilter && pct !== 0) {
         return res.status(422).json({
           message: 'applyToAll requires at least one filter (category, search, brand, status, or stockFilter) to prevent mass price changes.',
         });

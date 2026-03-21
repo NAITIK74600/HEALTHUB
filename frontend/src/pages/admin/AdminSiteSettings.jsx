@@ -15,6 +15,9 @@ const ANIMATION_OPTIONS = [
   { value: 'rotateIn',   label: '3D Diagonal Spin',    desc: 'Diagonal axis 3D rotation spin'            },
   { value: 'bounceIn',   label: '3D Spring Launch',    desc: 'Launches from behind with spring bounce'   },
   { value: 'glowIn',     label: '3D Glow Emerge',      desc: 'Emerges from depth with luminous glow'     },
+  { value: 'flip3d',     label: '3D Immersive Flip',   desc: 'Perspective flip from below into view'     },
+  { value: 'tilt3d',     label: '3D Immersive Tilt',   desc: 'Tilts in from the side with perspective'   },
+  { value: 'zoom3d',     label: '3D Immersive Zoom',   desc: 'Zooms from deep perspective into place'    },
   { value: 'none',       label: 'No Animation',        desc: 'Sections appear instantly'                 },
 ];
 

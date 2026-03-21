@@ -16,7 +16,7 @@ import { getLabTests } from '../api/lab';
 import ProductCard from '../components/ProductCard';
 import OfferBanner from '../components/OfferBanner';
 import AnimatedSection from '../components/AnimatedSection';
-import { useRipple } from '../hooks/useAnimations';
+import { useRipple, useParallaxMouse, useTilt3D } from '../hooks/useAnimations';
 import { getAnimationSetting } from '../pages/admin/AdminSiteSettings';
 
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/+$/, '');
@@ -189,6 +189,8 @@ function Counter({ target, suffix = '' }) {
 export default function Home() {
   const navigate = useNavigate();
   const ripple = useRipple();
+  const heroParallax = useParallaxMouse();
+  const dealTilt = useTilt3D({ maxTilt: 6, perspective: 1000 });
   const [offers, setOffers]         = useState([]);
   const [categories, setCategories] = useState([]);
   const [featured, setFeatured]     = useState([]);
@@ -277,12 +279,20 @@ export default function Home() {
   return (
     <main>
       {/* ══════════════════════════════ HERO ══════════════════════════════ */}
-      <section className="hero">
-        <div className="hero__particles" aria-hidden="true">
+      <section className="hero" ref={heroParallax}>
+        <div className="hero__particles" aria-hidden="true" data-depth="3">
           {[1,2,3,4,5,6,7,8].map(n => <div key={n} className={`hero__particle hero__particle--${n}`} />)}
         </div>
+        {/* 3D floating geometric shapes */}
+        <div className="hero__shapes" aria-hidden="true" data-depth="2">
+          <div className="hero__shape hero__shape--1" />
+          <div className="hero__shape hero__shape--2" />
+          <div className="hero__shape hero__shape--3" />
+          <div className="hero__shape hero__shape--4" />
+          <div className="hero__shape hero__shape--5" />
+        </div>
         <div className="hero__layout">
-          <div className="hero-orbital" aria-hidden="true">
+          <div className="hero-orbital" aria-hidden="true" data-depth="1.5">
             {/* Circular track rings */}
             <div className="orbit-track orbit-track--1" />
             <div className="orbit-track orbit-track--2" />
@@ -317,7 +327,7 @@ export default function Home() {
               <div className="orbit-dot orbit-dot--yellow"><Syringe size={14} color="#FDE68A" /></div>
             </div>
           </div>
-          <div className="hero__content">
+          <div className="hero__content" data-depth="0.5">
             <span className="hero__tag">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 2v20M2 12h20"/></svg>
               Trusted Pharmacy Since 2005
@@ -530,7 +540,7 @@ export default function Home() {
       {/* ════════════ DEAL OF THE DAY ════════════════════════════════════ */}
       <AnimatedSection animation={getAnimationSetting('dealOfDay')} as="section" className="deal-section">
         <div className="container">
-          <div className="deal-card">
+          <div className="deal-card" ref={dealTilt}>
             <div className="deal-card__badge"><BadgePercent size={16} /> Deal of the Day</div>
             <div className="deal-card__content">
               <div className="deal-card__text">
