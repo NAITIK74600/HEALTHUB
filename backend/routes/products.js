@@ -383,7 +383,10 @@ router.get('/', [
     const limit = Number(req.query.limit || 20);
 
     const catSlug = req.query.category ? normalizeCategorySlug(req.query.category) : null;
-    const isLifestyle = catSlug ? LIFESTYLE_SLUGS.has(catSlug) : false;
+    // Prioritise PARENT_GROUPS (category-ID filtering) over LIFESTYLE_SLUGS when both match.
+    // LIFESTYLE_SLUGS alone (oral-care, women-care, men-grooming, elderly-care) still use the
+    // lifestyle_category column + LIKE keyword fallbacks which work on any DB state.
+    const isLifestyle = catSlug ? (LIFESTYLE_SLUGS.has(catSlug) && !PARENT_GROUPS[catSlug]) : false;
 
     let categoryIds, lifestyleCategory;
     if (isLifestyle) {
@@ -432,7 +435,8 @@ router.get('/admin/list', requireAuth, requireAdmin, async (req, res, next) => {
     const limit = Number(req.query.limit || 20);
 
     const catSlug = req.query.category ? normalizeCategorySlug(req.query.category) : null;
-    const isLifestyle = catSlug ? LIFESTYLE_SLUGS.has(catSlug) : false;
+    // Prioritise PARENT_GROUPS over LIFESTYLE_SLUGS when both match (same fix as public route).
+    const isLifestyle = catSlug ? (LIFESTYLE_SLUGS.has(catSlug) && !PARENT_GROUPS[catSlug]) : false;
 
     let categoryIds, lifestyleCategory;
     if (isLifestyle) {
