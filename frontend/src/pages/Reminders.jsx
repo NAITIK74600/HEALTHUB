@@ -62,10 +62,14 @@ export default function Reminders() {
 
   const requestNotif = async () => {
     if (typeof Notification === 'undefined') { toast.error('Notifications not supported in this browser.'); return; }
+    if (Notification.permission === 'denied') {
+      toast.error('Notifications are blocked. Please allow them in your browser\'s site settings, then refresh.');
+      return;
+    }
     const perm = await Notification.requestPermission();
     setNotifPerm(perm);
     if (perm === 'granted') toast.success('Notifications enabled! You will be reminded on time.');
-    else toast.error('Notification permission denied.');
+    else toast.error('Notification permission denied. You can allow it in browser site settings.');
   };
 
   const handleSave = (e) => {
@@ -120,12 +124,16 @@ export default function Reminders() {
           <p className="rem-page__sub">Never miss a dose. Reminders fire as browser notifications.</p>
         </div>
         <div className="rem-page__header-actions">
-          {notifPerm !== 'granted' ? (
+          {notifPerm === 'granted' ? (
+            <span className="rem-notif-on"><Check size={14} /> Notifications On</span>
+          ) : notifPerm === 'denied' ? (
+            <span className="rem-notif-blocked" title="Open browser site settings to unblock notifications">
+              <BellOff size={16} /> Notifications Blocked
+            </span>
+          ) : (
             <button className="btn btn--outline" onClick={requestNotif}>
               <Bell size={16} /> Enable Notifications
             </button>
-          ) : (
-            <span className="rem-notif-on"><Check size={14} /> Notifications On</span>
           )}
           <button className="btn btn--primary" onClick={() => { setForm(EMPTY); setEditing(null); setShowForm(s => !s); }}>
             <Plus size={16} /> Add Reminder

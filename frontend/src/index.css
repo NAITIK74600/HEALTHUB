@@ -8391,6 +8391,7 @@ svg { flex-shrink: 0; }
 .rem-page__sub { color: var(--gray-500); margin-top: 4px; font-size: .9rem; }
 .rem-page__header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .rem-notif-on { display: flex; align-items: center; gap: 6px; background: var(--green-light); color: var(--green-dark); font-size: .82rem; font-weight: 600; padding: 6px 12px; border-radius: 20px; }
+.rem-notif-blocked { display: flex; align-items: center; gap: 6px; background: #fff3cd; color: #856404; font-size: .82rem; font-weight: 600; padding: 6px 12px; border-radius: 20px; cursor: default; }
 
 .rem-form-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: 16px; padding: 24px; margin-bottom: 28px; }
 .rem-form-card__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
