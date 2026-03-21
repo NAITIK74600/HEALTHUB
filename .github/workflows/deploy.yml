@@ -8,17 +8,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          port: ${{ secrets.SSH_PORT }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          passphrase: ${{ secrets.SSH_KEY_PASSPHRASE }}
-          script: |
-            cd ~/batla-medicos
-            git pull origin master
-            mkdir -p tmp
-            touch tmp/restart.txt
-            echo "Deployed at $(date)"
+      - name: Trigger deploy webhook
+        run: |
+          curl -s -X POST https://www.batlamedicos.shop/deploy.php \
+            -H "X-Deploy-Token: ${{ secrets.DEPLOY_SECRET }}" \
+            --max-time 60 \
+            --retry 2 \
+            -w "\nHTTP Status: %{http_code}\n"
