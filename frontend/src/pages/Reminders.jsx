@@ -33,6 +33,13 @@ export default function Reminders() {
   const [notifPerm, setNotifPerm]     = useState(typeof Notification !== 'undefined' ? Notification.permission : 'default');
   const timerRef = useRef(null);
 
+  // Auto-request permission on mount if not yet decided
+  useEffect(() => {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      Notification.requestPermission().then(perm => setNotifPerm(perm));
+    }
+  }, []);
+
   // Persist whenever reminders change
   useEffect(() => { saveReminders(reminders); }, [reminders]);
 

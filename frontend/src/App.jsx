@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { useEffect } from 'react';
 import './index.css';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -94,6 +95,25 @@ const DeliveryLayout = () => (
   </div>
 );
 
+/**
+ * Ask for browser notification permission once on first visit.
+ * Uses sessionStorage to avoid re-prompting in the same session.
+ */
+function NotificationPrompt() {
+  useEffect(() => {
+    if (typeof Notification === 'undefined') return;
+    if (Notification.permission !== 'default') return;
+    if (sessionStorage.getItem('bm_notif_asked')) return;
+    // Small delay so the page renders first, then prompt
+    const t = setTimeout(() => {
+      sessionStorage.setItem('bm_notif_asked', '1');
+      Notification.requestPermission();
+    }, 3000);
+    return () => clearTimeout(t);
+  }, []);
+  return null;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -101,6 +121,7 @@ export default function App() {
         <WishlistProvider>
           <CartProvider>
             <ScrollToTop />
+            <NotificationPrompt />
             <Toaster position="top-right" />
             <Routes>
               <Route element={<PublicLayout />}>
