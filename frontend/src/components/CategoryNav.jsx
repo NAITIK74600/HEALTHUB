@@ -237,7 +237,7 @@ export default function CategoryNav() {
             const isChildActive = childSlug && childSlug === currentCatSlug;
             return (
               <Link
-                key={child.path || child.slug}
+                key={child.path || child.label}
                 to={child.path || `/products?category=${child.slug}`}
                 className={`cat-nav__dropdown-item${isChildActive ? ' cat-nav__dropdown-item--active' : ''}`}
                 onClick={handleChildClick}
