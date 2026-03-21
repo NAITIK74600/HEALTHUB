@@ -6718,28 +6718,42 @@ svg { flex-shrink: 0; }
   border: 1.5px dashed rgba(252,129,129,0.35);
 }
 
-/* Centre logo disc */
+/* Centre BM brand mark */
 .orbit-center {
   position: absolute;
   top: 50%; left: 50%;
   width: 90px; height: 90px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: #fff;
-  overflow: hidden;
-  border: 3px solid rgba(255,255,255,0.9);
+  background: linear-gradient(145deg, #5c0a15 0%, #C0392B 48%, #0a3d1f 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2.5px solid rgba(255,255,255,0.22);
   box-shadow:
-    0 0 0 6px rgba(192,57,43,0.18),
-    0 0 32px rgba(192,57,43,0.45),
+    0 0 0 5px rgba(192,57,43,0.2),
+    0 0 30px rgba(192,57,43,0.55),
     0 0 60px rgba(27,136,67,0.22),
-    0 8px 28px rgba(0,0,0,0.5);
+    0 6px 26px rgba(0,0,0,0.55),
+    inset 0 1px 0 rgba(255,255,255,0.12);
   animation: logo-glow 3s ease-in-out infinite;
   z-index: 10;
+  overflow: visible;
 }
-.orbit-center__img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  display: block;
+/* BM text with gold→white→mint gradient */
+.orbit-center__bm {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  font-family: Georgia, 'Times New Roman', serif;
+  line-height: 1;
+  background: linear-gradient(135deg, #FFD700 0%, #FFFFFF 45%, #86EFAC 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 8px rgba(255,215,0,0.55)) drop-shadow(0 1px 3px rgba(0,0,0,0.4));
+  user-select: none;
+  pointer-events: none;
 }
 @keyframes logo-glow {
   0%,100% {
@@ -6952,23 +6966,47 @@ svg { flex-shrink: 0; }
 @media (max-width: 860px) {
   .hero__layout {
     flex-direction: column;
-    gap: 20px;
+    gap: 24px;
     text-align: center;
   }
   .hero__layout .hero__content { text-align: center; max-width: 100%; }
   .hero__layout .hero__content .hero__actions { justify-content: center; }
   .hero__layout .hero__content .hero__stats   { justify-content: center; }
-  .hero-orbital { order: -1; transform: scale(0.83); transform-origin: top center; margin-bottom: -48px; align-self: center; }
+  /* Orbital: proper resize (no scale/negative-margin hack) */
+  .hero-orbital {
+    order: -1;
+    width: 240px; height: 240px;
+    align-self: center;
+    overflow: visible;
+    transform: none; margin-bottom: 0;
+  }
+  .hero-orbital .orbit-track--1 { width: 200px; height: 200px; }
+  .hero-orbital .orbit-track--2 { width: 140px; height: 140px; }
+  .hero-orbital .orbit-track--3 { width: 84px; height: 84px; }
+  .hero-orbital .orbit-arm--r1 .orbit-dot { left: calc(100px - 18px); }
+  .hero-orbital .orbit-arm--r2 .orbit-dot { left: calc(70px  - 18px); }
+  .hero-orbital .orbit-arm--r3 .orbit-dot { left: calc(42px  - 18px); }
+  .hero-orbital .orbit-center { width: 74px; height: 74px; }
+  .hero-orbital .orbit-center__bm { font-size: 23px; }
+  .hero-orbital .orbit-dot { width: 36px; height: 36px; top: -18px; }
 }
-@media (max-width: 560px) {
-  .hero-orbital { transform: scale(0.62); transform-origin: top center; margin-bottom: -106px; align-self: center; overflow: hidden; }
-}
-@media (max-width: 420px) {
-  .hero-orbital { display: none; }
-  .hero__layout { gap: 12px; }
+@media (max-width: 540px) {
+  .hero-orbital {
+    width: 200px; height: 200px;
+  }
+  .hero-orbital .orbit-track--1 { width: 166px; height: 166px; }
+  .hero-orbital .orbit-track--2 { width: 116px; height: 116px; }
+  .hero-orbital .orbit-track--3 { width: 70px; height: 70px; }
+  .hero-orbital .orbit-arm--r1 .orbit-dot { left: calc(83px - 16px); }
+  .hero-orbital .orbit-arm--r2 .orbit-dot { left: calc(58px - 16px); }
+  .hero-orbital .orbit-arm--r3 .orbit-dot { left: calc(35px - 16px); }
+  .hero-orbital .orbit-center { width: 62px; height: 62px; }
+  .hero-orbital .orbit-center__bm { font-size: 20px; letter-spacing: 1.5px; }
+  .hero-orbital .orbit-dot { width: 32px; height: 32px; top: -16px; }
 }
 @media (max-width: 380px) {
   .hero-orbital { display: none; }
+  .hero__layout { gap: 12px; }
 }
 
 /* ================================================================

@@ -288,9 +288,9 @@ export default function Home() {
             <div className="orbit-track orbit-track--2" />
             <div className="orbit-track orbit-track--3" />
 
-            {/* ── Centre: actual Batla Medicos logo ── */}
-            <div className="orbit-center">
-              <img src="/logo.jpg" alt="Batla Medicos" className="orbit-center__img" />
+            {/* ── Centre: BM brand mark ── */}
+            <div className="orbit-center" aria-label="Batla Medicos">
+              <span className="orbit-center__bm">BM</span>
             </div>
 
             {/* Ring 1 – outer r=125px CW 7s */}
