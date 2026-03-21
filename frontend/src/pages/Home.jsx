@@ -283,23 +283,38 @@ export default function Home() {
         </div>
         <div className="hero__layout">
           <div className="hero-orbital" aria-hidden="true">
+            {/* ── DNA atom backdrop ── */}
+            <div className="pharma-atom">
+              <div className="pharma-atom__ring pharma-atom__ring--a" />
+              <div className="pharma-atom__ring pharma-atom__ring--b" />
+              <div className="pharma-atom__ring pharma-atom__ring--c" />
+              <div className="pharma-atom__nucleus" />
+            </div>
+
+            {/* ── 3-D Capsule Pill ── */}
             <div className="hero-orbital__core">
-              <svg viewBox="0 0 60 60" width="52" height="52" fill="none">
-                <rect x="22" y="4"  width="16" height="52" rx="6" fill="white" opacity="0.95"/>
-                <rect x="4"  y="22" width="52" height="16" rx="6" fill="white" opacity="0.95"/>
-                <defs><linearGradient id="cg" x1="0" y1="0" x2="60" y2="60"><stop offset="0%" stopColor="#C0392B"/><stop offset="100%" stopColor="#1B8843"/></linearGradient></defs>
-              </svg>
+              <div className="pharma-capsule">
+                <div className="pharma-capsule__half pharma-capsule__half--l" />
+                <div className="pharma-capsule__half pharma-capsule__half--r" />
+                <div className="pharma-capsule__gloss" />
+                <div className="pharma-capsule__gloss pharma-capsule__gloss--bot" />
+                <div className="pharma-capsule__seam" />
+              </div>
             </div>
+
+            {/* ── Ring 1: Stethoscope + Heart ── */}
             <div className="hero-orbital__ring hero-orbital__ring--1">
-              <div className="hero-orbital__icon hero-orbital__icon--1"><Pill size={18} color="white" /></div>
-              <div className="hero-orbital__icon hero-orbital__icon--1b"><Pill size={16} color="rgba(255,255,255,0.8)" /></div>
+              <div className="hero-orbital__icon hero-orbital__icon--1"><Stethoscope size={18} color="white" /></div>
+              <div className="hero-orbital__icon hero-orbital__icon--1b"><Heart size={16} color="rgba(252,129,129,0.95)" /></div>
             </div>
+            {/* ── Ring 2: Leaf + FlaskConical ── */}
             <div className="hero-orbital__ring hero-orbital__ring--2">
               <div className="hero-orbital__icon hero-orbital__icon--2"><Leaf size={19} color="#4ade80" /></div>
-              <div className="hero-orbital__icon hero-orbital__icon--2b"><Heart size={17} color="#FC8181" /></div>
+              <div className="hero-orbital__icon hero-orbital__icon--2b"><FlaskConical size={17} color="rgba(147,197,253,0.95)" /></div>
             </div>
+            {/* ── Ring 3: Activity (ECG) + Syringe ── */}
             <div className="hero-orbital__ring hero-orbital__ring--3">
-              <div className="hero-orbital__icon hero-orbital__icon--3"><Stethoscope size={18} color="white" /></div>
+              <div className="hero-orbital__icon hero-orbital__icon--3"><Activity size={18} color="white" /></div>
               <div className="hero-orbital__icon hero-orbital__icon--3b"><Syringe size={16} color="rgba(255,220,100,0.95)" /></div>
             </div>
           </div>

@@ -6789,6 +6789,128 @@ svg { flex-shrink: 0; }
 .hero-orbital__icon--3  { left: 0%;   top: 50%; }
 .hero-orbital__icon--3b { left: 100%; top: 50%; background: rgba(255,220,100,0.15); border-color: rgba(255,220,100,0.5); box-shadow: 0 0 16px rgba(255,220,100,0.25), 0 2px 10px rgba(0,0,0,0.2); }
 
+/* ================================================================
+   3-D PHARMA CAPSULE  (hero orbital core)
+   ================================================================ */
+.pharma-capsule {
+  width: 72px;
+  height: 30px;
+  border-radius: 15px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  /* 3D tilt — perspective gives depth illusion */
+  transform: perspective(320px) rotateX(24deg) rotateY(-16deg) rotateZ(-10deg);
+  animation: capsule-float 3.6s ease-in-out infinite;
+  box-shadow:
+    0 10px 32px rgba(0,0,0,0.6),
+    0 4px 12px rgba(0,0,0,0.35),
+    0 0 0 1.5px rgba(255,255,255,0.22),
+    inset 0 1px 4px rgba(255,255,255,0.3);
+}
+.pharma-capsule__half {
+  flex: 1;
+  height: 100%;
+}
+/* Left half — brand crimson */
+.pharma-capsule__half--l {
+  background: linear-gradient(155deg, #F1948A 0%, #E74C3C 28%, #C0392B 62%, #7B241C 100%);
+}
+/* Right half — brand green */
+.pharma-capsule__half--r {
+  background: linear-gradient(155deg, #58D68D 0%, #27AE60 28%, #1E8449 62%, #0E6630 100%);
+}
+/* Top gloss highlight */
+.pharma-capsule__gloss {
+  position: absolute;
+  top: 4px; left: 10%; right: 10%;
+  height: 8px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.58) 0%, rgba(255,255,255,0.0) 100%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+/* Bottom rim shadow */
+.pharma-capsule__gloss--bot {
+  top: auto; bottom: 3px;
+  height: 5px;
+  background: linear-gradient(0deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.0) 100%);
+}
+/* Centre seam glow — the join line between the two halves */
+.pharma-capsule__seam {
+  position: absolute;
+  top: 0; bottom: 0; left: 50%;
+  width: 2px; margin-left: -1px;
+  background: rgba(255,255,255,0.6);
+  box-shadow: 0 0 8px rgba(255,255,255,0.7), 0 0 18px rgba(255,255,255,0.25);
+}
+@keyframes capsule-float {
+  0%   { transform: perspective(320px) rotateX(24deg) rotateY(-16deg) rotateZ(-10deg) translateY(0);    }
+  38%  { transform: perspective(320px) rotateX(20deg) rotateY(-20deg) rotateZ(-7deg)  translateY(-6px); }
+  68%  { transform: perspective(320px) rotateX(27deg) rotateY(-12deg) rotateZ(-13deg) translateY(-3px); }
+  100% { transform: perspective(320px) rotateX(24deg) rotateY(-16deg) rotateZ(-10deg) translateY(0);    }
+}
+
+/* ================================================================
+   PHARMA ATOM DECORATION  (spinning atomic electron rings behind capsule)
+   ================================================================ */
+.pharma-atom {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 240px; height: 240px;
+  margin: -120px 0 0 -120px;
+  pointer-events: none;
+  z-index: 1;
+}
+.pharma-atom__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.pharma-atom__ring--a {
+  border-color: rgba(192,57,43,0.28);
+  transform: rotateX(70deg) rotateZ(0deg);
+  animation: atom-spin-a 12s linear infinite;
+  box-shadow: 0 0 12px rgba(192,57,43,0.12) inset;
+}
+.pharma-atom__ring--b {
+  border-color: rgba(30,132,73,0.28);
+  transform: rotateX(70deg) rotateZ(60deg);
+  animation: atom-spin-b 18s linear infinite reverse;
+  box-shadow: 0 0 12px rgba(30,132,73,0.12) inset;
+}
+.pharma-atom__ring--c {
+  border-color: rgba(255,255,255,0.14);
+  transform: rotateX(70deg) rotateZ(120deg);
+  animation: atom-spin-c 24s linear infinite;
+}
+.pharma-atom__nucleus {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 8px; height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.15) 100%);
+  box-shadow: 0 0 12px rgba(255,255,255,0.5), 0 0 24px rgba(192,57,43,0.4);
+  animation: nucleus-pulse 2.8s ease-in-out infinite;
+}
+@keyframes atom-spin-a {
+  from { transform: rotateX(70deg) rotateZ(0deg);   }
+  to   { transform: rotateX(70deg) rotateZ(360deg); }
+}
+@keyframes atom-spin-b {
+  from { transform: rotateX(70deg) rotateZ(60deg);  }
+  to   { transform: rotateX(70deg) rotateZ(420deg); }
+}
+@keyframes atom-spin-c {
+  from { transform: rotateX(70deg) rotateZ(120deg); }
+  to   { transform: rotateX(70deg) rotateZ(480deg); }
+}
+@keyframes nucleus-pulse {
+  0%,100% { transform: scale(1);   opacity: 0.8; }
+  50%     { transform: scale(1.6); opacity: 1;   }
+}
+
 /* ---- Floating Particle Crosses ---- */
 .hero__particles {
   position: absolute;
