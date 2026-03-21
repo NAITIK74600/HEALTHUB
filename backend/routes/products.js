@@ -611,7 +611,10 @@ function buildProductWhere({ admin = false, params = {}, categoryIds = [] } = {}
   const values = [];
 
   where.push('p.is_deleted = 0');
-  if (!admin) where.push('p.is_active = 1');
+  if (!admin) {
+    where.push('p.is_active = 1');
+    where.push('p.price >= 50');
+  }
 
   if (categoryIds.length) {
     // Also match products where any of the requested categories appear in secondary_category_ids
