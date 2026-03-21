@@ -10323,10 +10323,7 @@ input:focus, select:focus, textarea:focus {
    ════════════════════════════════════════════════════════════════ */
 
 /* ── Global 3D perspective container ── */
-main {
-  perspective: 1200px;
-  perspective-origin: 50% 0%;
-}
+/* perspective applied locally per-card, not globally (avoid layout breaks) */
 
 /* ── Hero 3D enhancements ── */
 .hero {
@@ -10751,20 +10748,7 @@ main {
   box-shadow: -8px 0 40px rgba(0,0,0,0.15), -2px 0 8px rgba(0,0,0,0.05);
 }
 
-/* ── Product grid staggered 3D entrance ── */
-.product-grid .product-card {
-  animation: card-3d-entrance 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-@keyframes card-3d-entrance {
-  from {
-    opacity: 0;
-    transform: perspective(800px) rotateX(-8deg) translateY(30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: perspective(800px) rotateX(0deg) translateY(0) scale(1);
-  }
-}
+/* ── Product grid staggered 3D entrance (scroll-triggered only via AnimatedSection) ── */
 
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {

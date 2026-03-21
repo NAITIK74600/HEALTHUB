@@ -88,6 +88,9 @@ export default function AdminProducts() {
   /* ── Quick stock ── */
   const [stockEdit, setStockEdit] = useState({});
 
+  /* ── Missing info filter ── */
+  const [missingFilter, setMissingFilter] = useState(false);
+
   /* ── Bulk select ── */
   const [selectedIds,       setSelectedIds]       = useState(new Set());
   const [selectAllMatching, setSelectAllMatching] = useState(false);
@@ -845,9 +848,6 @@ export default function AdminProducts() {
           title="Show only products missing salt or description"
         >
           ⚠ {missingFilter ? 'Hide Missing' : 'Missing Info'}
-          {!missingFilter && missingCount !== null && missingCount > 0 && (
-            <span className="ai-badge" style={{ marginLeft: 4 }}>{missingCount.toLocaleString()}</span>
-          )}
         </button>
       </div>
 
