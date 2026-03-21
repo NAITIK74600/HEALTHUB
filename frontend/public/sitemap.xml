@@ -27,7 +27,7 @@
     <priority>0.7</priority>
   </url>
 
-  <!-- Medicine / Rx categories -->
+  <!-- Medicine categories (matching actual DB/filter slugs) -->
   <url>
     <loc>https://www.batlamedicos.shop/products?category=allopathic</loc>
     <lastmod>2026-03-21</lastmod>
@@ -35,7 +35,25 @@
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://www.batlamedicos.shop/products?category=ayurveda</loc>
+    <loc>https://www.batlamedicos.shop/products?category=caps-tabs</loc>
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.batlamedicos.shop/products?category=liquids</loc>
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.batlamedicos.shop/products?category=generic</loc>
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.batlamedicos.shop/products?category=ayurvedic</loc>
     <lastmod>2026-03-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -46,20 +64,8 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
-    <loc>https://www.batlamedicos.shop/products?category=diabetes-care</loc>
-    <lastmod>2026-03-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.batlamedicos.shop/products?category=supports-braces</loc>
-    <lastmod>2026-03-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
 
-  <!-- Wellness and Nutrition -->
+  <!-- Wellness & Lifestyle categories -->
   <url>
     <loc>https://www.batlamedicos.shop/products?category=vitamins-nutrition</loc>
     <lastmod>2026-03-21</lastmod>
@@ -78,8 +84,20 @@
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://www.batlamedicos.shop/products?category=diabetes-care</loc>
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.batlamedicos.shop/products?category=supports-braces</loc>
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
 
-  <!-- Personal Care / Lifestyle -->
+  <!-- Personal Care -->
   <url>
     <loc>https://www.batlamedicos.shop/products?category=skin-care</loc>
     <lastmod>2026-03-21</lastmod>
@@ -99,24 +117,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.batlamedicos.shop/products?category=oral-care</loc>
-    <lastmod>2026-03-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.batlamedicos.shop/products?category=women-care</loc>
-    <lastmod>2026-03-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.batlamedicos.shop/products?category=men-grooming</loc>
-    <lastmod>2026-03-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://www.batlamedicos.shop/products?category=sexual-wellness</loc>
     <lastmod>2026-03-21</lastmod>
     <changefreq>weekly</changefreq>
@@ -124,6 +124,18 @@
   </url>
   <url>
     <loc>https://www.batlamedicos.shop/products?category=elderly-care</loc>
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.batlamedicos.shop/products?category=fmcg</loc>
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.batlamedicos.shop/products?category=surgicals</loc>
     <lastmod>2026-03-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>

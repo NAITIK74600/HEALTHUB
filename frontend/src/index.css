@@ -466,7 +466,7 @@ svg { flex-shrink: 0; }
 
 @media (max-width: 992px) {
   .navbar__links { display: none; }
-  .navbar__menu-btn { display: flex; }
+  .navbar__menu-btn { display: flex; align-items: center; justify-content: center; }
   .navbar__inner {
     padding: 0 14px;
     gap: 10px;
@@ -520,7 +520,7 @@ svg { flex-shrink: 0; }
   .navbar__brand-green {
     display: none;
   }
-  .navbar__cart-btn span {
+  .navbar__cart-btn span:not(.navbar__cart-count) {
     display: none;
   }
   .navbar__wish-btn,
