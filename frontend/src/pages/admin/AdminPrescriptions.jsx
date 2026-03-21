@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { createOrderFromPrescription, getAllPrescriptions, updatePrescriptionStatus, exportPrescriptions, clearPrescriptions } from '../../api/prescriptions';
+import { createOrderFromPrescription, getAllPrescriptions, updatePrescriptionStatus, exportPrescriptions, clearPrescriptions, deletePrescription } from '../../api/prescriptions';
 import { getAdminProducts } from '../../api/products';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -89,6 +89,15 @@ export default function AdminPrescriptions() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleDelete = async (rx) => {
+    if (!window.confirm(`Delete prescription #${rx._id} for ${rx.user?.name || 'user'}? This cannot be undone.`)) return;
+    try {
+      await deletePrescription(rx._id);
+      toast.success('Prescription deleted.');
+      load();
+    } catch (err) { toast.error(err.response?.data?.message || 'Delete failed.'); }
   };
 
   const openCreateOrder = (rx) => {
@@ -260,13 +269,25 @@ export default function AdminPrescriptions() {
                 )}
 
                 {rx.status === 'approved' && (
-                  <button
-                    className="btn btn--outline btn--sm admin-rx-card__review-btn"
-                    style={{ marginTop: 8 }}
-                    onClick={() => openCreateOrder(rx)}
-                  >
-                    Create Order
-                  </button>
+                  <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                    <button
+                      className="btn btn--outline btn--sm admin-rx-card__review-btn"
+                      style={{ flex: 1 }}
+                      onClick={() => openCreateOrder(rx)}
+                    >
+                      Create Order
+                    </button>
+                    {(!rx.usedInOrders || rx.usedInOrders.length === 0) && (
+                      <button
+                        className="btn btn--outline btn--sm"
+                        style={{ color: '#ef4444', borderColor: '#ef4444' }}
+                        title="Delete this approved prescription (no order linked)"
+                        onClick={() => handleDelete(rx)}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             );

@@ -810,7 +810,7 @@ router.get('/import-template', requireAuth, requireAdmin, async (req, res, next)
     // Fetch all existing products with IDs so admin can edit inline and add new rows at the bottom
     const [products, categories] = await Promise.all([
       query(
-        `SELECT p.id, p.name, p.brand, p.salt, p.description, p.side_effects,
+        `SELECT p.id, p.name, p.brand, p.salt,
                 c.slug AS category_slug, p.mrp, p.price, p.stock,
                 p.requires_prescription, p.code, p.pack, p.batch_number, p.is_active
          FROM products p
@@ -826,14 +826,12 @@ router.get('/import-template', requireAuth, requireAdmin, async (req, res, next)
     const wb = XLSX.utils.book_new();
 
     // Products sheet — id first so rows with id = UPDATE, rows without id = INSERT NEW
-    const headers = ['id', 'name', 'brand', 'salt', 'description', 'side_effects', 'category', 'mrp', 'price', 'stock', 'requiresPrescription', 'code', 'pack', 'batchNumber', 'isActive'];
+    const headers = ['id', 'name', 'brand', 'salt', 'category', 'mrp', 'price', 'stock', 'requiresPrescription', 'code', 'pack', 'batchNumber', 'isActive'];
     const dataRows = products.map(r => [
       r.id,
       r.name || '',
       r.brand || '',
       r.salt || '',
-      r.description || '',
-      r.side_effects || '',
       r.category_slug || '',
       r.mrp,
       r.price,
@@ -847,12 +845,12 @@ router.get('/import-template', requireAuth, requireAdmin, async (req, res, next)
 
     // Add 5 empty rows at the bottom for new products (leave id blank to insert as new)
     for (let i = 0; i < 5; i++) {
-      dataRows.push(['', '', '', '', '', '', '', '', '', '', 'false', '', '', '', 'true']);
+      dataRows.push(['', '', '', '', '', '', '', '', 'false', '', '', '', 'true']);
     }
 
     const wsProducts = XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
     wsProducts['!freeze'] = { xSplit: 0, ySplit: 1 };
-    wsProducts['!cols'] = [{ wch: 8 }, { wch: 40 }, { wch: 20 }, { wch: 25 }, { wch: 50 }, { wch: 30 },
+    wsProducts['!cols'] = [{ wch: 8 }, { wch: 40 }, { wch: 20 }, { wch: 25 },
                            { wch: 18 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 20 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 10 }];
 
     const wsCategories = XLSX.utils.aoa_to_sheet([['slug', 'name'], ...categories.map(r => [r.slug, r.name])]);
@@ -870,12 +868,10 @@ router.get('/import-template', requireAuth, requireAdmin, async (req, res, next)
       ['  • id column is ignored', ''],
       ['', ''],
       ['Column', 'Required', 'Notes'],
-      ['id', 'Keep to update / blank to add new', 'Product ID from database — keep to UPDATE, clear to INSERT as new'],
+      ['id', 'Keep to update / blank to add new', 'Product ID — keep to UPDATE that product, blank to INSERT as new'],
       ['name', 'YES', 'Product name (max 200 chars)'],
       ['brand', 'no', 'Manufacturer / brand name'],
       ['salt', 'no', 'Active ingredient + strength'],
-      ['description', 'no', 'Product description'],
-      ['side_effects', 'no', 'Known side effects'],
       ['category', 'no', 'Slug from the Categories sheet (e.g. caps-tabs, fmcg, ayurvedic)'],
       ['mrp', 'no', 'Maximum Retail Price (numeric)'],
       ['price', 'no', 'Selling price (numeric, defaults to mrp if blank)'],
