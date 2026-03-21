@@ -328,19 +328,6 @@ router.post(
   }
 );
 
-// DELETE /api/prescriptions/:id
-router.delete('/:id', requireAuth, [param('id').isInt({ min: 1 })], async (req, res, next) => {
-  try {
-    // Customers can only delete their own
-    if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
-      const rows = await query('SELECT id FROM prescriptions WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
-      if (!rows.length) return res.status(403).json({ message: 'Not authorized.' });
-    }
-    await execute('DELETE FROM prescriptions WHERE id = ?', [req.params.id]);
-    res.json({ message: 'Prescription deleted.' });
-  } catch (err) { next(err); }
-});
-
 // ─────────────────────────────────────────────────────────────────────────────
 // ADMIN — export prescriptions as XLSX
 // GET /api/prescriptions/export
@@ -398,5 +385,18 @@ router.delete('/clear', requireAuth, requireSuperAdmin,
     } catch (err) { next(err); }
   }
 );
+
+// DELETE /api/prescriptions/:id
+router.delete('/:id', requireAuth, [param('id').isInt({ min: 1 })], async (req, res, next) => {
+  try {
+    // Customers can only delete their own
+    if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+      const rows = await query('SELECT id FROM prescriptions WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+      if (!rows.length) return res.status(403).json({ message: 'Not authorized.' });
+    }
+    await execute('DELETE FROM prescriptions WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Prescription deleted.' });
+  } catch (err) { next(err); }
+});
 
 module.exports = router;

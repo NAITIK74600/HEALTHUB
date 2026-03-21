@@ -113,8 +113,25 @@ const LOREAL = [
   { name: "L'Oreal Paris Pure Clay Mask Exfoliate & Refine 50ml", brand: "L'Oreal Paris", pack: '50ml',    mrp: 499,  price: 424,  description: "Clay face mask with red algae extract to exfoliate and refine pores.",                          catSlug: 'fmcg' },
   { name: "L'Oreal Paris Pure Clay Detox Mask 50ml",              brand: "L'Oreal Paris", pack: '50ml',    mrp: 499,  price: 424,  description: "Clay face mask with charcoal to detox and unclog pores.",                                       catSlug: 'fmcg' },
   // Body Lotion
-  { name: "L'Oreal Paris Revitalift Body Serum 230ml",            brand: "L'Oreal Paris", pack: '230ml',   mrp: 799,  price: 679,  description: "Body serum with 1.5% hyaluronic acid. Firms and smoothens skin.",                               catSlug: 'lotion' },
-];
+  { name: "L'Oreal Paris Revitalift Body Serum 230ml",            brand: "L'Oreal Paris", pack: '230ml',   mrp: 799,  price: 679,  description: "Body serum with 1.5% hyaluronic acid. Firms and smoothens skin.",                               catSlug: 'lotion' },  // More Hair Colour Shades
+  { name: "L'Oreal Paris Excellence Creme 5 Natural Brown",        brand: "L'Oreal Paris", pack: '1 Kit',   mrp: 549,  price: 467,  description: "Triple protection hair colour with pro-keratin + ceramide. Shade: 5 Natural Brown.",         catSlug: 'fmcg' },
+  { name: "L'Oreal Paris Excellence Creme 6 Natural Light Brown",  brand: "L'Oreal Paris", pack: '1 Kit',   mrp: 549,  price: 467,  description: "Triple protection hair colour with pro-keratin + ceramide. Shade: 6 Natural Light Brown.",   catSlug: 'fmcg' },
+  { name: "L'Oreal Paris Excellence Creme 7 Natural Blonde",       brand: "L'Oreal Paris", pack: '1 Kit',   mrp: 549,  price: 467,  description: "Triple protection hair colour with pro-keratin + ceramide. Shade: 7 Natural Blonde.",        catSlug: 'fmcg' },
+  { name: "L'Oreal Paris Excellence Creme 4.62 Dark Maroon",       brand: "L'Oreal Paris", pack: '1 Kit',   mrp: 549,  price: 467,  description: "Triple protection hair colour + ceramide. Shade: 4.62 Dark Maroon. Rich burgundy tone.",     catSlug: 'fmcg' },
+  { name: "L'Oreal Paris Excellence Creme 5.62 Red Burgundy",      brand: "L'Oreal Paris", pack: '1 Kit',   mrp: 549,  price: 467,  description: "Triple protection hair colour + ceramide. Shade: 5.62 Red Burgundy. Bold red-wine tone.",    catSlug: 'fmcg' },
+  { name: "L'Oreal Paris Excellence Creme 6.45 Copper Mahogany",   brand: "L'Oreal Paris", pack: '1 Kit',   mrp: 549,  price: 467,  description: "Triple protection hair colour + ceramide. Shade: 6.45 Copper Mahogany.",                    catSlug: 'fmcg' },
+  { name: "L'Oreal Paris Excellence Creme 3.16 Plum",              brand: "L'Oreal Paris", pack: '1 Kit',   mrp: 549,  price: 467,  description: "Triple protection hair colour + ceramide. Shade: 3.16 Plum. Vibrant fashion shade.",         catSlug: 'fmcg' },
+  { name: "L'Oreal Paris Colour Naturals 4 Natural Brown",         brand: "L'Oreal Paris", pack: '1 Kit',   mrp: 249,  price: 212,  description: "Gentle permanent hair colour with milk proteins & honey. Shade: 4 Natural Brown.",            catSlug: 'fmcg' },
+  { name: "L'Oreal Paris Colour Naturals 4.62 Dark Maroon",        brand: "L'Oreal Paris", pack: '1 Kit',   mrp: 249,  price: 212,  description: "Gentle permanent hair colour with milk proteins & honey. Shade: 4.62 Dark Maroon.",           catSlug: 'fmcg' },
+  { name: "L'Oreal Paris Colour Naturals 5.62 Red Burgundy",       brand: "L'Oreal Paris", pack: '1 Kit',   mrp: 249,  price: 212,  description: "Gentle permanent hair colour with milk proteins & honey. Shade: 5.62 Red Burgundy.",          catSlug: 'fmcg' },
+  { name: "L'Oreal Paris Colour Naturals 6.3 Light Golden Brown",  brand: "L'Oreal Paris", pack: '1 Kit',   mrp: 249,  price: 212,  description: "Gentle permanent hair colour with milk proteins & honey. Shade: 6.3 Light Golden Brown.",     catSlug: 'fmcg' },
+  // Maybelline (L'Oreal Group)
+  { name: "Maybelline Baby Lips Lip Balm Pinkylicious 4g",          brand: 'Maybelline',    pack: '4g',      mrp: 125,  price: 112,  description: "Tinted moisturising lip balm with SPF20. Shade: Pinkylicious. 8-hour moisture.",             catSlug: 'fmcg' },
+  { name: "Maybelline Baby Lips Lip Balm Berry Crush 4g",           brand: 'Maybelline',    pack: '4g',      mrp: 125,  price: 112,  description: "Tinted moisturising lip balm with SPF20. Shade: Berry Crush. 8-hour moisture.",             catSlug: 'fmcg' },
+  { name: "Maybelline Baby Lips Lip Balm Peach Kiss 4g",            brand: 'Maybelline',    pack: '4g',      mrp: 125,  price: 112,  description: "Tinted moisturising lip balm with SPF20. Shade: Peach Kiss.",                               catSlug: 'fmcg' },
+  { name: "Maybelline Fit Me Foundation 220 Natural Beige 30ml",    brand: 'Maybelline',    pack: '30ml',    mrp: 355,  price: 319,  description: "Fit Me matte + poreless foundation. Shade: 220 Natural Beige. Blurs pores.",                catSlug: 'fmcg' },
+  { name: "Maybelline Colossal Bold Mascara Black 9.5ml",           brand: 'Maybelline',    pack: '9.5ml',   mrp: 299,  price: 269,  description: "Colossal 9X volume mascara. Enriched with collagen for bold, voluminous lashes.",            catSlug: 'fmcg' },
+  { name: "Maybelline New York Hyper Precise Liner Black 0.5ml",    brand: 'Maybelline',    pack: '0.5ml',   mrp: 345,  price: 310,  description: "0.1mm micro-brush liner. Water-resistant, all-day bold black liner.",                       catSlug: 'fmcg' },];
 
 // ─── Streax Products ────────────────────────────────────────────────────────
 const STREAX = [
@@ -170,6 +187,20 @@ const STREAX = [
   { name: 'Streax Serum + Shampoo Combo Pack',                    brand: 'Streax', pack: '1 Combo',mrp: 449,  price: 382,  description: 'Combo pack of Streax hair serum and shine shampoo for complete hair care.',               catSlug: 'fmcg' },
   { name: 'Streax Pro Argan Serum + Mask Combo',                  brand: 'Streax Pro', pack: '1 Combo',mrp: 999, price: 849, description: 'Combo pack of Streax Pro argan serum and hair mask for intense repair.',                catSlug: 'fmcg' },
   { name: 'Streax Hair Colour + Serum Combo',                     brand: 'Streax', pack: '1 Combo',mrp: 549,  price: 467,  description: 'Combo pack of Streax hair colour and serum for coloured hair care.',                     catSlug: 'fmcg' },
+  // More Hair Colour Shades
+  { name: 'Streax Hair Colour 1 Black',                          brand: 'Streax', pack: '1 Kit',  mrp: 99,   price: 89,   description: 'Permanent hair colour with Insta Smooth conditioner. Shade: 1 Black. 100% grey coverage.', catSlug: 'fmcg' },
+  { name: 'Streax Hair Colour 2 Brown',                          brand: 'Streax', pack: '1 Kit',  mrp: 99,   price: 89,   description: 'Permanent hair colour. Shade: 2 Brown. Rich, natural colour with luminous shine.',         catSlug: 'fmcg' },
+  { name: 'Streax Hair Colour 3 Darkest Brown',                  brand: 'Streax', pack: '1 Kit',  mrp: 99,   price: 89,   description: 'Permanent hair colour. Shade: 3 Darkest Brown. Deep colour with complete coverage.',       catSlug: 'fmcg' },
+  { name: 'Streax Hair Colour 4 Natural Brown',                  brand: 'Streax', pack: '1 Kit',  mrp: 99,   price: 89,   description: 'Permanent hair colour. Shade: 4 Natural Brown. Lustrous natural brown tones.',            catSlug: 'fmcg' },
+  { name: 'Streax Hair Colour 4.65 Burgundy',                    brand: 'Streax', pack: '1 Kit',  mrp: 99,   price: 89,   description: 'Permanent hair colour. Shade: 4.65 Burgundy. Deep red-violet fashion shade.',             catSlug: 'fmcg' },
+  { name: 'Streax Hair Colour 5 Light Brown',                    brand: 'Streax', pack: '1 Kit',  mrp: 99,   price: 89,   description: 'Permanent hair colour. Shade: 5 Light Brown. Warm medium brown.',                        catSlug: 'fmcg' },
+  { name: 'Streax Hair Colour 5.3 Golden Brown',                 brand: 'Streax', pack: '1 Kit',  mrp: 99,   price: 89,   description: 'Permanent hair colour. Shade: 5.3 Golden Brown. Warm golden-brown luminosity.',           catSlug: 'fmcg' },
+  { name: 'Streax Hair Colour 6 Dark Blonde',                    brand: 'Streax', pack: '1 Kit',  mrp: 99,   price: 89,   description: 'Permanent hair colour. Shade: 6 Dark Blonde. Natural-looking lighter brunette tones.',   catSlug: 'fmcg' },
+  { name: 'Streax Hair Colour 6.4 Copper',                       brand: 'Streax', pack: '1 Kit',  mrp: 99,   price: 89,   description: 'Permanent hair colour. Shade: 6.4 Copper. Vivid copper-orange fashion colour.',           catSlug: 'fmcg' },
+  { name: 'Streax Hair Colour 6.65 Red',                         brand: 'Streax', pack: '1 Kit',  mrp: 99,   price: 89,   description: 'Permanent hair colour. Shade: 6.65 Red. Vibrant, fashion-forward red shade.',            catSlug: 'fmcg' },
+  { name: 'Streax Hair Colour 7 Medium Blonde',                  brand: 'Streax', pack: '1 Kit',  mrp: 99,   price: 89,   description: 'Permanent hair colour. Shade: 7 Medium Blonde. Natural blonde with warm reflect.',       catSlug: 'fmcg' },
+  { name: 'Streax Hair Colour 7.3 Golden Blonde',                brand: 'Streax', pack: '1 Kit',  mrp: 99,   price: 89,   description: 'Permanent hair colour. Shade: 7.3 Golden Blonde. Sunny, warm golden blonde.',            catSlug: 'fmcg' },
+  { name: 'Streax Insta Smooth Conditioner Sachet 8ml',          brand: 'Streax', pack: '8ml sachet',mrp:10, price: 9,   description: 'Post-colour instant smooth conditioner. Restores moisture and adds shine.',              catSlug: 'fmcg' },
 ];
 
 async function run() {
