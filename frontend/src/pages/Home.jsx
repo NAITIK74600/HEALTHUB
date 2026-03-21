@@ -283,39 +283,38 @@ export default function Home() {
         </div>
         <div className="hero__layout">
           <div className="hero-orbital" aria-hidden="true">
-            {/* ── DNA atom backdrop ── */}
-            <div className="pharma-atom">
-              <div className="pharma-atom__ring pharma-atom__ring--a" />
-              <div className="pharma-atom__ring pharma-atom__ring--b" />
-              <div className="pharma-atom__ring pharma-atom__ring--c" />
-              <div className="pharma-atom__nucleus" />
+            {/* Circular track rings */}
+            <div className="orbit-track orbit-track--1" />
+            <div className="orbit-track orbit-track--2" />
+            <div className="orbit-track orbit-track--3" />
+
+            {/* ── Centre: actual Batla Medicos logo ── */}
+            <div className="orbit-center">
+              <img src="/logo.jpg" alt="Batla Medicos" className="orbit-center__img" />
             </div>
 
-            {/* ── 3-D Capsule Pill ── */}
-            <div className="hero-orbital__core">
-              <div className="pharma-capsule">
-                <div className="pharma-capsule__half pharma-capsule__half--l" />
-                <div className="pharma-capsule__half pharma-capsule__half--r" />
-                <div className="pharma-capsule__gloss" />
-                <div className="pharma-capsule__gloss pharma-capsule__gloss--bot" />
-                <div className="pharma-capsule__seam" />
-              </div>
+            {/* Ring 1 – outer r=125px CW 7s */}
+            <div className="orbit-arm orbit-arm--r1">
+              <div className="orbit-dot"><Pill size={17} color="white" /></div>
+            </div>
+            <div className="orbit-arm orbit-arm--r1" style={{animationDelay:'-3.5s'}}>
+              <div className="orbit-dot orbit-dot--red"><Heart size={16} color="#FC8181" /></div>
             </div>
 
-            {/* ── Ring 1: Stethoscope + Heart ── */}
-            <div className="hero-orbital__ring hero-orbital__ring--1">
-              <div className="hero-orbital__icon hero-orbital__icon--1"><Stethoscope size={18} color="white" /></div>
-              <div className="hero-orbital__icon hero-orbital__icon--1b"><Heart size={16} color="rgba(252,129,129,0.95)" /></div>
+            {/* Ring 2 – middle r=88px CCW 10s */}
+            <div className="orbit-arm orbit-arm--r2">
+              <div className="orbit-dot orbit-dot--green"><Leaf size={18} color="#4ade80" /></div>
             </div>
-            {/* ── Ring 2: Leaf + FlaskConical ── */}
-            <div className="hero-orbital__ring hero-orbital__ring--2">
-              <div className="hero-orbital__icon hero-orbital__icon--2"><Leaf size={19} color="#4ade80" /></div>
-              <div className="hero-orbital__icon hero-orbital__icon--2b"><FlaskConical size={17} color="rgba(147,197,253,0.95)" /></div>
+            <div className="orbit-arm orbit-arm--r2" style={{animationDelay:'-5s'}}>
+              <div className="orbit-dot orbit-dot--blue"><FlaskConical size={17} color="#93C5FD" /></div>
             </div>
-            {/* ── Ring 3: Activity (ECG) + Syringe ── */}
-            <div className="hero-orbital__ring hero-orbital__ring--3">
-              <div className="hero-orbital__icon hero-orbital__icon--3"><Activity size={18} color="white" /></div>
-              <div className="hero-orbital__icon hero-orbital__icon--3b"><Syringe size={16} color="rgba(255,220,100,0.95)" /></div>
+
+            {/* Ring 3 – inner r=52px CW 5s */}
+            <div className="orbit-arm orbit-arm--r3">
+              <div className="orbit-dot"><Stethoscope size={15} color="white" /></div>
+            </div>
+            <div className="orbit-arm orbit-arm--r3" style={{animationDelay:'-2.5s'}}>
+              <div className="orbit-dot orbit-dot--yellow"><Syringe size={14} color="#FDE68A" /></div>
             </div>
           </div>
           <div className="hero__content">

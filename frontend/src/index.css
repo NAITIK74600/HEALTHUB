@@ -6686,230 +6686,111 @@ svg { flex-shrink: 0; }
 .hero__layout .hero__content .hero__actions { justify-content: center; }
 .hero__layout .hero__content .hero__stats   { justify-content: center; }
 
-/* ---- Home Hero Medicine Orbital ---- */
+/* ================================================================
+   360° PHARMA ORBITAL  –  hero section
+   Batla Medicos logo at centre, 3 concentric circular rings,
+   6 pharma icons orbiting in full 360° (rotate+translateX)
+   ================================================================ */
 .hero-orbital {
-  width: 280px;
-  height: 280px;
+  width: 300px;
+  height: 300px;
   position: relative;
   flex-shrink: 0;
-  perspective: 700px;
-  transform-origin: top center;
 }
-.hero-orbital__core {
+/* Circular track rings (visual guides) */
+.orbit-track {
   position: absolute;
   top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100px; height: 100px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(192,57,43,0.45) 0%, rgba(27,136,67,0.3) 60%, transparent 100%);
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(255,255,255,0.55);
-  display: flex; align-items: center; justify-content: center;
-  box-shadow:
-    0 0 0 8px rgba(192,57,43,0.08),
-    0 0 40px rgba(255,255,255,0.2),
-    0 0 80px rgba(192,57,43,0.28);
-  animation: hero-core-pulse 3s ease-in-out infinite;
-  z-index: 5;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
 }
-@keyframes hero-core-pulse {
+.orbit-track--1 {
+  width: 252px; height: 252px;
+  border: 1.5px dashed rgba(255,255,255,0.22);
+}
+.orbit-track--2 {
+  width: 178px; height: 178px;
+  border: 1.5px dashed rgba(74,222,128,0.32);
+}
+.orbit-track--3 {
+  width: 106px; height: 106px;
+  border: 1.5px dashed rgba(252,129,129,0.35);
+}
+
+/* Centre logo disc */
+.orbit-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 90px; height: 90px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #fff;
+  overflow: hidden;
+  border: 3px solid rgba(255,255,255,0.9);
+  box-shadow:
+    0 0 0 6px rgba(192,57,43,0.18),
+    0 0 32px rgba(192,57,43,0.45),
+    0 0 60px rgba(27,136,67,0.22),
+    0 8px 28px rgba(0,0,0,0.5);
+  animation: logo-glow 3s ease-in-out infinite;
+  z-index: 10;
+}
+.orbit-center__img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+@keyframes logo-glow {
   0%,100% {
     box-shadow:
-      0 0 0 6px rgba(192,57,43,0.1),
-      0 0 35px rgba(255,255,255,0.16),
-      0 0 70px rgba(192,57,43,0.2);
+      0 0 0 5px rgba(192,57,43,0.15),
+      0 0 26px rgba(192,57,43,0.4),
+      0 8px 28px rgba(0,0,0,0.45);
   }
   50% {
     box-shadow:
-      0 0 0 14px rgba(27,136,67,0.12),
-      0 0 65px rgba(255,255,255,0.32),
-      0 0 120px rgba(27,136,67,0.25);
+      0 0 0 11px rgba(27,136,67,0.12),
+      0 0 50px rgba(27,136,67,0.38),
+      0 8px 28px rgba(0,0,0,0.38);
   }
 }
 
-/* Orbital rings */
-.hero-orbital__ring {
+/* ── Orbit arms: zero-size pivot at centre, CSS rotation drives 360° ── */
+/* Technique: rotate(θ) translateX(r) puts dot on circle of radius r at angle θ */
+.orbit-arm {
   position: absolute;
   top: 50%; left: 50%;
-  border-radius: 50%;
-  border: 1.5px solid rgba(255,255,255,0.3);
-  transform-style: preserve-3d;
+  width: 0; height: 0;
+  transform-origin: 0 0;
 }
-.hero-orbital__ring--1 {
-  width: 260px; height: 100px;
-  margin: -50px 0 0 -130px;
-  animation: hero-orbit-1 5s linear infinite;
-  border-color: rgba(255,255,255,0.42);
-  box-shadow: 0 0 18px rgba(255,255,255,0.07), 0 0 6px rgba(255,255,255,0.15) inset;
-}
-.hero-orbital__ring--2 {
-  width: 200px; height: 76px;
-  margin: -38px 0 0 -100px;
-  animation: hero-orbit-2 7.5s linear infinite reverse;
-  border-color: rgba(74,222,128,0.55);
-  box-shadow: 0 0 18px rgba(74,222,128,0.1), 0 0 6px rgba(74,222,128,0.2) inset;
-}
-.hero-orbital__ring--3 {
-  width: 148px; height: 56px;
-  margin: -28px 0 0 -74px;
-  animation: hero-orbit-3 10s linear infinite;
-  border-color: rgba(252,129,129,0.5);
-  box-shadow: 0 0 18px rgba(252,129,129,0.1), 0 0 6px rgba(252,129,129,0.2) inset;
-}
-@keyframes hero-orbit-1 {
-  from { transform: rotateX(68deg) rotateZ(0deg); }
-  to   { transform: rotateX(68deg) rotateZ(360deg); }
-}
-@keyframes hero-orbit-2 {
-  from { transform: rotateX(68deg) rotateZ(0deg); }
-  to   { transform: rotateX(68deg) rotateZ(360deg); }
-}
-@keyframes hero-orbit-3 {
-  from { transform: rotateX(68deg) rotateZ(0deg); }
-  to   { transform: rotateX(68deg) rotateZ(360deg); }
-}
+.orbit-arm--r1 { animation: full-cw  7s  linear infinite; }
+.orbit-arm--r2 { animation: full-ccw 10s linear infinite; }
+.orbit-arm--r3 { animation: full-cw  5s  linear infinite; }
+@keyframes full-cw  { to { transform: rotate( 360deg); } }
+@keyframes full-ccw { to { transform: rotate(-360deg); } }
 
-/* Icons on rings */
-.hero-orbital__icon {
+/* Icon dots */
+.orbit-dot {
   position: absolute;
-  top: 50%; left: 0;
-  transform: translateY(-50%) translateX(-50%);
   width: 38px; height: 38px;
+  top: -19px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.2);
-  backdrop-filter: blur(6px);
-  border: 1.5px solid rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255,255,255,0.45);
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 0 16px rgba(255,255,255,0.3), 0 2px 10px rgba(0,0,0,0.25);
+  box-shadow: 0 0 14px rgba(255,255,255,0.22), 0 2px 10px rgba(0,0,0,0.35);
 }
-.hero-orbital__icon--1  { left: 0%;   top: 50%; }
-.hero-orbital__icon--1b { left: 100%; top: 50%; }
-.hero-orbital__icon--2  { left: 0%;   top: 50%; background: rgba(74,222,128,0.18); border-color: rgba(74,222,128,0.55); box-shadow: 0 0 16px rgba(74,222,128,0.3), 0 2px 10px rgba(0,0,0,0.2); }
-.hero-orbital__icon--2b { left: 100%; top: 50%; background: rgba(252,129,129,0.18); border-color: rgba(252,129,129,0.55); box-shadow: 0 0 16px rgba(252,129,129,0.3), 0 2px 10px rgba(0,0,0,0.2); }
-.hero-orbital__icon--3  { left: 0%;   top: 50%; }
-.hero-orbital__icon--3b { left: 100%; top: 50%; background: rgba(255,220,100,0.15); border-color: rgba(255,220,100,0.5); box-shadow: 0 0 16px rgba(255,220,100,0.25), 0 2px 10px rgba(0,0,0,0.2); }
-
-/* ================================================================
-   3-D PHARMA CAPSULE  (hero orbital core)
-   ================================================================ */
-.pharma-capsule {
-  width: 72px;
-  height: 30px;
-  border-radius: 15px;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  /* 3D tilt — perspective gives depth illusion */
-  transform: perspective(320px) rotateX(24deg) rotateY(-16deg) rotateZ(-10deg);
-  animation: capsule-float 3.6s ease-in-out infinite;
-  box-shadow:
-    0 10px 32px rgba(0,0,0,0.6),
-    0 4px 12px rgba(0,0,0,0.35),
-    0 0 0 1.5px rgba(255,255,255,0.22),
-    inset 0 1px 4px rgba(255,255,255,0.3);
-}
-.pharma-capsule__half {
-  flex: 1;
-  height: 100%;
-}
-/* Left half — brand crimson */
-.pharma-capsule__half--l {
-  background: linear-gradient(155deg, #F1948A 0%, #E74C3C 28%, #C0392B 62%, #7B241C 100%);
-}
-/* Right half — brand green */
-.pharma-capsule__half--r {
-  background: linear-gradient(155deg, #58D68D 0%, #27AE60 28%, #1E8449 62%, #0E6630 100%);
-}
-/* Top gloss highlight */
-.pharma-capsule__gloss {
-  position: absolute;
-  top: 4px; left: 10%; right: 10%;
-  height: 8px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.58) 0%, rgba(255,255,255,0.0) 100%);
-  border-radius: 50%;
-  pointer-events: none;
-}
-/* Bottom rim shadow */
-.pharma-capsule__gloss--bot {
-  top: auto; bottom: 3px;
-  height: 5px;
-  background: linear-gradient(0deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.0) 100%);
-}
-/* Centre seam glow — the join line between the two halves */
-.pharma-capsule__seam {
-  position: absolute;
-  top: 0; bottom: 0; left: 50%;
-  width: 2px; margin-left: -1px;
-  background: rgba(255,255,255,0.6);
-  box-shadow: 0 0 8px rgba(255,255,255,0.7), 0 0 18px rgba(255,255,255,0.25);
-}
-@keyframes capsule-float {
-  0%   { transform: perspective(320px) rotateX(24deg) rotateY(-16deg) rotateZ(-10deg) translateY(0);    }
-  38%  { transform: perspective(320px) rotateX(20deg) rotateY(-20deg) rotateZ(-7deg)  translateY(-6px); }
-  68%  { transform: perspective(320px) rotateX(27deg) rotateY(-12deg) rotateZ(-13deg) translateY(-3px); }
-  100% { transform: perspective(320px) rotateX(24deg) rotateY(-16deg) rotateZ(-10deg) translateY(0);    }
-}
-
-/* ================================================================
-   PHARMA ATOM DECORATION  (spinning atomic electron rings behind capsule)
-   ================================================================ */
-.pharma-atom {
-  position: absolute;
-  top: 50%; left: 50%;
-  width: 240px; height: 240px;
-  margin: -120px 0 0 -120px;
-  pointer-events: none;
-  z-index: 1;
-}
-.pharma-atom__ring {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.1);
-}
-.pharma-atom__ring--a {
-  border-color: rgba(192,57,43,0.28);
-  transform: rotateX(70deg) rotateZ(0deg);
-  animation: atom-spin-a 12s linear infinite;
-  box-shadow: 0 0 12px rgba(192,57,43,0.12) inset;
-}
-.pharma-atom__ring--b {
-  border-color: rgba(30,132,73,0.28);
-  transform: rotateX(70deg) rotateZ(60deg);
-  animation: atom-spin-b 18s linear infinite reverse;
-  box-shadow: 0 0 12px rgba(30,132,73,0.12) inset;
-}
-.pharma-atom__ring--c {
-  border-color: rgba(255,255,255,0.14);
-  transform: rotateX(70deg) rotateZ(120deg);
-  animation: atom-spin-c 24s linear infinite;
-}
-.pharma-atom__nucleus {
-  position: absolute;
-  top: 50%; left: 50%;
-  width: 8px; height: 8px;
-  margin: -4px 0 0 -4px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.15) 100%);
-  box-shadow: 0 0 12px rgba(255,255,255,0.5), 0 0 24px rgba(192,57,43,0.4);
-  animation: nucleus-pulse 2.8s ease-in-out infinite;
-}
-@keyframes atom-spin-a {
-  from { transform: rotateX(70deg) rotateZ(0deg);   }
-  to   { transform: rotateX(70deg) rotateZ(360deg); }
-}
-@keyframes atom-spin-b {
-  from { transform: rotateX(70deg) rotateZ(60deg);  }
-  to   { transform: rotateX(70deg) rotateZ(420deg); }
-}
-@keyframes atom-spin-c {
-  from { transform: rotateX(70deg) rotateZ(120deg); }
-  to   { transform: rotateX(70deg) rotateZ(480deg); }
-}
-@keyframes nucleus-pulse {
-  0%,100% { transform: scale(1);   opacity: 0.8; }
-  50%     { transform: scale(1.6); opacity: 1;   }
-}
+.orbit-arm--r1 .orbit-dot { left: calc(125px - 19px); }
+.orbit-arm--r2 .orbit-dot { left: calc(88px  - 19px); }
+.orbit-arm--r3 .orbit-dot { left: calc(52px  - 19px); }
+/* Colour variants */
+.orbit-dot--red    { background: rgba(252,129,129,0.2); border-color: rgba(252,129,129,0.55); box-shadow: 0 0 14px rgba(252,129,129,0.32), 0 2px 10px rgba(0,0,0,0.3); }
+.orbit-dot--green  { background: rgba(74,222,128,0.18); border-color: rgba(74,222,128,0.55);  box-shadow: 0 0 14px rgba(74,222,128,0.32),  0 2px 10px rgba(0,0,0,0.3); }
+.orbit-dot--blue   { background: rgba(147,197,253,0.18);border-color: rgba(147,197,253,0.55); box-shadow: 0 0 14px rgba(147,197,253,0.32), 0 2px 10px rgba(0,0,0,0.3); }
+.orbit-dot--yellow { background: rgba(253,230,138,0.16);border-color: rgba(253,230,138,0.5);  box-shadow: 0 0 14px rgba(253,230,138,0.28), 0 2px 10px rgba(0,0,0,0.3); }
 
 /* ---- Floating Particle Crosses ---- */
 .hero__particles {
