@@ -123,4 +123,26 @@ router.delete('/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })]
   } catch (err) { next(err); }
 });
 
+// PUT /categories/:id/reassign  — move all products from this category to targetId before delete
+router.put('/:id/reassign', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+
+    const { targetId } = req.body;
+    if (!targetId) return res.status(400).json({ message: 'targetId is required.' });
+
+    const [targetRow] = await query(
+      'SELECT id FROM categories WHERE id = ? AND is_deleted = 0 LIMIT 1', [targetId]
+    );
+    if (!targetRow) return res.status(404).json({ message: 'Target category not found.' });
+
+    await execute(
+      'UPDATE products SET category_id = ? WHERE category_id = ? AND is_deleted = 0',
+      [targetId, req.params.id]
+    );
+    res.json({ message: 'Products reassigned.' });
+  } catch (err) { next(err); }
+});
+
 module.exports = router;
