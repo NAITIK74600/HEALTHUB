@@ -696,7 +696,7 @@ svg { flex-shrink: 0; }
    HERO  —  HCI: Clear value proposition, strong CTA
    ================================================================ */
 .hero {
-  background: linear-gradient(135deg, #7B0D1E 0%, #C0392B 40%, #1E8449 100%);
+  background: linear-gradient(135deg, #0A2463 0%, #1B4D8E 25%, #1E6F5C 55%, #29BB89 100%);
   position: relative;
   overflow: hidden;
   padding: 80px 0;
@@ -709,16 +709,16 @@ svg { flex-shrink: 0; }
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 75% 50%, rgba(30,132,73,0.4) 0%, transparent 60%),
-    radial-gradient(circle at 20% 80%, rgba(192,57,43,0.3) 0%, transparent 50%);
+    radial-gradient(circle at 75% 50%, rgba(30,111,92,0.45) 0%, transparent 60%),
+    radial-gradient(circle at 20% 80%, rgba(10,36,99,0.4) 0%, transparent 50%);
 }
-/* Decorative medical cross pattern */
+/* Decorative medical cross + pill pattern */
 .hero::after {
-  content: '+  +  +  +  +  +  +  +  +  +  +  +  +  +  +  +  +  +  +  +';
+  content: '+  ●  +  ●  +  ●  +  ●  +  ●  +  ●  +  ●  +  ●  +  ●  +  ●';
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  font-size: 28px;
-  color: rgba(255,255,255,0.04);
+  font-size: 24px;
+  color: rgba(255,255,255,0.03);
   line-height: 60px;
   letter-spacing: 50px;
   overflow: hidden;
@@ -756,8 +756,9 @@ svg { flex-shrink: 0; }
   margin-bottom: 16px;
   letter-spacing: -1px;
 }
-.hero__content h1 .red {
-  background: linear-gradient(90deg, #FFE066 0%, #A8E6CF 100%);
+.hero__content h1 .red,
+.hero__content h1 .hero__accent {
+  background: linear-gradient(90deg, #4ade80 0%, #93C5FD 50%, #FFFFFF 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -3221,7 +3222,7 @@ svg { flex-shrink: 0; }
 
 /* Compact map strip — ~20% of old card height */
 .map-strip {
-  background: linear-gradient(135deg, #1B5E20 0%, #1B8843 100%);
+  background: linear-gradient(135deg, #0A2463 0%, #1E6F5C 100%);
   padding: 0;
 }
 .map-strip__inner {
@@ -6730,61 +6731,81 @@ svg { flex-shrink: 0; }
 }
 .orbit-track--2 {
   width: 178px; height: 178px;
-  border: 1.5px dashed rgba(74,222,128,0.32);
+  border: 1.5px dashed rgba(147,197,253,0.35);
 }
 .orbit-track--3 {
   width: 106px; height: 106px;
-  border: 1.5px dashed rgba(252,129,129,0.35);
+  border: 1.5px dashed rgba(74,222,128,0.35);
 }
 
-/* Centre BM brand mark */
+/* Centre BM brand mark with medical cross */
 .orbit-center {
   position: absolute;
   top: 50%; left: 50%;
   width: 90px; height: 90px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: linear-gradient(145deg, #5c0a15 0%, #C0392B 48%, #0a3d1f 100%);
+  background: linear-gradient(145deg, #0A2463 0%, #1E6F5C 48%, #29BB89 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2.5px solid rgba(255,255,255,0.22);
+  border: 2.5px solid rgba(255,255,255,0.25);
   box-shadow:
-    0 0 0 5px rgba(192,57,43,0.2),
-    0 0 30px rgba(192,57,43,0.55),
-    0 0 60px rgba(27,136,67,0.22),
+    0 0 0 5px rgba(30,111,92,0.2),
+    0 0 30px rgba(41,187,137,0.55),
+    0 0 60px rgba(10,36,99,0.22),
     0 6px 26px rgba(0,0,0,0.55),
     inset 0 1px 0 rgba(255,255,255,0.12);
   animation: logo-glow 3s ease-in-out infinite;
   z-index: 10;
   overflow: visible;
 }
-/* BM text with gold→white→mint gradient */
+/* Glowing medical cross behind BM text */
+.orbit-center__cross {
+  position: absolute;
+  font-size: 52px;
+  font-weight: 900;
+  color: transparent;
+  background: linear-gradient(135deg, rgba(74,222,128,0.5) 0%, rgba(147,197,253,0.5) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: blur(3px);
+  animation: cross-pulse 2.5s ease-in-out infinite;
+  pointer-events: none;
+  user-select: none;
+}
+@keyframes cross-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.15); }
+}
+/* BM text with blue→white→green gradient */
 .orbit-center__bm {
   font-size: 28px;
   font-weight: 900;
   letter-spacing: 2px;
   font-family: Georgia, 'Times New Roman', serif;
   line-height: 1;
-  background: linear-gradient(135deg, #FFD700 0%, #FFFFFF 45%, #86EFAC 100%);
+  background: linear-gradient(135deg, #93C5FD 0%, #FFFFFF 45%, #4ade80 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 8px rgba(255,215,0,0.55)) drop-shadow(0 1px 3px rgba(0,0,0,0.4));
+  filter: drop-shadow(0 0 8px rgba(147,197,253,0.55)) drop-shadow(0 1px 3px rgba(0,0,0,0.4));
   user-select: none;
   pointer-events: none;
+  position: relative;
+  z-index: 2;
 }
 @keyframes logo-glow {
   0%,100% {
     box-shadow:
-      0 0 0 5px rgba(192,57,43,0.15),
-      0 0 26px rgba(192,57,43,0.4),
+      0 0 0 5px rgba(30,111,92,0.15),
+      0 0 26px rgba(41,187,137,0.4),
       0 8px 28px rgba(0,0,0,0.45);
   }
   50% {
     box-shadow:
-      0 0 0 11px rgba(27,136,67,0.12),
-      0 0 50px rgba(27,136,67,0.38),
+      0 0 0 11px rgba(10,36,99,0.12),
+      0 0 50px rgba(147,197,253,0.38),
       0 8px 28px rgba(0,0,0,0.38);
   }
 }
@@ -6821,6 +6842,7 @@ svg { flex-shrink: 0; }
 .orbit-arm--r3 .orbit-dot { left: calc(52px  - 19px); }
 /* Colour variants */
 .orbit-dot--red    { background: rgba(252,129,129,0.2); border-color: rgba(252,129,129,0.55); box-shadow: 0 0 14px rgba(252,129,129,0.32), 0 2px 10px rgba(0,0,0,0.3); }
+.orbit-dot--cyan   { background: rgba(34,211,238,0.18); border-color: rgba(34,211,238,0.5); box-shadow: 0 0 14px rgba(34,211,238,0.3), 0 2px 10px rgba(0,0,0,0.3); }
 .orbit-dot--green  { background: rgba(74,222,128,0.18); border-color: rgba(74,222,128,0.55);  box-shadow: 0 0 14px rgba(74,222,128,0.32),  0 2px 10px rgba(0,0,0,0.3); }
 .orbit-dot--blue   { background: rgba(147,197,253,0.18);border-color: rgba(147,197,253,0.55); box-shadow: 0 0 14px rgba(147,197,253,0.32), 0 2px 10px rgba(0,0,0,0.3); }
 .orbit-dot--yellow { background: rgba(253,230,138,0.16);border-color: rgba(253,230,138,0.5);  box-shadow: 0 0 14px rgba(253,230,138,0.28), 0 2px 10px rgba(0,0,0,0.3); }
@@ -9999,12 +10021,12 @@ input:focus, select:focus, textarea:focus {
 ═══════════════════════════════════════════════════════════════ */
 .deal-section { padding: 28px 0; }
 .deal-card {
-  background: linear-gradient(135deg, #C0392B 0%, #922B21 55%, #6E0F0F 100%);
+  background: linear-gradient(135deg, #0A2463 0%, #1B4D8E 40%, #1E6F5C 80%, #29BB89 100%);
   border-radius: 20px;
   padding: 32px 36px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(192,57,43,0.35);
+  box-shadow: 0 8px 32px rgba(10,36,99,0.35);
   animation: fadeInUp 0.5s ease both;
 }
 .deal-card::before {
@@ -10379,14 +10401,14 @@ input:focus, select:focus, textarea:focus {
 .hero__shape--1 {
   width: 120px; height: 120px;
   top: 10%; right: 8%;
-  background: radial-gradient(circle, rgba(255,215,0,0.6), transparent 70%);
+  background: radial-gradient(circle, rgba(147,197,253,0.5), transparent 70%);
   animation-delay: 0s;
   animation-duration: 7s;
 }
 .hero__shape--2 {
   width: 80px; height: 80px;
   top: 60%; left: 5%;
-  background: radial-gradient(circle, rgba(168,230,207,0.6), transparent 70%);
+  background: radial-gradient(circle, rgba(74,222,128,0.5), transparent 70%);
   border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
   animation-delay: -2s;
   animation-duration: 9s;
@@ -10394,7 +10416,7 @@ input:focus, select:focus, textarea:focus {
 .hero__shape--3 {
   width: 60px; height: 60px;
   bottom: 15%; right: 15%;
-  background: radial-gradient(circle, rgba(192,57,43,0.4), transparent 70%);
+  background: radial-gradient(circle, rgba(34,211,238,0.35), transparent 70%);
   border-radius: 50% 20% 50% 20%;
   animation-delay: -4s;
   animation-duration: 6s;
@@ -10402,7 +10424,7 @@ input:focus, select:focus, textarea:focus {
 .hero__shape--4 {
   width: 90px; height: 90px;
   top: 25%; left: 18%;
-  background: radial-gradient(circle, rgba(255,255,255,0.15), transparent 70%);
+  background: radial-gradient(circle, rgba(255,255,255,0.12), transparent 70%);
   border-radius: 20% 80% 20% 80%;
   animation-delay: -1s;
   animation-duration: 10s;
@@ -10410,7 +10432,7 @@ input:focus, select:focus, textarea:focus {
 .hero__shape--5 {
   width: 50px; height: 50px;
   top: 45%; right: 25%;
-  background: radial-gradient(circle, rgba(147,51,234,0.3), transparent 70%);
+  background: radial-gradient(circle, rgba(41,187,137,0.35), transparent 70%);
   border-radius: 70% 30%;
   animation-delay: -3s;
   animation-duration: 8s;
@@ -10804,5 +10826,177 @@ input:focus, select:focus, textarea:focus {
     transform: translateY(-3px) scale(1.03) !important;
   }
   .deal-card::after { display: none; }
+}
+
+/* ================================================================
+   3D PARALLAX LANDING PAGE - PREMIUM MEDICAL THEME
+   ================================================================ */
+
+/* ── Hero heartbeat SVG background ── */
+.hero__heartbeat {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 120px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.5;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Extra hero particles for denser effect ── */
+.hero__particle--9  { left: 55%; width: 16px; height: 16px; animation-duration: 12s; animation-delay: -6s; }
+.hero__particle--10 { left: 82%; width: 12px; height: 12px; animation-duration: 8s;  animation-delay: -1s; }
+
+/* ── Hero subtitle styling ── */
+.hero__subtitle {
+  font-size: clamp(14px, 2vw, 17px);
+  opacity: 0.88;
+  margin-bottom: 32px;
+  letter-spacing: 0.5px;
+}
+
+/* ── Glow CTA Button ── */
+.btn--glow {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+.btn--glow:hover {
+  transform: scale(1.07) !important;
+  box-shadow: 0 0 20px rgba(41,187,137,0.5), 0 0 40px rgba(41,187,137,0.25), 0 8px 32px rgba(0,0,0,0.2) !important;
+}
+.btn--glow::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%);
+  transform: translateX(-100%);
+  transition: none;
+}
+.btn--glow:hover::after {
+  animation: btn-shine 0.6s ease forwards;
+}
+@keyframes btn-shine {
+  to { transform: translateX(100%); }
+}
+
+/* ── Why Choose parallax background ── */
+.why-section--parallax {
+  position: relative;
+  overflow: hidden;
+}
+.why-section__bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(10,36,99,0.04) 0%, rgba(30,111,92,0.06) 50%, rgba(41,187,137,0.04) 100%);
+  z-index: 0;
+}
+.why-section--parallax .why-card {
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(30,111,92,0.08);
+}
+
+/* ================================================================
+   TESTIMONIALS SECTION
+   ================================================================ */
+.testimonials-section {
+  background: linear-gradient(180deg, #F8FAFC 0%, #EFF6FF 50%, #F0FDF4 100%);
+  padding: 60px 0;
+}
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 24px;
+}
+.testimonial-card {
+  background: white;
+  border-radius: 16px;
+  padding: 28px 24px 22px;
+  position: relative;
+  border: 1px solid rgba(30,111,92,0.08);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.05);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s;
+  animation: testimonial-in 0.6s ease both;
+}
+.testimonial-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 16px 48px rgba(10,36,99,0.1), 0 4px 12px rgba(30,111,92,0.08);
+}
+@keyframes testimonial-in {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.testimonial-card__quote {
+  color: rgba(30,111,92,0.15);
+  margin-bottom: 12px;
+}
+.testimonial-card__text {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-secondary, #475569);
+  margin: 0 0 20px;
+  min-height: 70px;
+}
+.testimonial-card__footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.testimonial-card__avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0A2463, #1E6F5C);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.testimonial-card__name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary, #1E293B);
+}
+.testimonial-card__stars {
+  display: flex;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+/* ── Scroll-triggered reveal animations ── */
+.testimonial-card:nth-child(1) { animation-delay: 0.1s; }
+.testimonial-card:nth-child(2) { animation-delay: 0.2s; }
+.testimonial-card:nth-child(3) { animation-delay: 0.3s; }
+.testimonial-card:nth-child(4) { animation-delay: 0.4s; }
+.testimonial-card:nth-child(5) { animation-delay: 0.5s; }
+.testimonial-card:nth-child(6) { animation-delay: 0.6s; }
+
+/* ── Testimonials responsive ── */
+@media (max-width: 900px) {
+  .testimonials-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .testimonials-grid { grid-template-columns: 1fr; }
+  .testimonials-section { padding: 40px 0; }
+}
+
+/* ── Enhanced section transitions ── */
+.section,
+.trust-strip,
+.testimonials-section,
+.deal-section,
+.map-strip-wrap {
+  will-change: opacity;
 }
 
