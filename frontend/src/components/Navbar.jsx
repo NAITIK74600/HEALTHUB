@@ -21,7 +21,7 @@ export default function Navbar() {
       <div className="topbar">
         <span className="topbar__item"><Truck size={13} /> Free Delivery above ₹499</span>
         <span className="topbar__divider" />
-        <span className="topbar__item"><Clock size={13} /> Open 9 AM – 9:30 PM daily</span>
+        <span className="topbar__item"><Clock size={13} /> Open 9 AM – 11:45 PM daily</span>
         <span className="topbar__divider" />
         <a
           href={`https://wa.me/${WHATSAPP}`}

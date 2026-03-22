@@ -59,7 +59,7 @@ const RULES = [
   {
     patterns: [/\b(timing|time|hours|open|close|kab|schedule|baje|खुलना|बंद)\b/i],
     replies: [
-      '🕐 **Store Timings:**\n**Mon–Sat:** 9:00 AM – 10:00 PM\n**Sunday:** 10:00 AM – 8:00 PM\n\nFor medicines, prescriptions, and urgent needs — you can also order online at batlamedicos.shop for home delivery! 🚚',
+      '🕐 **Store Timings:**\n**Mon–Sun:** 9:00 AM – 11:45 PM\n\nWe are open all 7 days! For medicines, prescriptions, and urgent needs — you can also order online at batlamedicos.shop for home delivery! 🚚',
     ],
   },
   // ── Contact / phone ────────────────────────────────────────────────────────

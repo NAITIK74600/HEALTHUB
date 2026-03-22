@@ -46,6 +46,7 @@ const SLOTS = [
   '2:00 PM - 4:00 PM',
   '4:00 PM - 6:00 PM',
   '6:00 PM - 9:00 PM',
+  '9:00 PM - 11:45 PM',
 ];
 
 const checkoutSchema = z.object({

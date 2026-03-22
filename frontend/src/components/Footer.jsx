@@ -71,8 +71,8 @@ export default function Footer() {
           <div className="footer__hours">
             <Clock size={14} />
             <div>
-              <div className="footer__hours-row"><span>Mon – Sat</span><span>9:00 AM – 9:30 PM</span></div>
-              <div className="footer__hours-row"><span>Sunday</span><span>9:00 AM – 9:30 PM</span></div>
+              <div className="footer__hours-row"><span>Mon – Sat</span><span>9:00 AM – 11:45 PM</span></div>
+              <div className="footer__hours-row"><span>Sunday</span><span>9:00 AM – 11:45 PM</span></div>
             </div>
           </div>
           <a href={GOOGLE_MAPS_URL} target="_blank" rel="noopener noreferrer" className="footer__map-link">
