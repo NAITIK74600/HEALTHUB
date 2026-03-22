@@ -1344,7 +1344,24 @@ router.get('/:slug', [param('slug').trim().isLength({ min: 1, max: 220 })], asyn
       [req.params.slug]
     );
     if (!rows.length) return res.status(404).json({ message: 'Product not found.' });
-    res.json(mapProduct(rows[0]));
+
+    const product = mapProduct(rows[0]);
+
+    // Attach brand media if product has a brand
+    if (rows[0].brand) {
+      const brandRows = await query(
+        'SELECT media_json FROM brands WHERE name = ? AND is_active = 1 LIMIT 1',
+        [rows[0].brand]
+      );
+      if (brandRows.length && brandRows[0].media_json) {
+        try {
+          const raw = brandRows[0].media_json;
+          product.brandMedia = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        } catch { product.brandMedia = []; }
+      }
+    }
+
+    res.json(product);
   } catch (err) { next(err); }
 });
 

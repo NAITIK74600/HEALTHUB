@@ -9,6 +9,7 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { trackViewItem, trackAddToCart } from '../utils/analytics';
+import { flyToCart } from '../utils/flyToCart';
 import toast from 'react-hot-toast';
 import ProductCard from '../components/ProductCard';
 
@@ -363,6 +364,8 @@ export default function ProductDetail() {
                 className={`btn btn--primary pd-add-cart${cartAdded ? ' pd-add-cart--added' : ''}`}
                 disabled={product.stock === 0}
                 onClick={() => {
+                  const imgEl = document.querySelector('.pd-gallery__img, .pd-gallery .medicine-image');
+                  if (imgEl) flyToCart(imgEl);
                   addItem(product, qty);
                   setCartAdded(true);
                   setTimeout(() => setCartAdded(false), 1200);
@@ -373,6 +376,30 @@ export default function ProductDetail() {
               </button>
             </div>
           </div>
+
+        {/* Brand Media — promotional images & videos */}
+        {product.brandMedia?.length > 0 && (
+          <section className="brand-media-section">
+            <h2>{product.brand} — Promotional Media</h2>
+            <div className="brand-media-grid">
+              {product.brandMedia.map((m, i) => (
+                <div className="brand-media-item" key={i}>
+                  {m.type === 'video' ? (
+                    <video
+                      src={m.url}
+                      controls
+                      preload="metadata"
+                      className="brand-media-item__video"
+                      playsInline
+                    />
+                  ) : (
+                    <img src={m.url} alt={`${product.brand} media ${i + 1}`} className="brand-media-item__img" loading="lazy" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Related Products */}
         {related.brandRelated.length > 0 && (

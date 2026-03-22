@@ -71,6 +71,8 @@ export default function AdminProducts() {
   const [existingImages, setExistingImages] = useState([]);
   const [removeImages,   setRemoveImages]   = useState([]);
   const [showForm,       setShowForm]       = useState(false);
+  const [formImageUrls,  setFormImageUrls]  = useState([]);   // URLs added via paste in form
+  const [formImageUrl,   setFormImageUrl]   = useState('');    // current URL input
 
   /* ── Import ── */
   const [importing,       setImporting]       = useState(false);
@@ -83,7 +85,7 @@ export default function AdminProducts() {
   const [uploadingFor,  setUploadingFor] = useState(null);
 
   /* ── Image URL modal ── */
-  const [urlModal, setUrlModal] = useState({ open: false, productId: null, url: '' });
+  const [urlModal, setUrlModal] = useState({ open: false, productId: null, url: '', urls: [] });
 
   /* ── Quick stock ── */
   const [stockEdit, setStockEdit] = useState({});
@@ -290,7 +292,7 @@ export default function AdminProducts() {
       else         { const res = await createProduct(formPayload); toast.success('Product created.'); productId = res.data._id; }
 
       // Handle image changes via dedicated image endpoint
-      if (productId && (images.length > 0 || removeImages.length > 0)) {
+      if (productId && (images.length > 0 || removeImages.length > 0 || formImageUrls.length > 0)) {
         const uploadedUrls = [];
         for (const img of images) {
           try {
@@ -302,16 +304,18 @@ export default function AdminProducts() {
           }
         }
 
+        const allNewUrls = [...uploadedUrls, ...formImageUrls];
         const imgPayload = {};
-        if (uploadedUrls.length > 0) imgPayload.imageUrls = uploadedUrls;
+        if (allNewUrls.length > 0) imgPayload.imageUrls = allNewUrls;
         if (removeImages.length > 0) imgPayload.removeImages = removeImages;
-        if (editing && uploadedUrls.length > 0) imgPayload.mode = 'replace';
+        if (editing && allNewUrls.length > 0) imgPayload.mode = 'replace';
 
         if (Object.keys(imgPayload).length > 0) {
           await updateProductImages(productId, imgPayload);
         }
       }
       setForm(EMPTY); setImages([]); setImgPreviews([]); setExistingImages([]); setRemoveImages([]);
+      setFormImageUrls([]); setFormImageUrl('');
       setEditing(null); setShowForm(false);
       refresh();
     } catch (err) { toast.error(err.response?.data?.message || 'Save failed.'); }
@@ -381,6 +385,7 @@ export default function AdminProducts() {
     setEditing(p._id);
     setForm({ name: p.name, category: p.category?._id || '', secondaryCategoryIds: (p.secondaryCategoryIds || []).map(String), brand: p.brand || '', company: p.company || '', salt: p.salt || '', description: p.description || '', mrp: p.mrp, price: p.price, stock: p.stock, requiresPrescription: p.requiresPrescription });
     setImages([]); setImgPreviews([]); setExistingImages(p.images || []); setRemoveImages([]);
+    setFormImageUrls([]); setFormImageUrl('');
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -421,14 +426,18 @@ export default function AdminProducts() {
   };
 
   const handleImageUrl = async () => {
-    const { productId, url } = urlModal;
-    if (!url.trim()) { toast.error('Enter a valid URL.'); return; }
-    if (!/^https?:\/\//i.test(url.trim())) { toast.error('URL must start with http:// or https://'); return; }
+    const { productId, url, urls } = urlModal;
+    // Collect all URLs (current input + queued ones)
+    const allUrls = [...(urls || [])];
+    if (url.trim() && /^https?:\/\//i.test(url.trim())) allUrls.push(url.trim());
+    const unique = [...new Set(allUrls)];
+    if (!unique.length) { toast.error('Enter at least one valid URL.'); return; }
     try {
-      const { data } = await updateProductImages(productId, { imageUrl: url.trim() });
-      setProducts(prev => prev.map(p => p._id === productId ? { ...p, images: data.images || [url.trim()] } : p));
-      toast.success('Image URL added!');
-      setUrlModal({ open: false, productId: null, url: '' });
+      const payload = unique.length === 1 ? { imageUrl: unique[0] } : { imageUrls: unique };
+      const { data } = await updateProductImages(productId, payload);
+      setProducts(prev => prev.map(p => p._id === productId ? { ...p, images: data.images || unique } : p));
+      toast.success(`${unique.length} image${unique.length > 1 ? 's' : ''} added!`);
+      setUrlModal({ open: false, productId: null, url: '', urls: [] });
     } catch (err) {
       const status = err.response?.status || 'network';
       const msg = err.response?.data?.message || err.message;
@@ -461,7 +470,7 @@ export default function AdminProducts() {
             <Upload size={16} /> {importing ? 'Importing...' : 'Import CSV/Excel'}
           </button>
           <input ref={csvInputRef} type="file" accept=".xlsx,.xls,.csv" style={{ display: 'none' }} onChange={handleExcelImport} />
-          <button className="btn btn--primary" onClick={() => { setShowForm(!showForm); setEditing(null); setForm(EMPTY); setExistingImages([]); setRemoveImages([]); setImages([]); setImgPreviews([]); }}>
+          <button className="btn btn--primary" onClick={() => { setShowForm(!showForm); setEditing(null); setForm(EMPTY); setExistingImages([]); setRemoveImages([]); setImages([]); setImgPreviews([]); setFormImageUrls([]); setFormImageUrl(''); }}>
             <Plus size={16} /> {showForm && !editing ? 'Cancel' : 'Add Product'}
           </button>
         </div>
@@ -535,38 +544,71 @@ export default function AdminProducts() {
 
       {/* ── Image URL Modal ── */}
       {urlModal.open && (
-        <div className="import-modal-overlay" onClick={() => setUrlModal({ open: false, productId: null, url: '' })}>
-          <div className="import-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
-            <button className="import-modal__close" onClick={() => setUrlModal({ open: false, productId: null, url: '' })}><X size={18} /></button>
+        <div className="import-modal-overlay" onClick={() => setUrlModal({ open: false, productId: null, url: '', urls: [] })}>
+          <div className="import-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 520 }}>
+            <button className="import-modal__close" onClick={() => setUrlModal({ open: false, productId: null, url: '', urls: [] })}><X size={18} /></button>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
               <Link size={20} style={{ color: 'var(--primary)' }} />
-              <h2 style={{ margin: 0 }}>Add Image by URL</h2>
+              <h2 style={{ margin: 0 }}>Add Images by URL</h2>
             </div>
             <p style={{ fontSize: '0.85rem', color: 'var(--gray-500)', marginBottom: 16 }}>
-              Paste a direct image URL (jpg, png, webp). It will be added to this product's images.
+              Paste image URLs (jpg, png, webp). Add multiple images by clicking "+ Queue" then submit all at once.
             </p>
-            <input
-              type="url"
-              autoFocus
-              placeholder="https://example.com/image.jpg"
-              value={urlModal.url}
-              onChange={e => setUrlModal(m => ({ ...m, url: e.target.value }))}
-              onKeyDown={e => e.key === 'Enter' && handleImageUrl()}
-              style={{ width: '100%', padding: '10px 13px', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', outline: 'none', marginBottom: 16 }}
-            />
+
+            {/* Queued URLs */}
+            {(urlModal.urls || []).length > 0 && (
+              <div style={{ marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {urlModal.urls.map((u, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', background: 'var(--gray-50)', borderRadius: 8, border: '1px solid var(--border)' }}>
+                    <img src={u} alt="" style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 6, flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; }} />
+                    <span style={{ fontSize: 12, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u}</span>
+                    <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#e74c3c', padding: 2 }}
+                      onClick={() => setUrlModal(m => ({ ...m, urls: m.urls.filter((_, j) => j !== i) }))}>
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+                <span style={{ fontSize: 11, color: 'var(--gray-400)' }}>{urlModal.urls.length} image{urlModal.urls.length > 1 ? 's' : ''} queued</span>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+              <input
+                type="url"
+                autoFocus
+                placeholder="https://example.com/image.jpg"
+                value={urlModal.url}
+                onChange={e => setUrlModal(m => ({ ...m, url: e.target.value }))}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (urlModal.url.trim() && /^https?:\/\//i.test(urlModal.url.trim())) {
+                      setUrlModal(m => ({ ...m, urls: [...(m.urls || []), m.url.trim()], url: '' }));
+                    }
+                  }
+                }}
+                style={{ flex: 1, padding: '10px 13px', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', outline: 'none' }}
+              />
+              <button type="button" className="btn btn--outline" style={{ flexShrink: 0 }}
+                disabled={!urlModal.url.trim() || !/^https?:\/\//i.test(urlModal.url.trim())}
+                onClick={() => setUrlModal(m => ({ ...m, urls: [...(m.urls || []), m.url.trim()], url: '' }))}>
+                + Queue
+              </button>
+            </div>
+
             {urlModal.url && /^https?:\/\//i.test(urlModal.url) && (
               <img
                 src={urlModal.url}
                 alt="preview"
                 onError={e => { e.target.style.display = 'none'; }}
-                style={{ width: '100%', maxHeight: 200, objectFit: 'contain', borderRadius: 8, border: '1px solid var(--border)', marginBottom: 16, background: 'var(--gray-50)' }}
+                style={{ width: '100%', maxHeight: 180, objectFit: 'contain', borderRadius: 8, border: '1px solid var(--border)', marginBottom: 12, background: 'var(--gray-50)' }}
               />
             )}
             <div style={{ display: 'flex', gap: 8 }}>
               <button className="btn btn--primary" style={{ flex: 1 }} onClick={handleImageUrl}>
-                <Link size={14} /> Add Image
+                <Link size={14} /> Add {((urlModal.urls || []).length + (urlModal.url.trim() && /^https?:\/\//i.test(urlModal.url.trim()) ? 1 : 0)) || ''} Image{((urlModal.urls || []).length + (urlModal.url.trim() && /^https?:\/\//i.test(urlModal.url.trim()) ? 1 : 0)) > 1 ? 's' : ''}
               </button>
-              <button className="btn btn--outline" onClick={() => setUrlModal({ open: false, productId: null, url: '' })}>Cancel</button>
+              <button className="btn btn--outline" onClick={() => setUrlModal({ open: false, productId: null, url: '', urls: [] })}>Cancel</button>
             </div>
           </div>
         </div>
@@ -773,6 +815,26 @@ export default function AdminProducts() {
               </div>
             )}
             <input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={e => handleNewImages(e.target.files)} />
+            <div style={{ display: 'flex', gap: '0.4rem', marginTop: 6 }}>
+              <input type="text" placeholder="Paste image URL (https://...)" value={formImageUrl} onChange={e => setFormImageUrl(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (/^https?:\/\//i.test(formImageUrl.trim())) { setFormImageUrls(u => [...u, formImageUrl.trim()]); setFormImageUrl(''); } } }}
+                style={{ flex: 1, fontSize: '0.85rem' }} />
+              <button type="button" className="btn btn--outline" style={{ padding: '0.25rem 0.6rem', fontSize: '0.8rem' }}
+                onClick={() => { if (/^https?:\/\//i.test(formImageUrl.trim())) { setFormImageUrls(u => [...u, formImageUrl.trim()]); setFormImageUrl(''); } else if (formImageUrl.trim()) { toast.error('Enter a valid URL'); } }}>
+                <Link size={13} /> Add URL
+              </button>
+            </div>
+            {formImageUrls.length > 0 && (
+              <div className="img-manage__existing" style={{ marginTop: 8 }}>
+                {formImageUrls.map((u, i) => (
+                  <div key={i} className="img-manage__thumb img-manage__thumb--new">
+                    <img src={u} alt={`url ${i + 1}`} />
+                    <button type="button" className="img-manage__remove" onClick={() => setFormImageUrls(arr => arr.filter((_, j) => j !== i))} title="Remove"><X size={12} /></button>
+                    <span className="img-manage__new-label">URL</span>
+                  </div>
+                ))}
+              </div>
+            )}
             {imgPreviews.length > 0 && (
               <div className="img-manage__existing" style={{ marginTop: 8 }}>
                 {imgPreviews.map((src, i) => (
@@ -790,7 +852,7 @@ export default function AdminProducts() {
           </label>
           <div className="form-actions">
             <button className="btn btn--primary" type="submit">{editing ? 'Update Product' : 'Create Product'}</button>
-            <button type="button" className="btn btn--outline" onClick={() => { setShowForm(false); setEditing(null); setForm(EMPTY); setExistingImages([]); setRemoveImages([]); setImages([]); setImgPreviews([]); }}>Cancel</button>
+            <button type="button" className="btn btn--outline" onClick={() => { setShowForm(false); setEditing(null); setForm(EMPTY); setExistingImages([]); setRemoveImages([]); setImages([]); setImgPreviews([]); setFormImageUrls([]); setFormImageUrl(''); }}>Cancel</button>
           </div>
         </form>
       )}
@@ -947,7 +1009,7 @@ export default function AdminProducts() {
                       </button>
                       <button type="button" className="btn btn--sm table-img-upload-btn" title="Add image by URL"
                         style={{ marginLeft: 2 }}
-                        onClick={() => setUrlModal({ open: true, productId: p._id, url: '' })}>
+                        onClick={() => setUrlModal({ open: true, productId: p._id, url: '', urls: [] })}>
                         <Link size={13} />
                       </button>
                     </div>

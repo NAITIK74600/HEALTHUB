@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { getAdminBrands, createBrand, updateBrand, deleteBrand } from '../../api/brands';
 import toast from 'react-hot-toast';
-import { Plus, Pencil, Trash2, X, Star, Leaf, Tag, HeartHandshake } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Star, Leaf, Tag, HeartHandshake, Image, Film } from 'lucide-react';
 
-const EMPTY = { name: '', category: 'featured', ord: 0, logoUrl: '', gradient: '', isActive: true };
+const EMPTY = { name: '', category: 'featured', ord: 0, logoUrl: '', gradient: '', isActive: true, media: [] };
 
 const CAT_LABEL = { featured: 'Featured', ayurvedic: 'Ayurvedic', general: 'General', personal_care: 'Personal Care' };
 const CAT_COLOR = {
@@ -35,6 +35,8 @@ export default function AdminBrands() {
   const [preview, setPreview]   = useState(null);
   const [saving, setSaving]     = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [mediaUrl, setMediaUrl] = useState('');
+  const [mediaType, setMediaType] = useState('image');
 
   const load = async () => {
     setLoading(true);
@@ -48,18 +50,19 @@ export default function AdminBrands() {
   useEffect(() => { load(); }, []);
 
   const openAdd = () => {
-    setForm(EMPTY); setLogoFile(null); setPreview(null); setModal('add');
+    setForm(EMPTY); setLogoFile(null); setPreview(null); setMediaUrl(''); setMediaType('image'); setModal('add');
   };
 
   const openAddPC = (preset) => {
     setForm({ ...EMPTY, category: 'personal_care', name: preset.label, gradient: preset.gradient });
-    setLogoFile(null); setPreview(null); setModal('add');
+    setLogoFile(null); setPreview(null); setMediaUrl(''); setMediaType('image'); setModal('add');
   };
 
   const openEdit = (b) => {
-    setForm({ name: b.name, category: b.category, ord: b.ord, logoUrl: b.logoUrl || '', isActive: b.isActive, _id: b._id });
+    setForm({ name: b.name, category: b.category, ord: b.ord, logoUrl: b.logoUrl || '', isActive: b.isActive, _id: b._id, gradient: b.gradient || '', media: b.media || [] });
     setLogoFile(null);
     setPreview(b.logoUrl || null);
+    setMediaUrl(''); setMediaType('image');
     setModal('edit');
   };
 
@@ -81,6 +84,7 @@ export default function AdminBrands() {
       fd.append('ord', String(form.ord || 0));
       fd.append('isActive', String(form.isActive));
       fd.append('gradient', form.gradient || '');
+      fd.append('media', JSON.stringify(form.media || []));
       if (logoFile) fd.append('logo', logoFile);
       else if (form.logoUrl) fd.append('logoUrl', form.logoUrl);
 
@@ -166,6 +170,7 @@ export default function AdminBrands() {
                   <div className="brand-admin-card__meta">
                     {!b.isActive && <span style={{ fontSize: 11, color: '#999' }}>Hidden</span>}
                     <span style={{ fontSize: 11, color: 'var(--gray-400)' }}>ord: {b.ord}</span>
+                    {(b.media || []).length > 0 && <span style={{ fontSize: 10, color: '#2563EB' }}>📷 {b.media.length} media</span>}
                   </div>
                   <div className="brand-admin-card__actions">
                     <button className="icon-btn" onClick={() => openEdit(b)} title="Edit"><Pencil size={14} /></button>
@@ -218,6 +223,7 @@ export default function AdminBrands() {
                       </span>
                       {!b.isActive && <span style={{ fontSize: 11, color: '#999' }}>Hidden</span>}
                       <span style={{ fontSize: 11, color: 'var(--gray-400)' }}>ord: {b.ord}</span>
+                      {(b.media || []).length > 0 && <span style={{ fontSize: 10, color: '#2563EB' }}>📷 {b.media.length} media</span>}
                     </div>
                     <div className="brand-admin-card__actions">
                       <button className="icon-btn" onClick={() => openEdit(b)} title="Edit"><Pencil size={14} /></button>
@@ -306,6 +312,49 @@ export default function AdminBrands() {
                   <p style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 4 }}>Background colour shown behind the image. Use a CSS gradient or solid hex colour.</p>
                 </div>
               )}
+
+              {/* Brand Media — Images & Videos */}
+              <div>
+                <label className="form-label">Brand Media (Images &amp; Videos)</label>
+                <p style={{ fontSize: 11, color: 'var(--gray-400)', marginBottom: 8 }}>Add promotional images or video URLs for this brand (max 10). These will be displayed on product pages of this brand.</p>
+
+                {/* Existing media list */}
+                {(form.media || []).length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 }}>
+                    {form.media.map((m, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', background: 'var(--gray-50)', borderRadius: 8, border: '1px solid var(--border)' }}>
+                        {m.type === 'video' ? <Film size={14} style={{ color: '#e74c3c', flexShrink: 0 }} /> : <Image size={14} style={{ color: '#2ecc71', flexShrink: 0 }} />}
+                        <span style={{ fontSize: 12, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.url}</span>
+                        <span style={{ fontSize: 10, color: 'var(--gray-400)', textTransform: 'uppercase', flexShrink: 0 }}>{m.type}</span>
+                        <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#e74c3c', padding: 2 }}
+                          onClick={() => setForm(f => ({ ...f, media: f.media.filter((_, j) => j !== i) }))}>
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add new media */}
+                {(form.media || []).length < 10 && (
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end' }}>
+                    <select className="form-input" style={{ width: 90, flexShrink: 0 }} value={mediaType} onChange={e => setMediaType(e.target.value)}>
+                      <option value="image">Image</option>
+                      <option value="video">Video</option>
+                    </select>
+                    <input className="form-input" type="url" placeholder="https://... (image or video URL)"
+                      style={{ flex: 1 }} value={mediaUrl} onChange={e => setMediaUrl(e.target.value)} />
+                    <button type="button" className="btn btn--outline" style={{ flexShrink: 0, padding: '8px 12px' }}
+                      onClick={() => {
+                        if (!mediaUrl.trim() || !/^https?:\/\//i.test(mediaUrl.trim())) return toast.error('Enter a valid URL');
+                        setForm(f => ({ ...f, media: [...(f.media || []), { type: mediaType, url: mediaUrl.trim() }] }));
+                        setMediaUrl('');
+                      }}>
+                      <Plus size={14} /> Add
+                    </button>
+                  </div>
+                )}
+              </div>
 
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                 <button type="button" className="btn btn--ghost" onClick={() => setModal(null)}>Cancel</button>

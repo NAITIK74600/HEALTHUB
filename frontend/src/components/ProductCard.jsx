@@ -4,6 +4,7 @@ import { ShoppingCart, FileText, Heart, Plus, Minus, Trash2, Star, Check } from 
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import MedicineImage from './MedicineImage';
+import { flyToCart } from '../utils/flyToCart';
 
 /* 🛒 Cart add sound — bright pop */
 function playCartSound(isIncrement = false) {
@@ -101,6 +102,9 @@ export default function ProductCard({ product }) {
   const handleAdd = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
+    // Fly-to-cart animation
+    const imgEl = cardRef.current?.querySelector('.medicine-image, .mi-fallback, img');
+    if (imgEl) flyToCart(imgEl);
     addItem(product);
     playCartSound();
     // Show "Added" feedback for 1.2s

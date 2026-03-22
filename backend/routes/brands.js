@@ -35,6 +35,10 @@ function deleteLocalFile(urlPath) {
 }
 
 function mapBrand(row) {
+  let media = [];
+  if (row.media_json) {
+    try { media = typeof row.media_json === 'string' ? JSON.parse(row.media_json) : row.media_json; } catch { media = []; }
+  }
   return {
     _id:      String(row.id),
     name:     row.name,
@@ -44,6 +48,7 @@ function mapBrand(row) {
     category: row.category,
     ord:      Number(row.ord || 0),
     isActive: Boolean(row.is_active),
+    media,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -110,9 +115,19 @@ router.post('/', requireAuth, requireAdmin, upload.single('logo'), [
 
     const gradient = req.body.gradient ? String(req.body.gradient).trim() : '';
 
+    // Parse media array from JSON string
+    let media = [];
+    if (req.body.media) {
+      try { media = JSON.parse(req.body.media); } catch { media = []; }
+    }
+    // Validate each entry: { type: 'image'|'video', url: string }
+    media = (Array.isArray(media) ? media : [])
+      .filter(m => m && ['image', 'video'].includes(m.type) && typeof m.url === 'string' && /^https?:\/\//i.test(m.url))
+      .slice(0, 10);
+
     const result = await execute(
-      `INSERT INTO brands (name, slug, logo_url, gradient, category, ord, is_active)
-       VALUES (?, ?, ?, ?, ?, ?, 1)`,
+      `INSERT INTO brands (name, slug, logo_url, gradient, category, ord, is_active, media_json)
+       VALUES (?, ?, ?, ?, ?, ?, 1, ?)`,
       [
         req.body.name.trim(),
         slug,
@@ -120,6 +135,7 @@ router.post('/', requireAuth, requireAdmin, upload.single('logo'), [
         gradient,
         req.body.category,
         Number(req.body.ord || 0),
+        media.length ? JSON.stringify(media) : null,
       ]
     );
 
@@ -167,8 +183,19 @@ router.put('/:id', requireAuth, requireAdmin, upload.single('logo'), [
       }
     }
 
+    // Parse media array
+    let mediaJson = current.media_json;
+    if (req.body.media !== undefined) {
+      let media = [];
+      try { media = JSON.parse(req.body.media); } catch { media = []; }
+      media = (Array.isArray(media) ? media : [])
+        .filter(m => m && ['image', 'video'].includes(m.type) && typeof m.url === 'string' && /^https?:\/\//i.test(m.url))
+        .slice(0, 10);
+      mediaJson = media.length ? JSON.stringify(media) : null;
+    }
+
     await execute(
-      `UPDATE brands SET name = ?, slug = ?, logo_url = ?, gradient = ?, category = ?, ord = ?, is_active = ? WHERE id = ?`,
+      `UPDATE brands SET name = ?, slug = ?, logo_url = ?, gradient = ?, category = ?, ord = ?, is_active = ?, media_json = ? WHERE id = ?`,
       [
         nextName,
         nextSlug,
@@ -177,6 +204,7 @@ router.put('/:id', requireAuth, requireAdmin, upload.single('logo'), [
         req.body.category !== undefined ? req.body.category : current.category,
         req.body.ord !== undefined ? Number(req.body.ord) : current.ord,
         req.body.isActive !== undefined ? (req.body.isActive === 'true' || req.body.isActive === true ? 1 : 0) : current.is_active,
+        mediaJson,
         req.params.id,
       ]
     );
