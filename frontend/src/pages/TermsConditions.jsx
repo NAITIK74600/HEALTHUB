@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
 import { FileText, Mail, MapPin, Phone } from 'lucide-react';
+import SEO from '../components/SEO';
 
 export default function TermsConditions() {
   return (
     <main className="policy-page container">
+      <SEO title="Terms & Conditions" description="Terms and conditions for using Batla Medicos online pharmacy. Read our usage policies, ordering terms, and delivery guidelines." path="/terms" />
       <div className="policy-hero">
         <div className="policy-hero__icon"><FileText size={32} /></div>
         <div>

@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
 import { Shield, Lock, Eye, Mail, MapPin, Phone } from 'lucide-react';
+import SEO from '../components/SEO';
 
 export default function PrivacyPolicy() {
   return (
     <main className="policy-page container">
+      <SEO title="Privacy Policy" description="Privacy policy of Batla Medicos. Learn how we collect, use, and protect your personal data when you shop medicines online." path="/privacy-policy" />
       <div className="policy-hero">
         <div className="policy-hero__icon"><Shield size={32} /></div>
         <div>

@@ -11,6 +11,7 @@ import {
   Shield, UserCheck, FileText, Microscope, TestTube, Activity,
   Navigation, Loader, LocateFixed,
 } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const FEATURES = [
   { icon: <Home size={20} />,      title: 'Free Home Collection', sub: 'Doorstep sample pickup' },
@@ -173,6 +174,11 @@ export default function LabTests() {
 
   return (
     <div className="lab-page">
+      <SEO
+        title="Book Lab Tests Online – Home Collection in New Delhi"
+        description="Book lab tests at home from Batla Medicos. CBC, thyroid, diabetes, liver function, kidney function, vitamin D, lipid profile & more. NABL certified lab, reports in 24–48 hours. Free home collection."
+        path="/lab"
+      />
       {/* Hero */}
       <div className="lab-hero">
         <div className="container lab-hero__inner">

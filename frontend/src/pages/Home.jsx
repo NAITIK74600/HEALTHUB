@@ -13,6 +13,7 @@ import { getCategories } from '../api/categories';
 import { getProducts } from '../api/products';
 import { getBrands } from '../api/brands';
 import { getLabTests } from '../api/lab';
+import SEO from '../components/SEO';
 import ProductCard from '../components/ProductCard';
 import OfferBanner from '../components/OfferBanner';
 import AnimatedSection from '../components/AnimatedSection';
@@ -278,6 +279,11 @@ export default function Home() {
 
   return (
     <main>
+      <SEO
+        title="Online Pharmacy New Delhi – Buy Medicines, Lab Tests, Ayurvedic Products"
+        description="Batla Medicos – trusted pharmacy since 2005. Buy medicines, Ayurvedic products, vitamins, cosmetics & baby care online. Lab tests at home. Free delivery above ₹499. Open 9 AM – 11:45 PM daily."
+        path="/"
+      />
       {/* ══════════════════════════════ HERO ══════════════════════════════ */}
       <section className="hero" ref={heroParallax}>
         <div className="hero__particles" aria-hidden="true" data-depth="3">
@@ -366,7 +372,7 @@ export default function Home() {
                       className="hero-search__result"
                       onClick={() => setShowResults(false)}
                     >
-                      {p.images?.[0] && <img src={p.images[0]} alt="" className="hero-search__thumb" />}
+                      {p.images?.[0] && <img src={p.images[0]} alt={p.name} className="hero-search__thumb" />}
                       <div className="hero-search__info">
                         <span className="hero-search__name">{p.name}</span>
                         <span className="hero-search__price">₹{p.price} {p.mrp > p.price && <s>₹{p.mrp}</s>}</span>

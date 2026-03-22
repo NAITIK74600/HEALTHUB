@@ -12,6 +12,7 @@ import { getGeoPosition, GEO_ERROR_MESSAGES } from '../utils/geo';
 import { validateCoupon } from '../api/coupons';
 import api from '../api/axios';
 import { uploadPrescription } from '../api/upload';
+import { trackPurchase } from '../utils/analytics';
 
 /* 🎵 Cheerful 3-note order-placed jingle (Web Audio API — no file needed) */
 function playOrderSound() {
@@ -209,6 +210,7 @@ export default function Checkout() {
                 razorpay_signature:  response.razorpay_signature,
                 orderId:             data.order._id,
               });
+              trackPurchase({ _id: data.order._id, items, totalPrice: finalTotal, method: 'razorpay' });
               playOrderSound();
               clearCart();
               navigate(`/orders/${data.order._id}?placed=1`);
@@ -220,6 +222,7 @@ export default function Checkout() {
       } else if (formData.method === 'paytm') {
         toast('Paytm checkout wiring will be enabled once merchant API credentials are added.');
       } else {
+        trackPurchase({ _id: data.order._id, items, totalPrice: finalTotal, method: formData.method });
         playOrderSound();
         clearCart();
         navigate(`/orders/${data.order._id}?placed=1`);

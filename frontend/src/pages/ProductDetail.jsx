@@ -4,9 +4,11 @@ import { ShoppingCart, FileText, Heart, Star, ChevronLeft, ChevronRight } from '
 import { getProductBySlug, getRelatedProducts, getProducts } from '../api/products';
 import { getProductReviews, submitReview } from '../api/reviews';
 import MedicineImage from '../components/MedicineImage';
+import SEO from '../components/SEO';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
+import { trackViewItem, trackAddToCart } from '../utils/analytics';
 import toast from 'react-hot-toast';
 import ProductCard from '../components/ProductCard';
 
@@ -77,6 +79,7 @@ export default function ProductDetail() {
     getProductBySlug(slug)
       .then(r => {
         setProduct(r.data);
+        trackViewItem(r.data);
         getRelatedProducts(r.data._id)
           .then(res => setRelated(res.data))
           .catch(() => {});
@@ -190,8 +193,53 @@ export default function ProductDetail() {
   const useInConditions = product.description?.trim() || 'Consult your doctor/pharmacist for proper use.';
   const sideEffectsText = product.sideEffects?.trim() || 'No common side effects listed. If any discomfort occurs, consult your doctor.';
 
+  // Product schema for SEO
+  const productSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: useInConditions,
+    image: images[0] || 'https://www.batlamedicos.shop/og-image.jpg',
+    brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
+    sku: String(product._id),
+    offers: {
+      '@type': 'Offer',
+      url: `https://www.batlamedicos.shop/products/${slug}`,
+      priceCurrency: 'INR',
+      price: product.price,
+      availability: product.inStock !== false ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      seller: { '@type': 'Organization', name: 'Batla Medicos' },
+    },
+    ...(reviewMeta.ratingCount > 0 ? {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: reviewMeta.avgRating,
+        reviewCount: reviewMeta.ratingCount,
+      },
+    } : {}),
+  };
+
+  // BreadcrumbList schema
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.batlamedicos.shop/' },
+      { '@type': 'ListItem', position: 2, name: 'Products', item: 'https://www.batlamedicos.shop/products' },
+      { '@type': 'ListItem', position: 3, name: product.name },
+    ],
+  };
+
   return (
     <main>
+      <SEO
+        title={`${product.name}${product.brand ? ` by ${product.brand}` : ''} – Buy Online`}
+        description={`Buy ${product.name}${product.brand ? ` by ${product.brand}` : ''} online at ₹${product.price}${discount > 0 ? ` (${discount}% off)` : ''}. ${useInConditions.slice(0, 120)}`}
+        path={`/products/${slug}`}
+        image={images[0]}
+        type="product"
+        schema={[productSchema, breadcrumbSchema]}
+      />
       <div className="product-detail container">
           {/* Images — Auto-sliding carousel like 1mg */}
           <div className="pd-gallery">

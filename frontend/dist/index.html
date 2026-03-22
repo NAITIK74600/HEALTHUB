@@ -47,6 +47,16 @@
     <link rel="preconnect" href="https://res.cloudinary.com" />
     <link rel="dns-prefetch" href="https://api.razorpay.com" />
 
+    <!-- ═══ Google Analytics 4 ════════════════════════════════════════════ -->
+    <!-- Replace G-XXXXXXXXXX with your actual GA4 Measurement ID from https://analytics.google.com -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
     <!-- ═══ Schema.org JSON-LD — Pharmacy LocalBusiness ═════════════════ -->
     <script type="application/ld+json">
     {
@@ -99,14 +109,118 @@
     </script>
 
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script type="module" crossorigin src="/assets/index-UHHwKL_6.js"></script>
+    <script type="module" crossorigin src="/assets/index-OudThLgl.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-BjmY1i0A.css">
   </head>
   <body>
     <div id="root">
-      <div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif">
-        <p style="color:#888;font-size:16px">Loading...</p>
+      <!-- SEO fallback — visible to search engines before JS renders, hidden once React mounts -->
+      <div id="seo-fallback" style="font-family:Arial,sans-serif;max-width:960px;margin:0 auto;padding:24px;color:#333">
+        <header style="text-align:center;padding:20px 0;border-bottom:2px solid #C0392B">
+          <h1 style="color:#C0392B;font-size:28px;margin:0">Batla Medicos – Chemist &amp; Cosmetics</h1>
+          <p style="color:#555;font-size:16px;margin:8px 0 0">Your Trusted Neighbourhood Pharmacy Since 2005 | New Delhi</p>
+        </header>
+
+        <nav style="padding:16px 0;text-align:center;line-height:2.2">
+          <a href="/" style="color:#C0392B;margin:0 12px;text-decoration:none;font-weight:600">Home</a>
+          <a href="/products" style="color:#C0392B;margin:0 12px;text-decoration:none;font-weight:600">All Products</a>
+          <a href="/lab" style="color:#C0392B;margin:0 12px;text-decoration:none;font-weight:600">Lab Tests</a>
+          <a href="/diseases" style="color:#C0392B;margin:0 12px;text-decoration:none;font-weight:600">Health Resources</a>
+          <a href="/products?category=allopathic" style="color:#C0392B;margin:0 12px;text-decoration:none">Allopathic</a>
+          <a href="/products?category=ayurvedic" style="color:#C0392B;margin:0 12px;text-decoration:none">Ayurvedic</a>
+          <a href="/products?category=homeopathy" style="color:#C0392B;margin:0 12px;text-decoration:none">Homeopathy</a>
+          <a href="/products?category=skin-care" style="color:#C0392B;margin:0 12px;text-decoration:none">Skin Care</a>
+          <a href="/products?category=hair-care" style="color:#C0392B;margin:0 12px;text-decoration:none">Hair Care</a>
+          <a href="/products?category=baby-care" style="color:#C0392B;margin:0 12px;text-decoration:none">Baby Care</a>
+          <a href="/products?category=vitamins-nutrition" style="color:#C0392B;margin:0 12px;text-decoration:none">Vitamins</a>
+          <a href="/products?category=diabetes-care" style="color:#C0392B;margin:0 12px;text-decoration:none">Diabetes Care</a>
+          <a href="/products?category=fitness-health" style="color:#C0392B;margin:0 12px;text-decoration:none">Fitness</a>
+          <a href="/products?category=generic" style="color:#C0392B;margin:0 12px;text-decoration:none">Generic Medicines</a>
+          <a href="/products?category=surgical" style="color:#C0392B;margin:0 12px;text-decoration:none">Surgical</a>
+        </nav>
+
+        <main>
+          <section style="padding:20px 0">
+            <h2 style="color:#2e7d32;font-size:22px">Buy Medicines Online in New Delhi – Home Delivery &amp; Lab Tests</h2>
+            <p style="line-height:1.7;font-size:15px">
+              <strong>Batla Medicos</strong> is a trusted pharmacy located at F 41/2, Nafees Road, Batla House, New Delhi – 110025,
+              serving the community since 2005. We offer a wide range of <strong>allopathic medicines, Ayurvedic products,
+              homeopathy remedies, vitamins &amp; supplements, skin care, hair care, baby care products, diabetes care,
+              surgical items</strong>, and more — all available for <strong>online ordering with home delivery</strong>.
+            </p>
+            <p style="line-height:1.7;font-size:15px">
+              Get <strong>free delivery above ₹499</strong>. We are open <strong>9:00 AM – 11:45 PM, 7 days a week</strong>.
+              Upload your prescription online and get medicines delivered to your doorstep. Book <strong>lab tests at home</strong>
+              including CBC, thyroid, diabetes, liver function, kidney function, lipid profile, vitamin D, and more at affordable prices.
+            </p>
+          </section>
+
+          <section style="padding:16px 0">
+            <h2 style="font-size:20px;color:#1565c0">Popular Medicine Categories</h2>
+            <ul style="line-height:2;font-size:14px;columns:2">
+              <li><a href="/products?category=allopathic">Allopathic Medicines</a> – Tablets, capsules, syrups, injections</li>
+              <li><a href="/products?category=ayurvedic">Ayurvedic Products</a> – Patanjali, Dabur, Himalaya, Baidyanath</li>
+              <li><a href="/products?category=homeopathy">Homeopathy</a> – SBL, Dr. Reckeweg, Schwabe remedies</li>
+              <li><a href="/products?category=generic">Generic Medicines</a> – Affordable alternatives</li>
+              <li><a href="/products?category=vitamins-nutrition">Vitamins &amp; Nutrition</a> – Vitamin C, D3, B12, Omega-3</li>
+              <li><a href="/products?category=diabetes-care">Diabetes Care</a> – Glucometers, strips, supplements</li>
+              <li><a href="/products?category=skin-care">Skin Care</a> – Sunscreen, moisturizers, face wash</li>
+              <li><a href="/products?category=hair-care">Hair Care</a> – Anti-dandruff, serums, oils</li>
+              <li><a href="/products?category=baby-care">Baby Care</a> – Diapers, formula, baby skincare</li>
+              <li><a href="/products?category=fitness-health">Fitness &amp; Health</a> – Protein, energy supplements</li>
+              <li><a href="/products?category=immunity-boosters">Immunity Boosters</a> – Chyawanprash, zinc, tulsi</li>
+              <li><a href="/products?category=sexual-wellness">Sexual Wellness</a> – Health &amp; hygiene products</li>
+              <li><a href="/products?category=surgical">Surgical Products</a> – Bandages, gloves, masks</li>
+              <li><a href="/products?category=supports-braces">Supports &amp; Braces</a> – Knee caps, back belts</li>
+            </ul>
+          </section>
+
+          <section style="padding:16px 0">
+            <h2 style="font-size:20px;color:#1565c0">Lab Tests at Home – Book Online</h2>
+            <p style="line-height:1.7;font-size:15px">
+              Book <a href="/lab">lab tests</a> from the comfort of your home. Our trained phlebotomist will collect your sample at your doorstep.
+              Available tests include: Complete Blood Count (CBC), Thyroid Profile, HbA1c, Lipid Profile, Liver Function Test (LFT),
+              Kidney Function Test (KFT), Vitamin D, Vitamin B12, Iron Profile, Urine Analysis, COVID-19 tests, and comprehensive health packages.
+            </p>
+          </section>
+
+          <section style="padding:16px 0">
+            <h2 style="font-size:20px;color:#1565c0">Why Choose Batla Medicos?</h2>
+            <ul style="line-height:2;font-size:15px">
+              <li>✅ Trusted pharmacy since 2005 – 20+ years of service</li>
+              <li>🚚 Free home delivery on orders above ₹499</li>
+              <li>🧪 Lab tests at home – book online, get reports fast</li>
+              <li>📋 Upload prescriptions and get medicines delivered</li>
+              <li>💊 Wide range: Allopathic, Ayurvedic, Homeopathy, Cosmetics</li>
+              <li>🕐 Open 9 AM – 11:45 PM, 7 days a week</li>
+              <li>📍 F 41/2, Nafees Road, Batla House, New Delhi – 110025</li>
+              <li>📞 Call/WhatsApp: +91 9990165925</li>
+            </ul>
+          </section>
+        </main>
+
+        <footer style="border-top:1px solid #ddd;padding:16px 0;text-align:center;font-size:13px;color:#888">
+          <p>Batla Medicos – Chemist &amp; Cosmetics | F 41/2, Nafees Road, Batla House, New Delhi – 110025</p>
+          <p>📞 +91 9990165925 | 📧 ordersupport@batlamedicos.shop</p>
+          <p>
+            <a href="/privacy-policy">Privacy Policy</a> |
+            <a href="/terms">Terms &amp; Conditions</a> |
+            <a href="/refund-policy">Refund Policy</a>
+          </p>
+          <p>© 2005–2026 Batla Medicos. All rights reserved.</p>
+        </footer>
       </div>
     </div>
+    <script>
+      // Remove SEO fallback once React mounts (prevents flash of fallback content for users)
+      var observer = new MutationObserver(function() {
+        var fb = document.getElementById('seo-fallback');
+        if (fb && document.getElementById('root').children.length > 1) {
+          fb.remove();
+          observer.disconnect();
+        }
+      });
+      observer.observe(document.getElementById('root'), { childList: true });
+    </script>
   </body>
 </html>

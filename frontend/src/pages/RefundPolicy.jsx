@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
 import { RefreshCw, Mail, MapPin, Phone, CheckCircle, XCircle, Clock } from 'lucide-react';
+import SEO from '../components/SEO';
 
 export default function RefundPolicy() {
   return (
     <main className="policy-page container">
+      <SEO title="Cancellation & Refund Policy" description="Batla Medicos cancellation and refund policy. Learn about return eligibility, refund timelines, and how to request a refund for medicines and healthcare products." path="/refund-policy" />
       <div className="policy-hero">
         <div className="policy-hero__icon"><RefreshCw size={32} /></div>
         <div>

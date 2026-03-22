@@ -4,6 +4,8 @@ import toast from 'react-hot-toast';
 import { getProducts, getTopBrands, requestMedicineAvailability } from '../api/products';
 import { getCategories } from '../api/categories';
 import ProductCard from '../components/ProductCard';
+import SEO from '../components/SEO';
+import { trackSearch } from '../utils/analytics';
 
 const SORT_OPTIONS = [
   { value: 'newest',        label: 'Newest First' },
@@ -182,6 +184,7 @@ export default function ProductCatalog() {
       setProducts(data.products);
       setTotal(data.total);
       setPages(data.pages);
+      if (search) trackSearch(search, data.total);
     } catch {
       setProducts([]);
       setTotal(0);
@@ -214,8 +217,18 @@ export default function ProductCatalog() {
   const selectedCatName = selectedCategory?.name || (categoryParam ? slugToTitle(categoryParam) : null);
   const hasFilter = !!(search || categoryParam || brand);
 
+  const seoTitle = selectedCatName ? `Buy ${selectedCatName} Online` : search ? `Search: ${search}` : 'Buy Medicines & Healthcare Products Online';
+  const seoDesc = selectedCatName
+    ? `Buy ${selectedCatName} online at best prices from Batla Medicos. Free delivery above ₹499. Trusted pharmacy since 2005 in New Delhi.`
+    : 'Browse medicines, Ayurvedic products, vitamins, cosmetics, baby care & more. Free delivery above ₹499. Buy online from Batla Medicos, New Delhi.';
+
   return (
     <div className="catalog-page-wrap">
+      <SEO
+        title={seoTitle}
+        description={seoDesc}
+        path={`/products${categoryParam ? `?category=${categoryParam}` : ''}`}
+      />
 
       {/* ── Page Hero Banner ─────────────────────────────────────── */}
       <div className="catalog-hero">

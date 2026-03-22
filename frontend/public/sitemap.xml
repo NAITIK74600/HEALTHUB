@@ -1,28 +1,28 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
   <!-- Core pages -->
   <url>
     <loc>https://www.batlamedicos.shop/</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://www.batlamedicos.shop/products</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://www.batlamedicos.shop/lab</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://www.batlamedicos.shop/diseases</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -30,37 +30,37 @@
   <!-- Medicine categories (matching actual DB/filter slugs) -->
   <url>
     <loc>https://www.batlamedicos.shop/products?category=allopathic</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://www.batlamedicos.shop/products?category=caps-tabs</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.batlamedicos.shop/products?category=liquids</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.batlamedicos.shop/products?category=generic</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.batlamedicos.shop/products?category=ayurvedic</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.batlamedicos.shop/products?category=homeopathy</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -68,31 +68,31 @@
   <!-- Wellness & Lifestyle categories -->
   <url>
     <loc>https://www.batlamedicos.shop/products?category=vitamins-nutrition</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.batlamedicos.shop/products?category=fitness-health</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.batlamedicos.shop/products?category=immunity-boosters</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.batlamedicos.shop/products?category=diabetes-care</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.batlamedicos.shop/products?category=supports-braces</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -100,43 +100,43 @@
   <!-- Personal Care -->
   <url>
     <loc>https://www.batlamedicos.shop/products?category=skin-care</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.batlamedicos.shop/products?category=hair-care</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.batlamedicos.shop/products?category=baby-care</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.batlamedicos.shop/products?category=sexual-wellness</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.batlamedicos.shop/products?category=elderly-care</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.batlamedicos.shop/products?category=fmcg</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.batlamedicos.shop/products?category=surgicals</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -144,21 +144,35 @@
   <!-- Legal / Policy -->
   <url>
     <loc>https://www.batlamedicos.shop/privacy-policy</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
     <loc>https://www.batlamedicos.shop/terms</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
     <loc>https://www.batlamedicos.shop/refund-policy</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2025-06-20</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
+  </url>
+
+  <!-- Auth / Public -->
+  <url>
+    <loc>https://www.batlamedicos.shop/login</loc>
+    <lastmod>2025-06-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.batlamedicos.shop/register</loc>
+    <lastmod>2025-06-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
 
 </urlset>

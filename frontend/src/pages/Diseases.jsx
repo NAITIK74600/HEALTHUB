@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 
 const DISEASES = [
   // A
@@ -98,6 +99,11 @@ export default function Diseases() {
 
   return (
     <div className="diseases-page">
+      <SEO
+        title="Health Resource Center – Diseases, Symptoms & Medicines"
+        description="Browse common diseases and health conditions from A to Z. Find symptoms, causes, and related medicines available at Batla Medicos. Expert health information for informed decisions."
+        path="/diseases"
+      />
       <div className="diseases-header">
         <h1 className="diseases-title">
           Disease Index starting with &mdash; <span className="diseases-title__letter">{activeLetter}</span>
