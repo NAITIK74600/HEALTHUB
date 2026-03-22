@@ -6,7 +6,7 @@ import {
   Stethoscope, Pill, Leaf, Sparkles, Baby, Scissors, Hospital, Star, Heart, Syringe,
   Droplets, Droplet, FlaskConical, Wind, Thermometer, ShoppingBag, Box,
   TestTube, Package, GlassWater, Gem, LayoutGrid, Activity,
-  SmilePlus, Users, Zap, Shield, Award, FileText, BadgePercent, Quote,
+  SmilePlus, Users, Zap, Shield, Award, FileText, BadgePercent,
 } from 'lucide-react';
 import { getActiveOffers } from '../api/offers';
 import { getCategories } from '../api/categories';
@@ -105,21 +105,12 @@ const PC_EMOJI_BY_LABEL = Object.fromEntries(PERSONAL_CARE_CATS.map(c => [c.labe
 const PC_GRADIENT_BY_LABEL = Object.fromEntries(PERSONAL_CARE_CATS.map(c => [c.label, c.gradient]));
 
 const TRUST_FEATURES = [
-  { icon: <Truck size={22} />,       bg: '#EFF6FF', color: '#2563EB', title: 'Free Delivery',           desc: 'On orders above ₹499',          counter: null },
-  { icon: <ShieldCheck size={22} />, bg: '#F0FDF4', color: '#16A34A', title: '100% Genuine',            desc: 'Licensed & verified sources',    counter: null },
-  { icon: <Clock size={22} />,       bg: '#EFF6FF', color: '#2563EB', title: 'Open 9 AM – 11:45 PM',     desc: 'Monday to Sunday',              counter: null },
-  { icon: <Stethoscope size={22} />, bg: '#F0FDF4', color: '#16A34A', title: 'Expert Pharmacists',      desc: 'Free consultation',              counter: null },
-  { icon: <Activity size={22} />,    bg: '#EFF6FF', color: '#2563EB', title: 'Lab Tests at Home',       desc: 'Up to 70% off',                  counter: null },
-  { icon: <Users size={22} />,       bg: '#FEF3C7', color: '#D97706', title: '50,000+ Customers',       desc: 'Trusted since 2005',             counter: 50000 },
-];
-
-const TESTIMONIALS = [
-  { name: 'Fatima S.', rating: 5, text: 'Best pharmacy in Jamia Nagar! Genuine medicines at great prices. The delivery is always on time.', avatar: 'FS' },
-  { name: 'Ahmed K.', rating: 5, text: 'I have been ordering from Batla Medicos for years. Their pharmacists are very helpful and knowledgeable.', avatar: 'AK' },
-  { name: 'Priya R.', rating: 5, text: 'Excellent service! Got my lab test done at home with 70% discount. Very professional staff.', avatar: 'PR' },
-  { name: 'Mohammad I.', rating: 5, text: 'Great collection of Ayurvedic and Homeopathy medicines. Highly recommended for genuine products.', avatar: 'MI' },
-  { name: 'Neha T.', rating: 4, text: 'The online ordering is so convenient. Medicines delivered to my doorstep within hours. Love the app!', avatar: 'NT' },
-  { name: 'Rizwan A.', rating: 5, text: 'Trusted pharmacy since 20 years. My whole family only buys medicines from Batla Medicos.', avatar: 'RA' },
+  { icon: <Truck size={22} />,       bg: '#FEF2F2', color: '#C0392B', title: 'Free Delivery',           desc: 'On orders above ₹499' },
+  { icon: <ShieldCheck size={22} />, bg: '#F0FBF4', color: '#1B8843', title: '100% Genuine',            desc: 'Licensed & verified sources' },
+  { icon: <Clock size={22} />,       bg: '#FEF2F2', color: '#C0392B', title: 'Open 9 AM – 11:45 PM',     desc: 'Monday to Sunday' },
+  { icon: <Stethoscope size={22} />, bg: '#F0FBF4', color: '#1B8843', title: 'Expert Pharmacists',      desc: 'Free consultation' },
+  { icon: <Activity size={22} />,    bg: '#EFF6FF', color: '#2563EB', title: 'Lab Tests at Home',       desc: 'Up to 70% off' },
+  { icon: <Users size={22} />,       bg: '#FFFBEB', color: '#D97706', title: '50,000+ Customers',       desc: 'Trusted since 2005' },
 ];
 
 const STORE_ADDRESS = 'F 41/2, Nafees Road, Batla House, Jamia Nagar, New Delhi - 110025';
@@ -139,12 +130,12 @@ const HEALTH_TIPS = [
 ];
 
 const WHY_CHOOSE = [
-  { icon: <Award size={26} />,       bg: '#DBEAFE', color: '#2563EB', title: '20+ Years of Trust',   desc: 'Serving Jamia Nagar since 2005' },
-  { icon: <ShieldCheck size={26} />, bg: '#DCFCE7', color: '#16A34A', title: '100% Authentic',        desc: 'Direct from licensed distributors' },
-  { icon: <Truck size={26} />,       bg: '#DBEAFE', color: '#2563EB', title: 'Fast Delivery',         desc: 'Same-day delivery in Jamia Nagar' },
-  { icon: <Stethoscope size={26} />, bg: '#DCFCE7', color: '#16A34A', title: 'Free Consultation',     desc: 'Expert pharmacists, no charge' },
-  { icon: <Clock size={26} />,       bg: '#FEF3C7', color: '#D97706', title: 'Open 7 Days a Week',   desc: 'Monday to Sunday, 9 AM – 11:45 PM' },
-  { icon: <Heart size={26} />,       bg: '#FCE7F3', color: '#DB2777', title: 'Patient Care First',   desc: 'Your wellbeing is our mission' },
+  { icon: <Award size={26} />,       bg: '#FEF2F2', color: '#C0392B', title: '20+ Years of Trust',   desc: 'Serving Jamia Nagar since 2005' },
+  { icon: <ShieldCheck size={26} />, bg: '#F0FBF4', color: '#1B8843', title: '100% Authentic',        desc: 'Direct from licensed distributors' },
+  { icon: <Truck size={26} />,       bg: '#EFF6FF', color: '#2563EB', title: 'Fast Delivery',         desc: 'Same-day delivery in Jamia Nagar' },
+  { icon: <Stethoscope size={26} />, bg: '#FDF4FF', color: '#9333EA', title: 'Free Consultation',     desc: 'Expert pharmacists, no charge' },
+  { icon: <Clock size={26} />,       bg: '#FFFBEB', color: '#D97706', title: 'Open 7 Days a Week',   desc: 'Monday to Sunday, 9 AM – 11:45 PM' },
+  { icon: <Heart size={26} />,       bg: '#FFF0F6', color: '#DB2777', title: 'Patient Care First',   desc: 'Your wellbeing is our mission' },
 ];
 
 /* ── Horizontal scroll carousel with prev/next arrows ── */
@@ -294,13 +285,9 @@ export default function Home() {
         path="/"
       />
       {/* ══════════════════════════════ HERO ══════════════════════════════ */}
-      <section className="hero hero--parallax" ref={heroParallax}>
-        {/* SVG heartbeat bg pattern */}
-        <svg className="hero__heartbeat" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true" data-depth="0.3">
-          <path d="M0,60 L200,60 L220,20 L240,100 L260,40 L280,80 L300,60 L500,60 L520,10 L540,110 L560,30 L580,90 L600,60 L800,60 L820,25 L840,95 L860,45 L880,75 L900,60 L1200,60" stroke="rgba(255,255,255,0.06)" strokeWidth="2" fill="none"/>
-        </svg>
+      <section className="hero" ref={heroParallax}>
         <div className="hero__particles" aria-hidden="true" data-depth="3">
-          {[1,2,3,4,5,6,7,8,9,10].map(n => <div key={n} className={`hero__particle hero__particle--${n}`} />)}
+          {[1,2,3,4,5,6,7,8].map(n => <div key={n} className={`hero__particle hero__particle--${n}`} />)}
         </div>
         {/* 3D floating geometric shapes */}
         <div className="hero__shapes" aria-hidden="true" data-depth="2">
@@ -317,9 +304,8 @@ export default function Home() {
             <div className="orbit-track orbit-track--2" />
             <div className="orbit-track orbit-track--3" />
 
-            {/* ── Centre: BM brand mark with medical cross ── */}
+            {/* ── Centre: BM brand mark ── */}
             <div className="orbit-center" aria-label="Batla Medicos">
-              <span className="orbit-center__cross" aria-hidden="true">+</span>
               <span className="orbit-center__bm">BM</span>
             </div>
 
@@ -328,23 +314,23 @@ export default function Home() {
               <div className="orbit-dot"><Pill size={17} color="white" /></div>
             </div>
             <div className="orbit-arm orbit-arm--r1" style={{animationDelay:'-3.5s'}}>
-              <div className="orbit-dot orbit-dot--green"><Heart size={16} color="#4ade80" /></div>
+              <div className="orbit-dot orbit-dot--red"><Heart size={16} color="#FC8181" /></div>
             </div>
 
             {/* Ring 2 – middle r=88px CCW 10s */}
             <div className="orbit-arm orbit-arm--r2">
-              <div className="orbit-dot orbit-dot--blue"><Leaf size={18} color="#93C5FD" /></div>
+              <div className="orbit-dot orbit-dot--green"><Leaf size={18} color="#4ade80" /></div>
             </div>
             <div className="orbit-arm orbit-arm--r2" style={{animationDelay:'-5s'}}>
-              <div className="orbit-dot orbit-dot--green"><FlaskConical size={17} color="#4ade80" /></div>
+              <div className="orbit-dot orbit-dot--blue"><FlaskConical size={17} color="#93C5FD" /></div>
             </div>
 
             {/* Ring 3 – inner r=52px CW 5s */}
             <div className="orbit-arm orbit-arm--r3">
-              <div className="orbit-dot orbit-dot--blue"><Stethoscope size={15} color="#93C5FD" /></div>
+              <div className="orbit-dot"><Stethoscope size={15} color="white" /></div>
             </div>
             <div className="orbit-arm orbit-arm--r3" style={{animationDelay:'-2.5s'}}>
-              <div className="orbit-dot"><Syringe size={14} color="white" /></div>
+              <div className="orbit-dot orbit-dot--yellow"><Syringe size={14} color="#FDE68A" /></div>
             </div>
           </div>
           <div className="hero__content" data-depth="0.5">
@@ -352,10 +338,10 @@ export default function Home() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 2v20M2 12h20"/></svg>
               Trusted Pharmacy Since 2005
             </span>
-            <h1>Your Trusted<br /><span className="hero__accent">Online Pharmacy</span></h1>
-            <p className="hero__subtitle">100% Genuine Medicines · Fast Delivery · Affordable Prices</p>
+            <h1>Your Trusted<br /><span className="red">Neighbourhood</span><br />Pharmacy</h1>
+            <p>Allopathic · Ayurvedic · Cosmetics · Baby Products · Surgical</p>
             <div className="hero__actions">
-              <Link to="/products" className="btn btn--primary btn--lg btn--glow ripple-btn" onClick={ripple}>Shop Now <ChevronRight size={18} /></Link>
+              <Link to="/products" className="btn btn--primary btn--lg ripple-btn" onClick={ripple}>Shop Now <ChevronRight size={18} /></Link>
               <Link to="/prescriptions" className="btn btn--ghost btn--lg ripple-btn" onClick={ripple}>
                 <FileText size={18} /> Upload Prescription
               </Link>
@@ -416,10 +402,8 @@ export default function Home() {
               <div key={i} className="trust-strip__item ripple-btn" onClick={ripple} style={{ animationDelay: `${i * 0.06}s` }}>
                 <div className="trust-strip__icon" style={{ background: f.bg, color: f.color }}>{f.icon}</div>
                 <div>
-                  <div className="trust-strip__title">
-                    {f.counter ? <><Counter target={f.counter} suffix="+" /></> : f.title}
-                  </div>
-                  <div className="trust-strip__desc">{f.counter ? f.desc : f.desc}</div>
+                  <div className="trust-strip__title">{f.title}</div>
+                  <div className="trust-strip__desc">{f.desc}</div>
                 </div>
               </div>
             ))}
@@ -626,12 +610,11 @@ export default function Home() {
       )}
 
       {/* ════════════ WHY CHOOSE US ══════════════════════════════════════ */}
-      <AnimatedSection animation={getAnimationSetting('whyChoose')} as="section" className="section why-section why-section--parallax">
-        <div className="why-section__bg" aria-hidden="true" />
-        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+      <AnimatedSection animation={getAnimationSetting('whyChoose')} as="section" className="section why-section">
+        <div className="container">
           <div className="section__header" style={{ flexDirection: 'column', gap: '4px', textAlign: 'center' }}>
             <h2 className="section__title" style={{ justifyContent: 'center' }}>Why Choose Batla Medicos?</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Trusted by <Counter target={50000} suffix="+" /> families in Jamia Nagar</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Trusted by 50,000+ families in Jamia Nagar</p>
           </div>
           <div className="why-grid">
             {WHY_CHOOSE.map((w, i) => (
@@ -639,33 +622,6 @@ export default function Home() {
                 <div className="why-card__icon" style={{ background: w.bg, color: w.color }}>{w.icon}</div>
                 <h4 className="why-card__title">{w.title}</h4>
                 <p className="why-card__desc">{w.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </AnimatedSection>
-
-      {/* ════════════ TESTIMONIALS ═══════════════════════════════════════ */}
-      <AnimatedSection as="section" className="section testimonials-section">
-        <div className="container">
-          <div className="section__header" style={{ flexDirection: 'column', gap: '4px', textAlign: 'center' }}>
-            <h2 className="section__title" style={{ justifyContent: 'center' }}>What Our Customers Say</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Real reviews from real customers</p>
-          </div>
-          <div className="testimonials-grid">
-            {TESTIMONIALS.map((t, i) => (
-              <div key={i} className="testimonial-card" style={{ animationDelay: `${i * 0.1}s` }}>
-                <Quote size={24} className="testimonial-card__quote" />
-                <p className="testimonial-card__text">{t.text}</p>
-                <div className="testimonial-card__footer">
-                  <div className="testimonial-card__avatar">{t.avatar}</div>
-                  <div>
-                    <div className="testimonial-card__name">{t.name}</div>
-                    <div className="testimonial-card__stars">
-                      {Array.from({ length: t.rating }, (_, j) => <Star key={j} size={13} fill="#F59E0B" color="#F59E0B" />)}
-                    </div>
-                  </div>
-                </div>
               </div>
             ))}
           </div>
