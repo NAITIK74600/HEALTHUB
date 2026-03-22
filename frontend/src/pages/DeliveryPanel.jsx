@@ -12,6 +12,7 @@ import {
   Power, PowerOff, Navigation, History, ChevronRight, Shield,
   Phone, MessageCircle
 } from 'lucide-react';
+import SEO from '../components/SEO';
 
 // ── Registration Form ─────────────────────────────────────────────────────────
 function RegisterForm({ onRegistered }) {
@@ -247,6 +248,7 @@ export default function DeliveryPanel() {
   // ── Approved — Show full dashboard ──────────────────────────────────────────
   return (
     <main className="delivery-panel container">
+      <SEO title="Delivery Dashboard" description="Batla Medicos delivery partner dashboard." path="/delivery" noIndex />
       {otpOrder && (
         <DeliveryOtpModal order={otpOrder} onClose={() => setOtpOrder(null)}
           onVerified={() => { setOtpOrder(null); fetchOrders(); }} />

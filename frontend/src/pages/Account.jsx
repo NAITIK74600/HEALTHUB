@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 import { User, Users, Plus, Trash2, Edit2, X, Heart } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const RELATIONS = ['Father', 'Mother', 'Spouse', 'Child', 'Sibling', 'Guardian', 'Other'];
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
@@ -93,6 +94,7 @@ export default function Account() {
 
   return (
     <main className="account-page container">
+      <SEO title="My Account" description="Manage your Batla Medicos account, profile and family members." path="/account" noIndex />
       <h1>My Account</h1>
 
       <div className="account-tabs">

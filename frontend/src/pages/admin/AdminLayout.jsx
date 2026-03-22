@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Percent, Shield, LogOut, ExternalLink, ChevronLeft, ChevronRight, Bell, FileText, FlaskConical, Menu, X, Truck, Ticket, Star, Sparkles, FolderOpen } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import NotificationBell from '../../components/NotificationBell';
+import SEO from '../../components/SEO';
 
 class AdminErrorBoundary extends Component {
   state = { hasError: false, error: null };
@@ -172,6 +173,7 @@ export default function AdminLayout() {
 
   return (
     <div className="admin-layout">
+      <SEO title="Admin Panel" description="Batla Medicos admin dashboard." path="/admin" noIndex />
       {/* Desktop sidebar */}
       <aside className={`admin-sidebar admin-sidebar--desktop ${sidebarOpen ? '' : 'admin-sidebar--collapsed'}`}>
         <SidebarContent collapsed={!sidebarOpen} />

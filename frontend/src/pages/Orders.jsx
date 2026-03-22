@@ -5,6 +5,7 @@ import OrderStatusBadge from '../components/OrderStatusBadge';
 import { useCart } from '../context/CartContext';
 import toast from 'react-hot-toast';
 import { RefreshCw } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const STATUS_FILTERS = [
   { value: '', label: 'All Orders' },
@@ -62,6 +63,7 @@ export default function Orders() {
 
   return (
     <main className="orders-page container">
+      <SEO title="My Orders" description="Track and manage your Batla Medicos orders." path="/orders" noIndex />
       <div className="orders-page__header">
         <h1>My Orders</h1>
         {orders.length > 0 && (

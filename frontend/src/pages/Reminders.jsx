@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Bell, BellOff, Plus, Trash2, Check, Clock, Pill, Edit2, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import SEO from '../components/SEO';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const STORAGE_KEY = 'bm_medicine_reminders';
@@ -125,6 +126,7 @@ export default function Reminders() {
 
   return (
     <main className="rem-page container">
+      <SEO title="Medicine Reminders" description="Set medicine reminders and never miss a dose with Batla Medicos." path="/reminders" noIndex />
       <div className="rem-page__header">
         <div>
           <h1><Pill size={22} /> Medicine Reminders</h1>
