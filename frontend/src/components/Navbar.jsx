@@ -39,7 +39,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="navbar__brand">
             <div className="navbar__logo">
-              <img src="/logo.png" className="navbar__logo-img" alt="Batla Medicos" />
+              <img src="/logo.png?v=3" className="navbar__logo-img" alt="Batla Medicos" />
             </div>
             <div className="navbar__brand-text">
               <span className="navbar__brand-red">Batla Medicos</span>

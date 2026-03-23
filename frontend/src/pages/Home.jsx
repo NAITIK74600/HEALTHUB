@@ -448,7 +448,7 @@ export default function Home() {
 
             {/* Centre logo – rendered above the 3-D scene */}
             <div className="orbit-center" aria-label="Batla Medicos">
-              <img src="/logo.png" className="orbit-center__capsule" alt="Batla Medicos" />
+              <img src="/logo.png?v=3" className="orbit-center__capsule" alt="Batla Medicos" />
             </div>
           </div>
           <div className="hero__content" data-depth="0.5">
