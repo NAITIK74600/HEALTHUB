@@ -57,6 +57,7 @@ import AdminBrands from './pages/admin/AdminBrands';
 import AdminSiteSettings from './pages/admin/AdminSiteSettings';
 import AdminCategories from './pages/admin/AdminCategories';
 import AdminPromotions from './pages/admin/AdminPromotions';
+import InstallPrompt from './components/InstallPrompt';
 
 const PublicLayout = () => (
   <>
@@ -123,6 +124,7 @@ export default function App() {
           <CartProvider>
             <ScrollToTop />
             <NotificationPrompt />
+            <InstallPrompt />
             <Toaster position="top-right" />
             <Routes>
               <Route element={<PublicLayout />}>
