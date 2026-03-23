@@ -8,6 +8,8 @@ import {
   TestTube, Package, GlassWater, Gem, LayoutGrid, Activity,
   SmilePlus, Users, Zap, Shield, Award, FileText, BadgePercent,
 } from 'lucide-react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 import { getActiveOffers } from '../api/offers';
 import { getCategories } from '../api/categories';
 import { getProducts } from '../api/products';
@@ -17,6 +19,7 @@ import SEO from '../components/SEO';
 import ProductCard from '../components/ProductCard';
 import OfferBanner from '../components/OfferBanner';
 import AnimatedSection from '../components/AnimatedSection';
+import OrbitalGlobe from '../components/OrbitalGlobe';
 import { useRipple, useParallaxMouse, useTilt3D } from '../hooks/useAnimations';
 import { getAnimationSetting } from '../pages/admin/AdminSiteSettings';
 
@@ -191,6 +194,11 @@ export default function Home() {
   const navigate = useNavigate();
   const ripple = useRipple();
   const heroParallax = useParallaxMouse();
+
+  // AOS scroll animations
+  useEffect(() => {
+    AOS.init({ duration: 700, easing: 'ease-out-cubic', once: true, offset: 60 });
+  }, []);
   const dealTilt = useTilt3D({ maxTilt: 6, perspective: 1000 });
   const [offers, setOffers]         = useState([]);
   const [categories, setCategories] = useState([]);
@@ -400,57 +408,7 @@ export default function Home() {
           <div className="hero__shape hero__shape--5" />
         </div>
         <div className="hero__layout">
-          <div className="hero-orbital" aria-hidden="true" data-depth="1.5">
-            {/* 3-D globe stage – orbit bands live in perspective space */}
-            <div className="globe-stage">
-              {/* Band 1 – outer r=125 · tilted 72° · CW 7s */}
-              <div className="orbit-band orbit-band--1">
-                <div className="orbit-band__track" />
-                <div className="orbit-spinner orbit-spinner--cw7">
-                  <div className="orbit-dot"><Pill size={17} color="white" /></div>
-                </div>
-                <div className="orbit-spinner orbit-spinner--cw7" style={{animationDelay:'-2.33s'}}>
-                  <div className="orbit-dot orbit-dot--green"><Leaf size={16} color="#4ade80" /></div>
-                </div>
-                <div className="orbit-spinner orbit-spinner--cw7" style={{animationDelay:'-4.67s'}}>
-                  <div className="orbit-dot orbit-dot--blue"><Droplets size={16} color="#93C5FD" /></div>
-                </div>
-              </div>
-
-              {/* Band 2 – middle r=88 · tilted 72°+60°Z · CCW 10s */}
-              <div className="orbit-band orbit-band--2">
-                <div className="orbit-band__track" />
-                <div className="orbit-spinner orbit-spinner--ccw10">
-                  <div className="orbit-dot orbit-dot--green"><Leaf size={18} color="#4ade80" /></div>
-                </div>
-                <div className="orbit-spinner orbit-spinner--ccw10" style={{animationDelay:'-3.33s'}}>
-                  <div className="orbit-dot orbit-dot--blue"><FlaskConical size={17} color="#93C5FD" /></div>
-                </div>
-                <div className="orbit-spinner orbit-spinner--ccw10" style={{animationDelay:'-6.67s'}}>
-                  <div className="orbit-dot orbit-dot--yellow"><Syringe size={16} color="#FDE68A" /></div>
-                </div>
-              </div>
-
-              {/* Band 3 – inner r=52 · tilted 72°−60°Z · CW 5s */}
-              <div className="orbit-band orbit-band--3">
-                <div className="orbit-band__track" />
-                <div className="orbit-spinner orbit-spinner--cw5">
-                  <div className="orbit-dot"><Stethoscope size={15} color="white" /></div>
-                </div>
-                <div className="orbit-spinner orbit-spinner--cw5" style={{animationDelay:'-1.67s'}}>
-                  <div className="orbit-dot orbit-dot--green"><Activity size={14} color="#4ade80" /></div>
-                </div>
-                <div className="orbit-spinner orbit-spinner--cw5" style={{animationDelay:'-3.33s'}}>
-                  <div className="orbit-dot orbit-dot--yellow"><Heart size={14} color="#FDE68A" /></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Centre logo – rendered above the 3-D scene */}
-            <div className="orbit-center" aria-label="Batla Medicos">
-              <img src="/logo.png?v=3" className="orbit-center__capsule" alt="Batla Medicos" />
-            </div>
-          </div>
+          <OrbitalGlobe size={300} />
           <div className="hero__content" data-depth="0.5">
             <span className="hero__tag">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 2v20M2 12h20"/></svg>
@@ -517,7 +475,7 @@ export default function Home() {
         <div className="container">
           <div className="trust-strip__grid">
             {TRUST_FEATURES.map((f, i) => (
-              <div key={i} className="trust-strip__item ripple-btn" onClick={ripple} style={{ animationDelay: `${i * 0.06}s` }}>
+              <div key={i} className="trust-strip__item ripple-btn" onClick={ripple} style={{ animationDelay: `${i * 0.06}s` }} data-aos="fade-up" data-aos-delay={i * 80}>
                 <div className="trust-strip__icon" style={{ background: f.bg, color: f.color }}>{f.icon}</div>
                 <div>
                   <div className="trust-strip__title">{f.title}</div>
@@ -533,7 +491,7 @@ export default function Home() {
       {offers.length > 0 && <OfferBanner offers={offers} />}
 
       {/* ═══════════════════ PERSONAL CARE CATEGORIES ═══════════════════ */}
-      <AnimatedSection animation={getAnimationSetting('personalCare')} as="section" className="section">
+      <AnimatedSection animation={getAnimationSetting('personalCare')} as="section" className="section" data-aos="fade-up">
         <div className="container">
           <div className="section__header">
             <h2 className="section__title">Personal care</h2>
@@ -569,7 +527,7 @@ export default function Home() {
 
       {/* ═══════════════════ FEATURED BRANDS CAROUSEL ═══════════════════ */}
       {featuredBrands.length > 0 && (
-        <AnimatedSection animation={getAnimationSetting('featuredBrands')}>
+        <AnimatedSection animation={getAnimationSetting('featuredBrands')} data-aos="fade-up">
         <ScrollRow title="Featured brands" link="/products" accent="">
           {featuredBrands.map(b => (
             <Link key={b._id} to={`/products?brand=${encodeURIComponent(b.name)}`} className="brand-circle-card ripple-btn" onClick={ripple} title={b.name}>
@@ -587,7 +545,7 @@ export default function Home() {
       )}
 
       {/* ═══════════════════ SHOP BY CATEGORY ══════════════════════════ */}
-      <AnimatedSection animation={getAnimationSetting('shopByCategory')} as="section" className="section section--gray">
+      <AnimatedSection animation={getAnimationSetting('shopByCategory')} as="section" className="section section--gray" data-aos="fade-up">
         <div className="container">
           <div className="section__header">
             <h2 className="section__title">Shop by Category</h2>
@@ -606,7 +564,7 @@ export default function Home() {
 
       {/* ═══════════════════ NEW ARRIVALS ════════════════════════════════ */}
       {newArrivals.length > 0 && (
-        <AnimatedSection animation={getAnimationSetting('newArrivals')} as="section" className="section section--gray">
+        <AnimatedSection animation={getAnimationSetting('newArrivals')} as="section" className="section section--gray" data-aos="fade-up">
           <div className="container">
             <div className="section__header">
               <h2 className="section__title">New Arrivals</h2>
@@ -662,7 +620,7 @@ export default function Home() {
       </div>
 
       {/* ════════════ DEAL OF THE DAY ════════════════════════════════════ */}
-      <AnimatedSection animation={getAnimationSetting('dealOfDay')} as="section" className="deal-section">
+      <AnimatedSection animation={getAnimationSetting('dealOfDay')} as="section" className="deal-section" data-aos="fade-up">
         <div className="container">
           <div className="deal-card" ref={dealTilt}>
             <div className="deal-card__badge"><BadgePercent size={16} /> Deal of the Day</div>
@@ -701,7 +659,7 @@ export default function Home() {
 
       {/* ════════════ PATHOLOGY TESTS ══════════════════════════════════ */}
       {labTests.length > 0 && (
-        <AnimatedSection animation={getAnimationSetting('labTests')} as="section" className="section">
+        <AnimatedSection animation={getAnimationSetting('labTests')} as="section" className="section" data-aos="fade-up">
           <div className="container">
             <div className="section__header">
               <h2 className="section__title">Pathology Tests <span className="lab-section__badge">UP TO 70% OFF</span></h2>
@@ -728,7 +686,7 @@ export default function Home() {
       )}
 
       {/* ════════════ WHY CHOOSE US ══════════════════════════════════════ */}
-      <AnimatedSection animation={getAnimationSetting('whyChoose')} as="section" className="section why-section">
+      <AnimatedSection animation={getAnimationSetting('whyChoose')} as="section" className="section why-section" data-aos="fade-up">
         <div className="container">
           <div className="section__header" style={{ flexDirection: 'column', gap: '4px', textAlign: 'center' }}>
             <h2 className="section__title" style={{ justifyContent: 'center' }}>Why Choose Batla Medicos?</h2>
@@ -736,7 +694,7 @@ export default function Home() {
           </div>
           <div className="why-grid">
             {WHY_CHOOSE.map((w, i) => (
-              <div key={i} className="why-card ripple-btn" onClick={ripple} style={{ animationDelay: `${i * 0.08}s` }}>
+              <div key={i} className="why-card ripple-btn" onClick={ripple} style={{ animationDelay: `${i * 0.08}s` }} data-aos="zoom-in" data-aos-delay={i * 80}>
                 <div className="why-card__icon" style={{ background: w.bg, color: w.color }}>{w.icon}</div>
                 <h4 className="why-card__title">{w.title}</h4>
                 <p className="why-card__desc">{w.desc}</p>
