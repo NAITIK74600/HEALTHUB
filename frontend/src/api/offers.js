@@ -1,6 +1,6 @@
 import api from './axios';
 
-export const getActiveOffers = () => api.get('/offers');
+export const getActiveOffers = (display) => api.get('/offers', { params: { ...(display ? { display } : {}) } });
 export const getAllOffers = () => api.get('/offers/all');
 export const getOfferStats = () => api.get('/offers/stats');
 export const createOffer = (data) => api.post('/offers', data);

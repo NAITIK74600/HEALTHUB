@@ -3,7 +3,7 @@ import { getAllOffers, createOffer, updateOffer, deleteOffer, duplicateOffer, ge
 import { getCategories } from '../../api/categories';
 import { uploadImage } from '../../api/upload';
 import toast from 'react-hot-toast';
-import { Plus, Pencil, Trash2, ExternalLink, Copy, Eye, MousePointerClick, Tag, Truck, BarChart3, Clock, ArrowUp, ArrowDown, CheckSquare, Square, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Plus, Pencil, Trash2, ExternalLink, Copy, Eye, MousePointerClick, Tag, Truck, BarChart3, Clock, ArrowUp, ArrowDown, CheckSquare, Square, ToggleLeft, ToggleRight, Monitor, Store, Layers } from 'lucide-react';
 
 const LINK_TYPES = [
   { value: 'products',      label: '🛒 All Products',         path: () => '/products' },
@@ -37,7 +37,7 @@ const EMPTY = {
   title: '', description: '', imageUrl: '', startDate: '', endDate: '',
   isActive: true, freeDelivery: false, freeDeliveryMin: '',
   discountText: '', badgeColor: '#C0392B', priority: 0,
-  isDealOfDay: false,
+  isDealOfDay: false, displayOn: 'both',
 };
 
 const BADGE_COLORS = [
@@ -102,6 +102,7 @@ export default function AdminOffers() {
         freeDeliveryMin: form.freeDeliveryMin ? Number(form.freeDeliveryMin) : 0,
         ord: Number(form.priority) || 0,
         badge: form.isDealOfDay ? 'deal_of_day' : '',
+        displayOn: form.displayOn || 'both',
       };
       if (editing) {
         await updateOffer(editing, payload);
@@ -178,6 +179,7 @@ export default function AdminOffers() {
       badgeColor: offer.badgeColor || '#C0392B',
       priority: offer.priority || 0,
       isDealOfDay: offer.badge === 'deal_of_day',
+      displayOn: offer.displayOn || 'both',
     });
     setLinkType(parsed.type);
     setLinkCat(parsed.cat);
@@ -414,8 +416,30 @@ export default function AdminOffers() {
             checked={form.isActive}
             onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))}
           />
-          Active (show on homepage)
+          Active (show on site)
         </label>
+
+        {/* ── Display On ── */}
+        <div className="form-group">
+          <label>Display On</label>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {[
+              { value: 'both', label: 'Both Pages', icon: <Layers size={14} /> },
+              { value: 'home', label: 'Home Page Only', icon: <Monitor size={14} /> },
+              { value: 'products', label: 'Products Page Only', icon: <Store size={14} /> },
+            ].map(opt => (
+              <button
+                key={opt.value}
+                type="button"
+                className={`btn btn--sm ${form.displayOn === opt.value ? 'btn--primary' : 'btn--outline'}`}
+                onClick={() => setForm(f => ({ ...f, displayOn: opt.value }))}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}
+              >
+                {opt.icon} {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <label className="checkbox-label" style={{ background: '#fef9c3', border: '1.5px solid #fde047', borderRadius: 8, padding: '8px 12px', gap: 8 }}>
           <input
@@ -541,6 +565,16 @@ export default function AdminOffers() {
                   {o.freeDelivery && (
                     <span className="offer-tile__free-delivery">
                       🚚 Free Delivery {o.freeDeliveryMin > 0 ? `above ₹${o.freeDeliveryMin}` : ''}
+                    </span>
+                  )}
+                  {o.displayOn && o.displayOn !== 'both' && (
+                    <span style={{ fontSize: '0.7rem', background: '#eff6ff', color: '#2563eb', padding: '2px 6px', borderRadius: 4 }}>
+                      {o.displayOn === 'home' ? '🏠 Home Only' : '🛒 Products Only'}
+                    </span>
+                  )}
+                  {o.displayOn === 'both' && (
+                    <span style={{ fontSize: '0.7rem', background: '#f0fdf4', color: '#166534', padding: '2px 6px', borderRadius: 4 }}>
+                      🌐 Both Pages
                     </span>
                   )}
                   {o.priority > 0 && (

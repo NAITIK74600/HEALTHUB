@@ -364,7 +364,7 @@ export default function Home() {
   }, [dealEndDate]);
 
   useEffect(() => {
-    getActiveOffers().then(r => {
+    getActiveOffers('home').then(r => {
       const allOffers = r.data.offers || [];
       setOffers(allOffers);
       const deal = allOffers.find(o => o.badge === 'deal_of_day');

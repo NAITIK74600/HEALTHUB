@@ -3,8 +3,10 @@ import { useSearchParams } from 'react-router-dom';import { Search, SlidersHoriz
 import toast from 'react-hot-toast';
 import { getProducts, getTopBrands, requestMedicineAvailability } from '../api/products';
 import { getBrandPromotions } from '../api/brands';
+import { getActiveOffers } from '../api/offers';
 import { getCategories } from '../api/categories';
 import ProductCard from '../components/ProductCard';
+import OfferBanner from '../components/OfferBanner';
 import SEO from '../components/SEO';
 import { trackSearch } from '../utils/analytics';
 
@@ -76,6 +78,7 @@ export default function ProductCatalog() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [brands, setBrands] = useState([]);
   const [brandPromoVideos, setBrandPromoVideos] = useState([]);
+  const [offers, setOffers] = useState([]);
   const sidebarRef = useRef(null);
   const [requestName, setRequestName] = useState('');
   const [requestPhone, setRequestPhone] = useState('');
@@ -199,6 +202,7 @@ export default function ProductCatalog() {
   useEffect(() => {
     getCategories().then(r => setCategories(r.data.categories)).catch(() => {});
     getTopBrands().then(r => setBrands(r.data.brands || [])).catch(() => {});
+    getActiveOffers('products').then(r => setOffers(r.data.offers || [])).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -267,6 +271,8 @@ export default function ProductCatalog() {
           </div>
         </div>
       </div>
+      {/* ── Offer Banner ── */}
+      {offers.length > 0 && <OfferBanner offers={offers} />}
       {/* ── Brand Promo Videos (shown when filtering by a specific brand) ── */}
       {brand && brandPromoVideos.length > 0 && (
         <div style={{ background: '#0d0d1a', padding: 0, overflow: 'hidden' }}>

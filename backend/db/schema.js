@@ -342,12 +342,15 @@ async function ensureCoreSchema() {
       start_date DATETIME NULL,
       end_date DATETIME NULL,
       clicks INT NOT NULL DEFAULT 0,
+      display_on VARCHAR(20) NOT NULL DEFAULT 'both',
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       PRIMARY KEY (id),
       KEY idx_offers_active (is_active, ord)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
+
+  await execute(`ALTER TABLE offers ADD COLUMN display_on VARCHAR(20) NOT NULL DEFAULT 'both'`).catch(() => {});
 
   await execute(`
     CREATE TABLE IF NOT EXISTS prescriptions (
