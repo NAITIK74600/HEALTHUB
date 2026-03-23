@@ -104,7 +104,7 @@ export default function ProductCard({ product }) {
     e.stopPropagation();
     // Fly-to-cart animation
     const imgEl = cardRef.current?.querySelector('.medicine-image, .mi-fallback, img');
-    if (imgEl) flyToCart(imgEl);
+    flyToCart(imgEl, cardRef.current);
     addItem(product);
     playCartSound();
     // Show "Added" feedback for 1.2s

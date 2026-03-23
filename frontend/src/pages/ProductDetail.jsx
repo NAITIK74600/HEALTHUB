@@ -382,7 +382,7 @@ export default function ProductDetail() {
                 disabled={product.stock === 0}
                 onClick={() => {
                   const imgEl = document.querySelector('.pd-gallery__img, .pd-gallery .medicine-image');
-                  if (imgEl) flyToCart(imgEl);
+                  flyToCart(imgEl, document.querySelector('.pd-gallery, .pd-main'));
                   addItem(product, qty);
                   setCartAdded(true);
                   setTimeout(() => setCartAdded(false), 1200);

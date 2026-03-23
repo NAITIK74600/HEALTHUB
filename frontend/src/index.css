@@ -6773,57 +6773,50 @@ svg { flex-shrink: 0; }
 }
 .orbit-track--3 {
   width: 106px; height: 106px;
-  border: 1.5px dashed rgba(252,129,129,0.35);
+  border: 1.5px dashed rgba(147,197,253,0.35);
 }
 
-/* Centre BM brand mark */
+/* Centre capsule logo */
 .orbit-center {
   position: absolute;
   top: 50%; left: 50%;
   width: 90px; height: 90px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: linear-gradient(145deg, #5c0a15 0%, #C0392B 48%, #0a3d1f 100%);
+  background: linear-gradient(145deg, #0a1f6e 0%, #3451D1 48%, #0a3d1f 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   border: 2.5px solid rgba(255,255,255,0.22);
   box-shadow:
-    0 0 0 5px rgba(192,57,43,0.2),
-    0 0 30px rgba(192,57,43,0.55),
-    0 0 60px rgba(27,136,67,0.22),
+    0 0 0 5px rgba(52,81,209,0.20),
+    0 0 30px rgba(52,81,209,0.55),
+    0 0 60px rgba(39,174,96,0.22),
     0 6px 26px rgba(0,0,0,0.55),
     inset 0 1px 0 rgba(255,255,255,0.12);
   animation: logo-glow 3s ease-in-out infinite;
   z-index: 10;
   overflow: visible;
 }
-/* BM text with gold→white→mint gradient */
-.orbit-center__bm {
-  font-size: 28px;
-  font-weight: 900;
-  letter-spacing: 2px;
-  font-family: Georgia, 'Times New Roman', serif;
-  line-height: 1;
-  background: linear-gradient(135deg, #FFD700 0%, #FFFFFF 45%, #86EFAC 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 0 8px rgba(255,215,0,0.55)) drop-shadow(0 1px 3px rgba(0,0,0,0.4));
-  user-select: none;
+/* Capsule SVG in orbit center */
+.orbit-center__capsule {
+  width: 52px;
+  height: 52px;
+  filter: drop-shadow(0 0 7px rgba(147,197,253,0.5)) drop-shadow(0 0 3px rgba(74,222,128,0.4));
   pointer-events: none;
+  user-select: none;
 }
 @keyframes logo-glow {
   0%,100% {
     box-shadow:
-      0 0 0 5px rgba(192,57,43,0.15),
-      0 0 26px rgba(192,57,43,0.4),
+      0 0 0 5px rgba(52,81,209,0.15),
+      0 0 26px rgba(52,81,209,0.40),
       0 8px 28px rgba(0,0,0,0.45);
   }
   50% {
     box-shadow:
-      0 0 0 11px rgba(27,136,67,0.12),
-      0 0 50px rgba(27,136,67,0.38),
+      0 0 0 11px rgba(39,174,96,0.12),
+      0 0 50px rgba(39,174,96,0.38),
       0 8px 28px rgba(0,0,0,0.38);
   }
 }
@@ -6889,14 +6882,58 @@ svg { flex-shrink: 0; }
   font-weight: 900;
   color: rgba(255, 255, 255, 0.3);
 }
-.hero__particle--1 { left:  4%; width: 14px; height: 14px; animation-duration:  9s; animation-delay:  0s;  }
-.hero__particle--2 { left: 12%; width: 22px; height: 22px; animation-duration: 14s; animation-delay: -4s;  }
-.hero__particle--3 { left: 22%; width: 12px; height: 12px; animation-duration: 10s; animation-delay: -7s;  }
-.hero__particle--4 { left: 35%; width: 18px; height: 18px; animation-duration:  8s; animation-delay: -2s;  }
-.hero__particle--5 { left: 48%; width: 20px; height: 20px; animation-duration: 16s; animation-delay: -9s;  }
-.hero__particle--6 { left: 63%; width: 16px; height: 16px; animation-duration: 11s; animation-delay: -1s;  }
-.hero__particle--7 { left: 76%; width: 24px; height: 24px; animation-duration: 13s; animation-delay: -5s;  }
-.hero__particle--8 { left: 89%; width: 10px; height: 10px; animation-duration:  7s; animation-delay: -3s;  }
+/* Pill shapes — 1,5,9,13 */
+.hero__particle--1, .hero__particle--5,
+.hero__particle--9, .hero__particle--13 {
+  height: 10px !important;
+  border-radius: 50px;
+  border: 1.5px solid rgba(147,197,253,0.45);
+  background: rgba(147,197,253,0.10);
+}
+.hero__particle--1::after, .hero__particle--5::after,
+.hero__particle--9::after, .hero__particle--13::after { content: ''; }
+/* Leaf shapes — 2,6,10,14 */
+.hero__particle--2, .hero__particle--6,
+.hero__particle--10, .hero__particle--14 {
+  border-radius: 0 70% 100% 0 / 0 100% 0 100%;
+  background: rgba(74,222,128,0.18);
+  border: 1.5px solid rgba(74,222,128,0.45);
+}
+.hero__particle--2::after, .hero__particle--6::after,
+.hero__particle--10::after, .hero__particle--14::after { content: ''; }
+/* Cross/plus — 3,7,11,15 — uses default ::after '+' */
+.hero__particle--3, .hero__particle--7,
+.hero__particle--11, .hero__particle--15 {
+  border-radius: 4px;
+  background: rgba(255,255,255,0.06);
+}
+/* Small glow dots — 4,8,12,16 */
+.hero__particle--4, .hero__particle--8,
+.hero__particle--12, .hero__particle--16 {
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.30);
+}
+.hero__particle--4::after, .hero__particle--8::after,
+.hero__particle--12::after, .hero__particle--16::after { content: ''; }
+/* Positions & timings — original 8 */
+.hero__particle--1  { left:  4%; width: 26px; animation-duration:  9s; animation-delay:  0s; }
+.hero__particle--2  { left: 12%; width: 18px; height: 18px; animation-duration: 14s; animation-delay: -4s; }
+.hero__particle--3  { left: 22%; width: 12px; height: 12px; animation-duration: 10s; animation-delay: -7s; }
+.hero__particle--4  { left: 35%; width: 16px; height: 16px; animation-duration:  8s; animation-delay: -2s; }
+.hero__particle--5  { left: 48%; width: 30px; animation-duration: 16s; animation-delay: -9s; }
+.hero__particle--6  { left: 63%; width: 14px; height: 14px; animation-duration: 11s; animation-delay: -1s; }
+.hero__particle--7  { left: 76%; width: 14px; height: 14px; animation-duration: 13s; animation-delay: -5s; }
+.hero__particle--8  { left: 89%; width: 10px; height: 10px; animation-duration:  7s; animation-delay: -3s; }
+/* New 8 medicine particles */
+.hero__particle--9  { left:  7%; width: 22px; animation-duration: 11s; animation-delay:  -3s; }
+.hero__particle--10 { left: 17%; width: 13px; height: 13px; animation-duration:  8s; animation-delay:  -6s; }
+.hero__particle--11 { left: 29%; width: 11px; height: 11px; animation-duration: 12s; animation-delay:  -1s; }
+.hero__particle--12 { left: 43%; width: 15px; height: 15px; animation-duration:  9s; animation-delay:  -8s; }
+.hero__particle--13 { left: 57%; width: 24px; animation-duration: 15s; animation-delay:  -4s; }
+.hero__particle--14 { left: 70%; width: 12px; height: 12px; animation-duration:  7s; animation-delay:  -2s; }
+.hero__particle--15 { left: 82%; width: 10px; height: 10px; animation-duration: 10s; animation-delay:  -7s; }
+.hero__particle--16 { left: 94%; width: 18px; height: 18px; animation-duration: 13s; animation-delay:  -5s; }
 
 /* ---- Professional Feature Cards (right side of hero) ---- */
 .hero__visual {
@@ -7045,7 +7082,7 @@ svg { flex-shrink: 0; }
   .hero-orbital .orbit-arm--r2 .orbit-dot { left: calc(70px  - 18px); }
   .hero-orbital .orbit-arm--r3 .orbit-dot { left: calc(42px  - 18px); }
   .hero-orbital .orbit-center { width: 74px; height: 74px; }
-  .hero-orbital .orbit-center__bm { font-size: 23px; }
+  .hero-orbital .orbit-center__capsule { width: 42px; height: 42px; }
   .hero-orbital .orbit-dot { width: 36px; height: 36px; top: -18px; }
 }
 @media (max-width: 540px) {
@@ -7059,7 +7096,7 @@ svg { flex-shrink: 0; }
   .hero-orbital .orbit-arm--r2 .orbit-dot { left: calc(58px - 16px); }
   .hero-orbital .orbit-arm--r3 .orbit-dot { left: calc(35px - 16px); }
   .hero-orbital .orbit-center { width: 62px; height: 62px; }
-  .hero-orbital .orbit-center__bm { font-size: 20px; letter-spacing: 1.5px; }
+  .hero-orbital .orbit-center__capsule { width: 34px; height: 34px; }
   .hero-orbital .orbit-dot { width: 32px; height: 32px; top: -16px; }
 }
 @media (max-width: 380px) {
