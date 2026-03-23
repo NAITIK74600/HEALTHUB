@@ -372,6 +372,16 @@ export default function AdminProducts() {
   const handleExportExcel = async () => {
     try {
       const { data } = await exportProductsExcel({ search, category: catFilter || undefined, brand: brandFilter || undefined, status: statusFilter, stockFilter });
+      // Check if the response is a JSON error (blob responses with error status)
+      if (data instanceof Blob && data.type?.includes('application/json')) {
+        const text = await data.text();
+        try { const err = JSON.parse(text); toast.error(err.message || 'Export failed.'); } catch { toast.error('Export failed.'); }
+        return;
+      }
+      if (!data || data.size === 0) {
+        toast.error('No products found to export.');
+        return;
+      }
       const url = URL.createObjectURL(new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
       const a = document.createElement('a');
       a.href = url;
@@ -379,17 +389,32 @@ export default function AdminProducts() {
       a.click();
       URL.revokeObjectURL(url);
       toast.success('Excel export downloaded! Edit and re-import to update products.');
-    } catch {
-      toast.error('Could not export products.');
+    } catch (err) {
+      // When responseType is 'blob', error responses come as blobs too
+      if (err.response?.data instanceof Blob) {
+        try {
+          const text = await err.response.data.text();
+          const parsed = JSON.parse(text);
+          toast.error(parsed.message || 'Could not export products.');
+        } catch { toast.error('Could not export products. Try applying filters to reduce the dataset.'); }
+      } else {
+        const msg = err.response?.data?.message || 'Could not export products. Try again or apply filters to reduce the number of products.';
+        toast.error(msg);
+      }
     }
   };
 
   const handleDownloadTemplate = async () => {
     try {
       const { data } = await downloadImportTemplate();
+      if (!data || data.size === 0) {
+        toast.error('Could not download template.');
+        return;
+      }
       const url = URL.createObjectURL(new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
       const a = document.createElement('a'); a.href = url; a.download = 'products-template.xlsx'; a.click();
       URL.revokeObjectURL(url);
+      toast.success('Blank template downloaded! Fill in your products and import.');
     } catch { toast.error('Could not download template.'); }
   };
 
@@ -473,7 +498,7 @@ export default function AdminProducts() {
           {total > 0 && <span className="admin-page__count">{total.toLocaleString()}</span>}
         </h1>
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <button className="btn btn--outline" onClick={handleDownloadTemplate} title="Download all products with IDs — edit inline, add new at the bottom, then re-import">
+          <button className="btn btn--outline" onClick={handleDownloadTemplate} title="Download blank template for adding new products">
             <FileSpreadsheet size={16} /> Template
           </button>
           <button className="btn btn--outline" onClick={handleExportExcel} title="Export filtered products to Excel (.xlsx)">
@@ -522,7 +547,7 @@ export default function AdminProducts() {
               </div>
             </div>
             <p style={{ fontSize: '0.76rem', color: 'var(--gray-400)', marginTop: '1rem' }}>
-              💡 Download the <strong>Template</strong> to get all current products with IDs — edit inline and add new rows at the bottom, then import with Option 1.
+              💡 Download the <strong>Template</strong> for a blank sheet to add new products, or use <strong>Export Excel</strong> to get existing products with IDs for editing.
             </p>
           </div>
         </div>

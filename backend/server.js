@@ -253,6 +253,14 @@ app.get(/(.*)/, (req, res) => {
 // ── Global error handler — never expose stack traces in production ────────────
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
+  // Handle Multer file upload errors with friendly messages
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ message: 'File size too large. Please upload a smaller file.' });
+  }
+  if (err.name === 'MulterError') {
+    return res.status(400).json({ message: err.message || 'File upload error.' });
+  }
+
   const status = err.status || 500;
   console.error('[ERROR]', req.method, req.originalUrl, err.message);
   if (process.env.NODE_ENV !== 'production') console.error(err);

@@ -808,66 +808,18 @@ router.get('/admin/list', requireAuth, requireAdmin, async (req, res, next) => {
 
 router.get('/import-template', requireAuth, requireAdmin, async (req, res, next) => {
   try {
-    // Fetch all existing products with IDs so admin can edit inline and add new rows at the bottom
-    const [products, categories] = await Promise.all([
-      query(
-        `SELECT p.id, p.name, p.brand, p.salt,
-                c.slug AS category_slug, p.mrp, p.price, p.stock,
-                p.requires_prescription, p.code, p.pack, p.batch_number, p.is_active,
-                p.secondary_category_ids
-         FROM products p
-         LEFT JOIN categories c ON c.id = p.category_id
-         WHERE p.is_deleted = 0
-         ORDER BY p.id ASC
-         LIMIT 50000`,
-        []
-      ),
-      query('SELECT id, slug, name FROM categories WHERE is_deleted = 0 ORDER BY ord ASC, name ASC', []),
-    ]);
-
-    // Build id → slug map for secondary categories
-    const catIdToSlug = {};
-    for (const c of categories) catIdToSlug[c.id] = c.slug;
+    // Fetch categories only — template is a BLANK template for adding new products
+    const categories = await query(
+      'SELECT id, slug, name FROM categories WHERE is_deleted = 0 ORDER BY ord ASC, name ASC', []
+    );
 
     const wb = XLSX.utils.book_new();
 
-    // Products sheet — id first so rows with id = UPDATE, rows without id = INSERT NEW
+    // Products sheet — blank with headers + 1 example row
     const headers = ['id', 'name', 'brand', 'salt', 'category', 'mrp', 'price', 'stock', 'requiresPrescription', 'code', 'pack', 'batchNumber', 'isActive'];
-    const dataRows = products.map(r => {
-      // Build comma-separated category string: primary, secondary1, secondary2...
-      let catStr = r.category_slug || '';
-      if (r.secondary_category_ids) {
-        try {
-          const arr = typeof r.secondary_category_ids === 'string'
-            ? JSON.parse(r.secondary_category_ids) : r.secondary_category_ids;
-          if (Array.isArray(arr) && arr.length) {
-            const secSlugs = arr.map(id => catIdToSlug[id]).filter(Boolean);
-            if (secSlugs.length) catStr += ', ' + secSlugs.join(', ');
-          }
-        } catch {}
-      }
-      return [
-      r.id,
-      r.name || '',
-      r.brand || '',
-      r.salt || '',
-      catStr,
-      r.mrp,
-      r.price,
-      r.stock,
-      r.requires_prescription ? 'true' : 'false',
-      r.code || '',
-      r.pack || '',
-      r.batch_number || '',
-      r.is_active ? 'true' : 'false',
-    ]; });
+    const exampleRow = ['', 'Paracetamol 650 Tablet', 'Cipla', 'Paracetamol 650mg', 'caps-tabs', 35, 30, 120, 'false', 'PARA650-01', '10 tablets strip', 'BATCH-2026-01', 'true'];
 
-    // Add 5 empty rows at the bottom for new products (leave id blank to insert as new)
-    for (let i = 0; i < 5; i++) {
-      dataRows.push(['', '', '', '', '', '', '', '', 'false', '', '', '', 'true']);
-    }
-
-    const wsProducts = XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
+    const wsProducts = XLSX.utils.aoa_to_sheet([headers, exampleRow]);
     wsProducts['!freeze'] = { xSplit: 0, ySplit: 1 };
     wsProducts['!cols'] = [{ wch: 8 }, { wch: 40 }, { wch: 20 }, { wch: 25 },
                            { wch: 18 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 20 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 10 }];
@@ -877,17 +829,19 @@ router.get('/import-template', requireAuth, requireAdmin, async (req, res, next)
     const wsGuide = XLSX.utils.aoa_to_sheet([
       ['HOW TO USE THIS TEMPLATE', ''],
       ['', ''],
+      ['This is a BLANK template for adding NEW products.', ''],
+      ['To update existing products, use "Export Excel" instead — it includes product IDs.', ''],
+      ['', ''],
       ['OPTION 1 — Update existing + Add new', 'Use "Update existing + Add new" when importing'],
       ['  • Rows WITH an id value  →  update that product (price, stock, brand, etc.)', ''],
       ['  • Rows WITHOUT an id     →  insert as a NEW product', ''],
-      ['  • Add new products at the bottom of the sheet, leave the id column EMPTY', ''],
       ['', ''],
       ['OPTION 2 — Add new products only', 'Use "Add new products only" when importing'],
       ['  • All rows are treated as new products regardless of id column', ''],
       ['  • id column is ignored', ''],
       ['', ''],
       ['Column', 'Required', 'Notes'],
-      ['id', 'Keep to update / blank to add new', 'Product ID — keep to UPDATE that product, blank to INSERT as new'],
+      ['id', 'Leave blank for new products', 'Only needed when updating — use Export Excel to get IDs'],
       ['name', 'YES', 'Product name (max 200 chars)'],
       ['brand', 'no', 'Manufacturer / brand name'],
       ['salt', 'no', 'Active ingredient + strength'],
@@ -926,6 +880,9 @@ router.get('/csv-template', requireAuth, requireAdmin, (req, res) => {
 // Supports optional filters: ?search=&category=&brand=&status=&stockFilter=
 router.get('/export-excel', requireAuth, requireAdmin, async (req, res, next) => {
   try {
+    // Increase timeout for large exports
+    req.setTimeout(120000); // 2 minutes
+
     const categoryIds = await resolveCategoryIds(req.query.category);
     const { whereSql, values } = buildProductWhere({
       admin: true,
@@ -945,6 +902,10 @@ router.get('/export-excel', requireAuth, requireAdmin, async (req, res, next) =>
        LIMIT 50000`,
       values
     );
+
+    if (!rows.length) {
+      return res.status(404).json({ message: 'No products found to export.' });
+    }
 
     // Build real .xlsx with id as first column so imported rows can UPDATE by id
     const sheetData = [
@@ -1002,6 +963,7 @@ router.get('/export-excel', requireAuth, requireAdmin, async (req, res, next) =>
     const filename = `products-export-${new Date().toISOString().slice(0, 10)}.xlsx`;
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', buf.length);
     res.send(buf);
   } catch (err) { next(err); }
 });
@@ -1081,7 +1043,17 @@ const _TYPE_SLUG = {
 router.post(
   '/bulk-import',
   requireAuth, requireAdmin,
-  uploadSpreadsheet.single('file'),
+  (req, res, next) => {
+    uploadSpreadsheet.single('file')(req, res, (err) => {
+      if (err) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(413).json({ message: 'File size too large. Maximum allowed size is 50 MB.' });
+        }
+        return res.status(400).json({ message: err.message || 'File upload failed.' });
+      }
+      next();
+    });
+  },
   async (req, res, next) => {
     try {
       if (!req.file) return res.status(400).json({ message: 'No file uploaded.' });

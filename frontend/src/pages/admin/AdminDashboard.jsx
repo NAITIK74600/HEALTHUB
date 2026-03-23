@@ -111,7 +111,17 @@ export default function AdminDashboard() {
         const a = document.createElement('a'); a.href = url; a.download = `low-stock-${new Date().toISOString().slice(0,10)}.xlsx`; a.click(); URL.revokeObjectURL(url);
         toast.success('Low stock export downloaded!');
       }
-    } catch { toast.error(`Export failed.`); }
+    } catch (err) {
+      if (err.response?.data instanceof Blob) {
+        try {
+          const text = await err.response.data.text();
+          const parsed = JSON.parse(text);
+          toast.error(parsed.message || 'Export failed.');
+        } catch { toast.error('Export failed.'); }
+      } else {
+        toast.error(err.response?.data?.message || 'Export failed.');
+      }
+    }
     finally { setExporting(''); }
   };
 

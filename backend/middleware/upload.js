@@ -36,7 +36,7 @@ const uploadSpreadsheet = multer({
     if (SHEET_TYPES.includes(file.mimetype) || SHEET_EXTS.includes(ext)) return cb(null, true);
     cb(new Error('Invalid file type. Only Excel (.xlsx, .xls) and CSV (.csv) files are allowed.'), false);
   },
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB for spreadsheets
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB for spreadsheets
 });
 
 // ── Video uploader (product promo videos) ────────────────────────────────────
