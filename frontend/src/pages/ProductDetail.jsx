@@ -394,6 +394,20 @@ export default function ProductDetail() {
             </div>
           </div>
 
+        {/* Product Video */}
+        {product.videoUrl && (
+          <section className="product-detail__video" style={{ gridColumn: '1 / -1', marginTop: 8 }}>
+            <h3 style={{ marginBottom: 10, fontSize: '1rem', fontWeight: 700, color: '#1a1a1a' }}>Product Video</h3>
+            <video
+              src={product.videoUrl}
+              controls
+              preload="metadata"
+              playsInline
+              style={{ width: '100%', borderRadius: 10, maxHeight: 400, background: '#000' }}
+            />
+          </section>
+        )}
+
         {/* Brand Media — promotional images & videos (from admin brands section) */}
         {brandMedia.length > 0 && (
           <section className="brand-media-section">

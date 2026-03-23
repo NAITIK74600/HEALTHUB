@@ -3,7 +3,10 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const requireAuth = require('../middleware/requireAuth');
+const requireAdmin = require('../middleware/requireAdmin');
 const upload = require('../middleware/upload');
+const { videoUpload } = require('../middleware/upload');
+const { uploadBuffer } = require('../utils/cloudinary');
 
 const router = express.Router();
 
@@ -39,6 +42,20 @@ router.post('/image', requireAuth, upload.single('file'), async (req, res, next)
   try {
     if (!req.file) return res.status(422).json({ message: 'No file uploaded.' });
     const url = saveFile(req.file.buffer, 'products', req.file.originalname);
+    res.json({ url });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── POST /api/upload/video — admin product promo video (Cloudinary) ───────────
+router.post('/video', requireAuth, requireAdmin, videoUpload.single('file'), async (req, res, next) => {
+  try {
+    if (!req.file) return res.status(422).json({ message: 'No video file uploaded.' });
+    const { url } = await uploadBuffer(req.file.buffer, 'products_videos', {
+      resource_type: 'video',
+      quality: 'auto',
+    });
     res.json({ url });
   } catch (err) {
     next(err);

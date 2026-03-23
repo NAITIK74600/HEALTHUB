@@ -160,6 +160,7 @@ async function ensureCoreSchema() {
   await execute(`ALTER TABLE brands ADD COLUMN gradient VARCHAR(200) NOT NULL DEFAULT ''`).catch(() => {});
   await execute(`ALTER TABLE brands ADD COLUMN media_json JSON NULL`).catch(() => {});
   await execute(`ALTER TABLE products ADD COLUMN company VARCHAR(150) NOT NULL DEFAULT '' AFTER brand`).catch(() => {});
+  await execute(`ALTER TABLE products ADD COLUMN video_url VARCHAR(500) NULL DEFAULT NULL`).catch(() => {});
 
 
   await execute(`

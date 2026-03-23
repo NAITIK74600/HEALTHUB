@@ -5,7 +5,7 @@ import {
   deleteProduct, bulkImportProducts, downloadImportTemplate, bulkUpdateProducts, bulkDiscountProducts,
   exportProductsExcel,
 } from '../../api/products';
-import { uploadImage } from '../../api/upload';
+import { uploadImage, uploadVideo } from '../../api/upload';
 import { getCategories } from '../../api/categories';
 import toast from 'react-hot-toast';
 import {
@@ -13,7 +13,7 @@ import {
   FileSpreadsheet, CheckCircle, AlertTriangle, Search, Package, Percent, Zap,
 } from 'lucide-react';
 
-const EMPTY = { name: '', category: '', secondaryCategoryIds: [], brand: '', company: '', salt: '', description: '', mrp: '', price: '', stock: '', requiresPrescription: false };
+const EMPTY = { name: '', category: '', secondaryCategoryIds: [], brand: '', company: '', salt: '', description: '', mrp: '', price: '', stock: '', requiresPrescription: false, videoUrl: '' };
 
 const STOCK_OPTS = [
   { value: 'all', label: 'All Stock' },
@@ -83,6 +83,11 @@ export default function AdminProducts() {
   /* ── Inline image upload ── */
   const inlineUploadRef = useRef(null);
   const [uploadingFor,  setUploadingFor] = useState(null);
+
+  /* ── Video upload (form) ── */
+  const videoInputRef = useRef(null);
+  const [videoUploading, setVideoUploading] = useState(false);
+  const [videoProgress,  setVideoProgress]  = useState(0);
 
   /* ── Image URL modal ── */
   const [urlModal, setUrlModal] = useState({ open: false, productId: null, url: '', urls: [] });
@@ -286,7 +291,7 @@ export default function AdminProducts() {
     e.preventDefault();
     try {
       // Send product data as JSON (no files — images handled separately)
-      const formPayload = { ...form, secondaryCategoryIds: (form.secondaryCategoryIds || []).map(Number).filter(Boolean) };
+      const formPayload = { ...form, secondaryCategoryIds: (form.secondaryCategoryIds || []).map(Number).filter(Boolean), videoUrl: form.videoUrl || null };
       let productId = editing;
       if (editing) { await updateProduct(editing, formPayload); toast.success('Product updated.'); }
       else         { const res = await createProduct(formPayload); toast.success('Product created.'); productId = res.data._id; }
@@ -315,7 +320,7 @@ export default function AdminProducts() {
         }
       }
       setForm(EMPTY); setImages([]); setImgPreviews([]); setExistingImages([]); setRemoveImages([]);
-      setFormImageUrls([]); setFormImageUrl('');
+      setFormImageUrls([]); setFormImageUrl(''); setVideoProgress(0);
       setEditing(null); setShowForm(false);
       refresh();
     } catch (err) { toast.error(err.response?.data?.message || 'Save failed.'); }
@@ -383,9 +388,9 @@ export default function AdminProducts() {
   /* ── Edit helpers ── */
   const startEdit = (p) => {
     setEditing(p._id);
-    setForm({ name: p.name, category: p.category?._id || '', secondaryCategoryIds: (p.secondaryCategoryIds || []).map(String), brand: p.brand || '', company: p.company || '', salt: p.salt || '', description: p.description || '', mrp: p.mrp, price: p.price, stock: p.stock, requiresPrescription: p.requiresPrescription });
+    setForm({ name: p.name, category: p.category?._id || '', secondaryCategoryIds: (p.secondaryCategoryIds || []).map(String), brand: p.brand || '', company: p.company || '', salt: p.salt || '', description: p.description || '', mrp: p.mrp, price: p.price, stock: p.stock, requiresPrescription: p.requiresPrescription, videoUrl: p.videoUrl || '' });
     setImages([]); setImgPreviews([]); setExistingImages(p.images || []); setRemoveImages([]);
-    setFormImageUrls([]); setFormImageUrl('');
+    setFormImageUrls([]); setFormImageUrl(''); setVideoProgress(0);
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -850,9 +855,78 @@ export default function AdminProducts() {
             <input type="checkbox" checked={form.requiresPrescription} onChange={e => setForm(f => ({ ...f, requiresPrescription: e.target.checked }))} />
             Requires Prescription (Rx)
           </label>
+
+          {/* ── Video Section ── */}
+          <div className="form-group">
+            <label>Product Video</label>
+            <input
+              type="text"
+              placeholder="Paste video URL (YouTube, Cloudinary, etc.)"
+              value={form.videoUrl}
+              onChange={e => setForm(f => ({ ...f, videoUrl: e.target.value }))}
+            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: 6 }}>
+              <span style={{ fontSize: '0.8rem', color: '#888' }}>— OR —</span>
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/mp4,video/webm,video/quicktime,video/x-msvideo"
+                style={{ display: 'none' }}
+                onChange={async (e) => {
+                  const file = e.target.files[0];
+                  e.target.value = '';
+                  if (!file) return;
+                  setVideoUploading(true);
+                  setVideoProgress(0);
+                  try {
+                    const res = await uploadVideo(file, (evt) => {
+                      if (evt.total) setVideoProgress(Math.round((evt.loaded / evt.total) * 100));
+                    });
+                    setForm(f => ({ ...f, videoUrl: res.data.url }));
+                    toast.success('Video uploaded!');
+                  } catch (err) {
+                    toast.error(err.response?.data?.message || 'Video upload failed.');
+                  } finally {
+                    setVideoUploading(false);
+                    setVideoProgress(0);
+                  }
+                }}
+              />
+              <button
+                type="button"
+                className="btn btn--outline"
+                style={{ padding: '0.25rem 0.7rem', fontSize: '0.8rem' }}
+                disabled={videoUploading}
+                onClick={() => videoInputRef.current?.click()}
+              >
+                {videoUploading ? `Uploading… ${videoProgress}%` : '📹 Upload Video'}
+              </button>
+              {form.videoUrl && (
+                <button
+                  type="button"
+                  className="img-manage__remove"
+                  title="Remove video"
+                  onClick={() => setForm(f => ({ ...f, videoUrl: '' }))}
+                ><X size={13} /></button>
+              )}
+            </div>
+            {videoUploading && (
+              <div style={{ marginTop: 6, height: 6, borderRadius: 3, background: '#e5e7eb', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${videoProgress}%`, background: '#3451D1', transition: 'width 0.2s' }} />
+              </div>
+            )}
+            {form.videoUrl && !videoUploading && (
+              <video
+                src={form.videoUrl}
+                controls
+                style={{ marginTop: 8, width: '100%', maxHeight: 200, borderRadius: 6, background: '#000' }}
+              />
+            )}
+          </div>
+
           <div className="form-actions">
             <button className="btn btn--primary" type="submit">{editing ? 'Update Product' : 'Create Product'}</button>
-            <button type="button" className="btn btn--outline" onClick={() => { setShowForm(false); setEditing(null); setForm(EMPTY); setExistingImages([]); setRemoveImages([]); setImages([]); setImgPreviews([]); setFormImageUrls([]); setFormImageUrl(''); }}>Cancel</button>
+            <button type="button" className="btn btn--outline" onClick={() => { setShowForm(false); setEditing(null); setForm(EMPTY); setExistingImages([]); setRemoveImages([]); setImages([]); setImgPreviews([]); setFormImageUrls([]); setFormImageUrl(''); setVideoProgress(0); }}>Cancel</button>
           </div>
         </form>
       )}

@@ -39,5 +39,21 @@ const uploadSpreadsheet = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB for spreadsheets
 });
 
+// ── Video uploader (product promo videos) ────────────────────────────────────
+const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo'];
+const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100 MB
+
+const videoUpload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (!ALLOWED_VIDEO_TYPES.includes(file.mimetype)) {
+      return cb(new Error('Invalid video type. Only MP4, WebM, MOV, AVI are allowed.'), false);
+    }
+    cb(null, true);
+  },
+  limits: { fileSize: MAX_VIDEO_SIZE },
+});
+
 module.exports = upload;
 module.exports.uploadSpreadsheet = uploadSpreadsheet;
+module.exports.videoUpload = videoUpload;

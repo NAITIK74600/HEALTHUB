@@ -580,6 +580,7 @@ function mapProduct(row) {
     batchNumber: row.batch_number || '',
     salt: row.salt || '',
     sideEffects: row.side_effects || '',
+    videoUrl: row.video_url || null,
     isActive: Boolean(row.is_active),
     isDeleted: Boolean(row.is_deleted),
     createdAt: row.created_at,
@@ -1462,8 +1463,8 @@ router.post('/', requireAuth, requireAdmin, auditLogger('CREATE_PRODUCT', 'Produ
     const result = await execute(
       `INSERT INTO products
         (code, name, slug, category_id, brand, company, description, pack, mrp, price, stock, requires_prescription,
-         images_json, expiry_date, batch_number, salt, side_effects, secondary_category_ids, is_active, is_deleted)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0)`,
+         images_json, expiry_date, batch_number, salt, side_effects, secondary_category_ids, video_url, is_active, is_deleted)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0)`,
       [
         req.body.code || '',
         req.body.name.trim(),
@@ -1483,6 +1484,7 @@ router.post('/', requireAuth, requireAdmin, auditLogger('CREATE_PRODUCT', 'Produ
         req.body.salt || '',
         req.body.sideEffects || '',
         JSON.stringify(Array.isArray(req.body.secondaryCategoryIds) ? req.body.secondaryCategoryIds.map(Number).filter(Boolean) : []),
+        req.body.videoUrl || null,
       ]
     );
 
@@ -1524,7 +1526,7 @@ router.put('/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })], a
       `UPDATE products SET
         code = ?, name = ?, slug = ?, category_id = ?, brand = ?, company = ?, description = ?, pack = ?,
         mrp = ?, price = ?, stock = ?, requires_prescription = ?, expiry_date = ?,
-        batch_number = ?, salt = ?, side_effects = ?, is_active = ?, secondary_category_ids = ?
+        batch_number = ?, salt = ?, side_effects = ?, is_active = ?, secondary_category_ids = ?, video_url = ?
        WHERE id = ?`,
       [
         req.body.code !== undefined ? req.body.code : current.code,
@@ -1549,6 +1551,7 @@ router.put('/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })], a
         req.body.secondaryCategoryIds !== undefined
           ? JSON.stringify(Array.isArray(req.body.secondaryCategoryIds) ? req.body.secondaryCategoryIds.map(Number).filter(Boolean) : [])
           : (current.secondary_category_ids || null),
+        req.body.videoUrl !== undefined ? (req.body.videoUrl || null) : (current.video_url || null),
         req.params.id,
       ]
     );
