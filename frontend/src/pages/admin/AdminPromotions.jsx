@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import api from '../../api/axios';
+import { updateBrand } from '../../api/brands';
 import { uploadVideo } from '../../api/upload';
 import toast from 'react-hot-toast';
 import {
@@ -86,7 +87,7 @@ export default function AdminPromotions() {
       fd.append('name', brand.name);
       fd.append('category', brand.category || 'general');
       fd.append('media', JSON.stringify([...existing, newEntry]));
-      await api.put(`/brands/${brand._id}`, fd);
+      await updateBrand(brand._id, fd);
       toast.success('Promotion video added!');
       closeAdd();
       load();
@@ -109,7 +110,7 @@ export default function AdminPromotions() {
       fd.append('name', r.data.brand.name);
       fd.append('category', r.data.brand.category || 'general');
       fd.append('media', JSON.stringify(updated));
-      await api.put(`/brands/${item.brand._id}`, fd);
+      await updateBrand(item.brand._id, fd);
       toast.success('Promotion removed.');
       load();
     } catch (err) { toast.error(err?.response?.data?.message || 'Failed to remove.'); }
@@ -127,7 +128,7 @@ export default function AdminPromotions() {
       fd.append('name', r.data.brand.name);
       fd.append('category', r.data.brand.category || 'general');
       fd.append('media', JSON.stringify(media));
-      await api.put(`/brands/${item.brand._id}`, fd);
+      await updateBrand(item.brand._id, fd);
       toast.success('Display location updated.');
       load();
     } catch (err) { toast.error(err?.response?.data?.message || 'Failed.'); }
