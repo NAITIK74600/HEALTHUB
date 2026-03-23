@@ -167,7 +167,7 @@ router.post('/', requireAuth, requireAdmin, upload.single('logo'), [
     }
     // Validate each entry: { type, url, title?, displayOn? }
     media = (Array.isArray(media) ? media : [])
-      .filter(m => m && ['image', 'video'].includes(m.type) && typeof m.url === 'string' && /^https?:\/\//i.test(m.url))
+      .filter(m => m && ['image', 'video'].includes(m.type) && typeof m.url === 'string' && (/^https?:\/\//i.test(m.url) || /^\/uploads\//i.test(m.url)))
       .map(m => {
         const entry = { type: m.type, url: m.url };
         if (m.title) entry.title = String(m.title).slice(0, 100);
@@ -240,7 +240,7 @@ router.put('/:id', requireAuth, requireAdmin, upload.single('logo'), [
       let media = [];
       try { media = JSON.parse(req.body.media); } catch { media = []; }
       media = (Array.isArray(media) ? media : [])
-        .filter(m => m && ['image', 'video'].includes(m.type) && typeof m.url === 'string' && /^https?:\/\//i.test(m.url))
+        .filter(m => m && ['image', 'video'].includes(m.type) && typeof m.url === 'string' && (/^https?:\/\//i.test(m.url) || /^\/uploads\//i.test(m.url)))
         .map(m => {
           const entry = { type: m.type, url: m.url };
           if (m.title) entry.title = String(m.title).slice(0, 100);
