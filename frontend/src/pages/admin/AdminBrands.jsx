@@ -381,7 +381,7 @@ export default function AdminBrands() {
                           const entry = { type: mediaType, url: mediaUrl.trim() };
                           if (mediaType === 'video') { if (mediaTitle.trim()) entry.title = mediaTitle.trim(); entry.displayOn = mediaDisplayOn; }
                           setForm(f => ({ ...f, media: [...(f.media || []), entry] }));
-                          setMediaUrl(''); setMediaTitle(''); setMediaDisplayOn('brand');
+                          setMediaUrl(''); setMediaTitle(''); setMediaDisplayOn('both');
                         }}>
                         <Plus size={14} /> Add URL
                       </button>
@@ -434,7 +434,7 @@ export default function AdminBrands() {
                               if (mediaTitle.trim()) vEntry.title = mediaTitle.trim();
                               vEntry.displayOn = mediaDisplayOn;
                               setForm(f => ({ ...f, media: [...(f.media || []), vEntry] }));
-                              setMediaTitle(''); setMediaDisplayOn('brand');
+                              setMediaTitle(''); setMediaDisplayOn('both');
                               toast.success('Video uploaded!');
                             }
                           } catch (err) { toast.error(err.response?.data?.message || 'Video upload failed.'); }

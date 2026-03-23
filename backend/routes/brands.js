@@ -157,7 +157,7 @@ router.post('/', requireAuth, requireAdmin, upload.single('logo'), [
       .map(m => {
         const entry = { type: m.type, url: m.url };
         if (m.title) entry.title = String(m.title).slice(0, 100);
-        if (m.displayOn && ['home', 'brand', 'both'].includes(m.displayOn)) entry.displayOn = m.displayOn;
+        entry.displayOn = (m.displayOn && ['home', 'brand', 'both'].includes(m.displayOn)) ? m.displayOn : 'both';
         return entry;
       })
       .slice(0, 10);
@@ -230,7 +230,7 @@ router.put('/:id', requireAuth, requireAdmin, upload.single('logo'), [
         .map(m => {
           const entry = { type: m.type, url: m.url };
           if (m.title) entry.title = String(m.title).slice(0, 100);
-          if (m.displayOn && ['home', 'brand', 'both'].includes(m.displayOn)) entry.displayOn = m.displayOn;
+          entry.displayOn = (m.displayOn && ['home', 'brand', 'both'].includes(m.displayOn)) ? m.displayOn : 'both';
           return entry;
         })
         .slice(0, 10);
