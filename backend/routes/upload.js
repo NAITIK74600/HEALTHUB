@@ -48,14 +48,26 @@ router.post('/image', requireAuth, upload.single('file'), async (req, res, next)
   }
 });
 
-// ── POST /api/upload/video — admin product promo video (Cloudinary) ───────────
+// ── POST /api/upload/video — admin promo video ───────────────────────────────
+// Uses Cloudinary when credentials are configured, otherwise saves locally.
 router.post('/video', requireAuth, requireAdmin, videoUpload.single('file'), async (req, res, next) => {
   try {
     if (!req.file) return res.status(422).json({ message: 'No video file uploaded.' });
-    const { url } = await uploadBuffer(req.file.buffer, 'products_videos', {
-      resource_type: 'video',
-      quality: 'auto',
-    });
+
+    const hasCloudinary = process.env.CLOUDINARY_CLOUD_NAME &&
+                          process.env.CLOUDINARY_API_KEY &&
+                          process.env.CLOUDINARY_API_SECRET;
+
+    if (hasCloudinary) {
+      const { url } = await uploadBuffer(req.file.buffer, 'products_videos', {
+        resource_type: 'video',
+        quality: 'auto',
+      });
+      return res.json({ url });
+    }
+
+    // Fallback: save to local /uploads/videos/
+    const url = saveFile(req.file.buffer, 'videos', req.file.originalname);
     res.json({ url });
   } catch (err) {
     next(err);
