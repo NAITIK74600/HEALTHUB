@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getAdminBrands, createBrand, updateBrand, deleteBrand } from '../../api/brands';
+import { uploadImage, uploadVideo } from '../../api/upload';
 import toast from 'react-hot-toast';
-import { Plus, Pencil, Trash2, X, Star, Leaf, Tag, HeartHandshake, Image, Film } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Star, Leaf, Tag, HeartHandshake, Image, Film, Upload } from 'lucide-react';
 
 const EMPTY = { name: '', category: 'featured', ord: 0, logoUrl: '', gradient: '', isActive: true, media: [] };
 
@@ -37,6 +38,10 @@ export default function AdminBrands() {
   const [deletingId, setDeletingId] = useState(null);
   const [mediaUrl, setMediaUrl] = useState('');
   const [mediaType, setMediaType] = useState('image');
+  const [mediaUploading, setMediaUploading] = useState(false);
+  const [mediaProgress, setMediaProgress] = useState(0);
+  const mediaVideoRef = useRef(null);
+  const mediaImageRef = useRef(null);
 
   const load = async () => {
     setLoading(true);
@@ -50,19 +55,19 @@ export default function AdminBrands() {
   useEffect(() => { load(); }, []);
 
   const openAdd = () => {
-    setForm(EMPTY); setLogoFile(null); setPreview(null); setMediaUrl(''); setMediaType('image'); setModal('add');
+    setForm(EMPTY); setLogoFile(null); setPreview(null); setMediaUrl(''); setMediaType('image'); setMediaProgress(0); setModal('add');
   };
 
   const openAddPC = (preset) => {
     setForm({ ...EMPTY, category: 'personal_care', name: preset.label, gradient: preset.gradient });
-    setLogoFile(null); setPreview(null); setMediaUrl(''); setMediaType('image'); setModal('add');
+    setLogoFile(null); setPreview(null); setMediaUrl(''); setMediaType('image'); setMediaProgress(0); setModal('add');
   };
 
   const openEdit = (b) => {
     setForm({ name: b.name, category: b.category, ord: b.ord, logoUrl: b.logoUrl || '', isActive: b.isActive, _id: b._id, gradient: b.gradient || '', media: b.media || [] });
     setLogoFile(null);
     setPreview(b.logoUrl || null);
-    setMediaUrl(''); setMediaType('image');
+    setMediaUrl(''); setMediaType('image'); setMediaProgress(0);
     setModal('edit');
   };
 
@@ -337,21 +342,76 @@ export default function AdminBrands() {
 
                 {/* Add new media */}
                 {(form.media || []).length < 10 && (
-                  <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end' }}>
-                    <select className="form-input" style={{ width: 90, flexShrink: 0 }} value={mediaType} onChange={e => setMediaType(e.target.value)}>
-                      <option value="image">Image</option>
-                      <option value="video">Video</option>
-                    </select>
-                    <input className="form-input" type="url" placeholder="https://... (image or video URL)"
-                      style={{ flex: 1 }} value={mediaUrl} onChange={e => setMediaUrl(e.target.value)} />
-                    <button type="button" className="btn btn--outline" style={{ flexShrink: 0, padding: '8px 12px' }}
-                      onClick={() => {
-                        if (!mediaUrl.trim() || !/^https?:\/\//i.test(mediaUrl.trim())) return toast.error('Enter a valid URL');
-                        setForm(f => ({ ...f, media: [...(f.media || []), { type: mediaType, url: mediaUrl.trim() }] }));
-                        setMediaUrl('');
-                      }}>
-                      <Plus size={14} /> Add
-                    </button>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {/* Type selector */}
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                      <select className="form-input" style={{ width: 90, flexShrink: 0 }} value={mediaType} onChange={e => setMediaType(e.target.value)}>
+                        <option value="image">Image</option>
+                        <option value="video">Video</option>
+                      </select>
+                      <input className="form-input" type="url" placeholder="Paste URL (https://...)" style={{ flex: 1 }}
+                        value={mediaUrl} onChange={e => setMediaUrl(e.target.value)} />
+                      <button type="button" className="btn btn--outline" style={{ flexShrink: 0, padding: '8px 12px' }}
+                        onClick={() => {
+                          if (!mediaUrl.trim() || !/^https?:\/\//i.test(mediaUrl.trim())) return toast.error('Enter a valid URL');
+                          setForm(f => ({ ...f, media: [...(f.media || []), { type: mediaType, url: mediaUrl.trim() }] }));
+                          setMediaUrl('');
+                        }}>
+                        <Plus size={14} /> Add URL
+                      </button>
+                    </div>
+
+                    {/* Direct file upload */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 11, color: 'var(--gray-400)' }}>— OR upload file —</span>
+
+                      {/* Hidden file inputs */}
+                      <input ref={mediaImageRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" style={{ display: 'none' }}
+                        onChange={async (e) => {
+                          const file = e.target.files[0]; e.target.value = '';
+                          if (!file) return;
+                          setMediaUploading(true); setMediaProgress(0);
+                          try {
+                            const res = await uploadImage(file);
+                            if (res?.data?.url) {
+                              setForm(f => ({ ...f, media: [...(f.media || []), { type: 'image', url: res.data.url }] }));
+                              toast.success('Image uploaded!');
+                            }
+                          } catch (err) { toast.error(err.response?.data?.message || 'Image upload failed.'); }
+                          finally { setMediaUploading(false); setMediaProgress(0); }
+                        }}
+                      />
+                      <input ref={mediaVideoRef} type="file" accept="video/mp4,video/webm,video/quicktime,video/x-msvideo" style={{ display: 'none' }}
+                        onChange={async (e) => {
+                          const file = e.target.files[0]; e.target.value = '';
+                          if (!file) return;
+                          setMediaUploading(true); setMediaProgress(0);
+                          try {
+                            const res = await uploadVideo(file, (evt) => {
+                              if (evt.total) setMediaProgress(Math.round((evt.loaded / evt.total) * 100));
+                            });
+                            if (res?.data?.url) {
+                              setForm(f => ({ ...f, media: [...(f.media || []), { type: 'video', url: res.data.url }] }));
+                              toast.success('Video uploaded!');
+                            }
+                          } catch (err) { toast.error(err.response?.data?.message || 'Video upload failed.'); }
+                          finally { setMediaUploading(false); setMediaProgress(0); }
+                        }}
+                      />
+
+                      <button type="button" className="btn btn--outline" style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                        disabled={mediaUploading}
+                        onClick={() => mediaType === 'video' ? mediaVideoRef.current?.click() : mediaImageRef.current?.click()}>
+                        <Upload size={13} /> {mediaUploading ? `Uploading… ${mediaProgress}%` : `Upload ${mediaType === 'video' ? 'Video' : 'Image'}`}
+                      </button>
+                    </div>
+
+                    {/* Progress bar */}
+                    {mediaUploading && (
+                      <div style={{ height: 5, borderRadius: 3, background: '#e5e7eb', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${mediaProgress}%`, background: '#3451D1', transition: 'width 0.2s' }} />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
