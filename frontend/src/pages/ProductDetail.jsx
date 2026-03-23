@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { ShoppingCart, FileText, Heart, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getProductBySlug, getRelatedProducts, getProducts } from '../api/products';
 import { getProductReviews, submitReview } from '../api/reviews';
+import { getBrands } from '../api/brands';
 import MedicineImage from '../components/MedicineImage';
 import SEO from '../components/SEO';
 import { useCart } from '../context/CartContext';
@@ -59,6 +60,9 @@ export default function ProductDetail() {
   const touchDeltaX = useRef(0);
   const carouselRef = useRef(null);
 
+  // Brand media
+  const [brandMedia, setBrandMedia] = useState([]);
+
   // Reviews state
   const [reviews, setReviews] = useState([]);
   const [reviewMeta, setReviewMeta] = useState({ avgRating: 0, ratingCount: 0, total: 0 });
@@ -84,6 +88,19 @@ export default function ProductDetail() {
         getRelatedProducts(r.data._id)
           .then(res => setRelated(res.data))
           .catch(() => {});
+      })
+      .then(r => {
+        // Fetch brand media after product loads
+        if (r.data?.brand) {
+          getBrands()
+            .then(res => {
+              const match = (res.data.brands || []).find(
+                b => b.name.toLowerCase() === r.data.brand.toLowerCase()
+              );
+              setBrandMedia(match?.media || []);
+            })
+            .catch(() => {});
+        }
       })
       .catch(() => setProduct(null))
       .finally(() => setLoading(false));
@@ -377,12 +394,14 @@ export default function ProductDetail() {
             </div>
           </div>
 
-        {/* Brand Media — promotional images & videos */}
-        {product.brandMedia?.length > 0 && (
+        {/* Brand Media — promotional images & videos (from admin brands section) */}
+        {brandMedia.length > 0 && (
           <section className="brand-media-section">
-            <h2>{product.brand} — Promotional Media</h2>
+            <h3 style={{ marginBottom: 12, fontSize: '1rem', fontWeight: 700, color: '#1a1a1a' }}>
+              More from {product.brand}
+            </h3>
             <div className="brand-media-grid">
-              {product.brandMedia.map((m, i) => (
+              {brandMedia.map((m, i) => (
                 <div className="brand-media-item" key={i}>
                   {m.type === 'video' ? (
                     <video
@@ -391,9 +410,16 @@ export default function ProductDetail() {
                       preload="metadata"
                       className="brand-media-item__video"
                       playsInline
+                      style={{ width: '100%', borderRadius: 10, maxHeight: 320 }}
                     />
                   ) : (
-                    <img src={m.url} alt={`${product.brand} media ${i + 1}`} className="brand-media-item__img" loading="lazy" />
+                    <img
+                      src={m.url}
+                      alt={`${product.brand} ${i + 1}`}
+                      className="brand-media-item__img"
+                      loading="lazy"
+                      style={{ width: '100%', borderRadius: 10, objectFit: 'cover', maxHeight: 260 }}
+                    />
                   )}
                 </div>
               ))}
