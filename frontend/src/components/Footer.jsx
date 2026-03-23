@@ -40,12 +40,7 @@ export default function Footer() {
         {/* ── Column 1: Brand ── */}
         <div className="footer__brand">
           <div className="footer__logo">
-            <div className="footer__logo-icon">
-              <svg viewBox="0 0 40 40" width="22" height="22" fill="none">
-                <rect x="16" y="3" width="8" height="34" rx="4" fill="white" opacity="0.95"/>
-                <rect x="3" y="16" width="34" height="8" rx="4" fill="white" opacity="0.95"/>
-              </svg>
-            </div>
+            <img src="/logo.png?v=3" alt="Batla Medicos" style={{ width: 48, height: 48, objectFit: 'contain', borderRadius: 10 }} />
             <div className="footer__logo-text">
               <span className="footer__logo-name">Batla Medicos</span>
               <span className="footer__logo-tagline">Chemist &amp; Cosmetics</span>

@@ -1,65 +1,87 @@
 /**
  * OrbitalGlobe — Three.js 3D globe with orbiting medicine icons as sprites.
- * Logo sits in a DOM element layered on top of the canvas.
+ * Layout: inner sphere (r=38) → rings (r=68 / 90 / 112) → icon sprites (r=138)
+ * Logo is rendered as a billboard sprite at the centre, in front of the sphere.
  */
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-// Medicine emoji labels mapped to colour tints (used as canvas-drawn sprites)
 const ICONS = [
   { label: '💊', color: '#93C5FD' },
   { label: '🌿', color: '#4ade80' },
-  { label: '+',  color: '#ffffff' },
+  { label: '✚',  color: '#ffffff' },
   { label: '🧪', color: '#fde68a' },
   { label: '💉', color: '#f9a8d4' },
   { label: '❤️', color: '#fc8181' },
   { label: '🩺', color: '#a78bfa' },
   { label: '💧', color: '#67e8f9' },
-  { label: '⚕',  color: '#6ee7b7' },
 ];
 
-/** Draw an icon onto an offscreen canvas and return a THREE.Texture */
-function makeIconTexture(label, bgColor, size = 128) {
-  const canvas = document.createElement('canvas');
-  canvas.width = size; canvas.height = size;
-  const ctx = canvas.getContext('2d');
+function makeIconTexture(label, ringColor, size = 128) {
+  const c = document.createElement('canvas');
+  c.width = size; c.height = size;
+  const ctx = c.getContext('2d');
+  const cx = size / 2, cy = size / 2, r = size / 2 - 4;
 
-  // Circular background
+  // Glow halo
   ctx.beginPath();
-  ctx.arc(size / 2, size / 2, size / 2 - 2, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(255,255,255,0.13)';
+  ctx.arc(cx, cy, r + 4, 0, Math.PI * 2);
+  ctx.fillStyle = ringColor + '18';
   ctx.fill();
-  ctx.strokeStyle = bgColor;
-  ctx.lineWidth = 4;
+
+  // Background circle
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(8,12,36,0.75)';
+  ctx.fill();
+
+  // Border
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.strokeStyle = ringColor;
+  ctx.lineWidth = 3.5;
   ctx.stroke();
 
-  // Emoji / text
-  ctx.font = `bold ${size * 0.44}px serif`;
+  // Icon
+  ctx.font = `${Math.floor(size * 0.42)}px serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = bgColor;
-  ctx.fillText(label, size / 2, size / 2 + 2);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(label, cx, cy + 2);
 
-  const tex = new THREE.CanvasTexture(canvas);
+  const tex = new THREE.CanvasTexture(c);
   tex.needsUpdate = true;
   return tex;
 }
 
-/** Generate a point uniformly distributed on a sphere via Fibonacci lattice */
+function makeLogoTexture(size = 256) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.src = '/logo.png?v=3';
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = size; c.height = size;
+      const ctx = c.getContext('2d');
+      const pad = size * 0.08;
+      ctx.drawImage(img, pad, pad, size - pad * 2, size - pad * 2);
+      const tex = new THREE.CanvasTexture(c);
+      tex.needsUpdate = true;
+      resolve(tex);
+    };
+    img.onerror = () => resolve(null);
+  });
+}
+
 function fibonacciSphere(count, radius) {
-  const points = [];
+  const pts = [];
   const golden = Math.PI * (3 - Math.sqrt(5));
   for (let i = 0; i < count; i++) {
     const y = 1 - (i / (count - 1)) * 2;
-    const r = Math.sqrt(1 - y * y);
+    const r2 = Math.sqrt(1 - y * y);
     const theta = golden * i;
-    points.push(new THREE.Vector3(
-      Math.cos(theta) * r * radius,
-      y * radius,
-      Math.sin(theta) * r * radius,
-    ));
+    pts.push(new THREE.Vector3(Math.cos(theta) * r2 * radius, y * radius, Math.sin(theta) * r2 * radius));
   }
-  return points;
+  return pts;
 }
 
 export default function OrbitalGlobe({ size = 300 }) {
@@ -70,138 +92,135 @@ export default function OrbitalGlobe({ size = 300 }) {
     const el = mountRef.current;
     if (!el) return;
 
-    /* ── Renderer ── */
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(W, H);
     renderer.setClearColor(0x000000, 0);
     el.appendChild(renderer.domElement);
 
-    /* ── Scene / Camera ── */
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 1000);
-    camera.position.set(0, 0, 320);
+    const camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 1000);
+    camera.position.set(0, 0, 340);
 
-    /* ── Ambient + directional light (makes the scene feel 3-D) ── */
-    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-    const dirLight = new THREE.DirectionalLight(0xa0c4ff, 1.0);
-    dirLight.position.set(5, 10, 7);
-    scene.add(dirLight);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    const dir = new THREE.DirectionalLight(0xa0c4ff, 0.9);
+    dir.position.set(5, 10, 7);
+    scene.add(dir);
 
-    /* ── Wispy globe outline (IcosahedronGeometry wireframe) ── */
-    const geoGlobe = new THREE.IcosahedronGeometry(88, 3);
-    const matWire = new THREE.MeshBasicMaterial({
-      color: 0x3451D1,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.18,
-    });
-    const meshGlobe = new THREE.Mesh(geoGlobe, matWire);
+    // Wireframe globe shell r=80
+    const meshGlobe = new THREE.Mesh(
+      new THREE.IcosahedronGeometry(80, 3),
+      new THREE.MeshBasicMaterial({ color: 0x3451D1, wireframe: true, transparent: true, opacity: 0.13 }),
+    );
     scene.add(meshGlobe);
 
-    /* ── Inner glow sphere ── */
-    const geoInner = new THREE.SphereGeometry(42, 32, 32);
-    const matInner = new THREE.MeshPhongMaterial({
-      color: 0x0a1f6e,
-      emissive: 0x3451D1,
-      emissiveIntensity: 0.38,
-      transparent: true,
-      opacity: 0.82,
-      shininess: 120,
-    });
-    const meshInner = new THREE.Mesh(geoInner, matInner);
+    // Inner glow sphere r=38
+    const meshInner = new THREE.Mesh(
+      new THREE.SphereGeometry(38, 48, 48),
+      new THREE.MeshPhongMaterial({
+        color: 0x0a1f6e, emissive: 0x3451D1, emissiveIntensity: 0.35,
+        transparent: true, opacity: 0.88, shininess: 100,
+      }),
+    );
     scene.add(meshInner);
 
-    /* ── Equator ring ── */
-    const geoRing = new THREE.TorusGeometry(95, 1.2, 8, 120);
-    const matRing = new THREE.MeshBasicMaterial({ color: 0x27AE60, transparent: true, opacity: 0.4 });
-    const meshRing = new THREE.Mesh(geoRing, matRing);
-    meshRing.rotation.x = Math.PI / 2;
-    scene.add(meshRing);
+    // Logo billboard sprite at centre (in front of sphere)
+    makeLogoTexture(256).then(tex => {
+      if (!tex) return;
+      const logo = new THREE.Sprite(
+        new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: 1, depthWrite: false }),
+      );
+      logo.scale.set(58, 58, 1);
+      logo.position.set(0, 0, 42);
+      scene.add(logo);
+    });
 
-    /* ── Orbit ring 2 – tilted ── */
-    const geoRing2 = new THREE.TorusGeometry(72, 0.9, 8, 100);
-    const matRing2 = new THREE.MeshBasicMaterial({ color: 0x93C5FD, transparent: true, opacity: 0.35 });
-    const meshRing2 = new THREE.Mesh(geoRing2, matRing2);
-    meshRing2.rotation.x = Math.PI / 2.8;
+    // Ring 1 equator green r=68
+    const meshRing1 = new THREE.Mesh(
+      new THREE.TorusGeometry(68, 1.0, 8, 120),
+      new THREE.MeshBasicMaterial({ color: 0x27AE60, transparent: true, opacity: 0.5 }),
+    );
+    meshRing1.rotation.x = Math.PI / 2;
+    scene.add(meshRing1);
+
+    // Ring 2 tilted blue r=90
+    const meshRing2 = new THREE.Mesh(
+      new THREE.TorusGeometry(90, 0.8, 8, 100),
+      new THREE.MeshBasicMaterial({ color: 0x93C5FD, transparent: true, opacity: 0.38 }),
+    );
+    meshRing2.rotation.x = Math.PI / 2.6;
     meshRing2.rotation.z = Math.PI / 5;
     scene.add(meshRing2);
 
-    /* ── Orbit ring 3 – tilted opposite ── */
-    const geoRing3 = new THREE.TorusGeometry(110, 0.8, 8, 130);
-    const matRing3 = new THREE.MeshBasicMaterial({ color: 0xfde68a, transparent: true, opacity: 0.22 });
-    const meshRing3 = new THREE.Mesh(geoRing3, matRing3);
-    meshRing3.rotation.x = Math.PI / 2.8;
+    // Ring 3 tilted gold r=112
+    const meshRing3 = new THREE.Mesh(
+      new THREE.TorusGeometry(112, 0.7, 8, 130),
+      new THREE.MeshBasicMaterial({ color: 0xfde68a, transparent: true, opacity: 0.22 }),
+    );
+    meshRing3.rotation.x = Math.PI / 2.6;
     meshRing3.rotation.z = -Math.PI / 5;
     scene.add(meshRing3);
 
-    /* ── Floating icon sprites (Fibonacci-distributed on a sphere) ── */
+    // Icon sprites at r=138 — cleanly outside all rings
     const spriteObjs = [];
-    const positions = fibonacciSphere(ICONS.length, 108);
+    const positions = fibonacciSphere(ICONS.length, 138);
     ICONS.forEach(({ label, color }, i) => {
-      const tex = makeIconTexture(label, color, 128);
-      const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: 0.92, depthWrite: false });
-      const sprite = new THREE.Sprite(mat);
-      sprite.scale.set(38, 38, 1);
+      const sprite = new THREE.Sprite(
+        new THREE.SpriteMaterial({
+          map: makeIconTexture(label, color, 128),
+          transparent: true, opacity: 0.95, depthWrite: false,
+        }),
+      );
+      sprite.scale.set(34, 34, 1);
       sprite.position.copy(positions[i]);
       scene.add(sprite);
-      // store initial spherical position for pulsing
       spriteObjs.push({ sprite, base: positions[i].clone(), phase: Math.random() * Math.PI * 2 });
     });
 
-    /* ── Floating glowing particles (random small spheres) ── */
-    const particleMat = new THREE.PointsMaterial({ color: 0xffffff, size: 2.5, transparent: true, opacity: 0.5, sizeAttenuation: true });
-    const particlePositions = new Float32Array(180);
-    for (let i = 0; i < 180; i++) particlePositions[i] = (Math.random() - 0.5) * 260;
-    const particleGeo = new THREE.BufferGeometry();
-    particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-    const particles = new THREE.Points(particleGeo, particleMat);
+    // Background particles
+    const pBuf = new Float32Array(240);
+    for (let i = 0; i < 240; i++) pBuf[i] = (Math.random() - 0.5) * 280;
+    const pGeo = new THREE.BufferGeometry();
+    pGeo.setAttribute('position', new THREE.BufferAttribute(pBuf, 3));
+    const particles = new THREE.Points(
+      pGeo,
+      new THREE.PointsMaterial({ color: 0xffffff, size: 1.8, transparent: true, opacity: 0.3, sizeAttenuation: true }),
+    );
     scene.add(particles);
 
-    /* ── Animation loop ── */
     let animId;
     const clock = new THREE.Clock();
-
     const animate = () => {
       animId = requestAnimationFrame(animate);
       const t = clock.getElapsedTime();
 
-      // Slow globe auto-rotate
-      meshGlobe.rotation.y = t * 0.18;
-      meshGlobe.rotation.x = t * 0.07;
-      meshInner.rotation.y = t * 0.12;
+      meshGlobe.rotation.y = t * 0.15;
+      meshGlobe.rotation.x = t * 0.06;
+      meshInner.rotation.y = t * 0.10;
+      meshRing1.rotation.z = t * 0.20;
+      meshRing2.rotation.z = -t * 0.14 + Math.PI / 5;
+      meshRing3.rotation.z = t * 0.09 - Math.PI / 5;
+      particles.rotation.y = t * 0.03;
 
-      // Ring animations
-      meshRing.rotation.z = t * 0.22;
-      meshRing2.rotation.z = -t * 0.16 + Math.PI / 5;
-      meshRing3.rotation.z = t * 0.11 - Math.PI / 5;
-
-      // Particles slow drift
-      particles.rotation.y = t * 0.04;
-      particles.rotation.x = t * 0.02;
-
-      // Sprite pulse (in/out along radial direction)
       spriteObjs.forEach(({ sprite, base, phase }) => {
-        const pulse = 1 + 0.06 * Math.sin(t * 1.2 + phase);
-        sprite.position.set(base.x * pulse, base.y * pulse, base.z * pulse);
-        sprite.material.opacity = 0.7 + 0.25 * Math.sin(t * 0.8 + phase);
+        const p = 1 + 0.04 * Math.sin(t * 1.0 + phase);
+        sprite.position.set(base.x * p, base.y * p, base.z * p);
+        sprite.material.opacity = 0.75 + 0.20 * Math.sin(t * 0.7 + phase);
       });
 
       renderer.render(scene, camera);
     };
     animate();
 
-    /* ── Mouse parallax ── */
     const onMouseMove = (e) => {
       const rect = el.getBoundingClientRect();
       const mx = ((e.clientX - rect.left) / W - 0.5) * 2;
       const my = -((e.clientY - rect.top) / H - 0.5) * 2;
-      scene.rotation.y += (mx * 0.4 - scene.rotation.y) * 0.04;
-      scene.rotation.x += (my * 0.3 - scene.rotation.x) * 0.04;
+      scene.rotation.y += (mx * 0.35 - scene.rotation.y) * 0.05;
+      scene.rotation.x += (my * 0.25 - scene.rotation.x) * 0.05;
     };
     el.addEventListener('mousemove', onMouseMove);
 
-    /* ── Cleanup ── */
     return () => {
       cancelAnimationFrame(animId);
       el.removeEventListener('mousemove', onMouseMove);
@@ -215,23 +234,6 @@ export default function OrbitalGlobe({ size = 300 }) {
       ref={mountRef}
       style={{ width: size, height: size, position: 'relative', flexShrink: 0, cursor: 'grab' }}
       aria-hidden="true"
-    >
-      {/* Logo layered in DOM above the canvas */}
-      <img
-        src="/logo.png?v=3"
-        alt="Batla Medicos"
-        style={{
-          position: 'absolute',
-          top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: 72, height: 72,
-          objectFit: 'contain',
-          pointerEvents: 'none',
-          zIndex: 2,
-          filter: 'drop-shadow(0 0 12px rgba(52,81,209,0.7)) drop-shadow(0 0 6px rgba(39,174,96,0.5))',
-          animation: 'logo-glow 3s ease-in-out infinite',
-        }}
-      />
-    </div>
+    />
   );
 }
