@@ -1,6 +1,6 @@
 import { useState, useEffect, Component } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Percent, Shield, LogOut, ExternalLink, ChevronLeft, ChevronRight, Bell, FileText, FlaskConical, Menu, X, Truck, Ticket, Star, Sparkles, FolderOpen } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Percent, Shield, LogOut, ExternalLink, ChevronLeft, ChevronRight, Bell, FileText, FlaskConical, Menu, X, Truck, Ticket, Star, Sparkles, FolderOpen, Film } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import NotificationBell from '../../components/NotificationBell';
 import SEO from '../../components/SEO';
@@ -40,6 +40,7 @@ const NAV_GROUPS = [
       { to: '/admin/discounts',  label: 'Discounts',  icon: Percent },
       { to: '/admin/brands',     label: 'Brands',     icon: Star },
       { to: '/admin/categories', label: 'Categories', icon: FolderOpen },
+      { to: '/admin/promotions', label: 'Promotions', icon: Film },
     ],
   },
   {

@@ -5,7 +5,6 @@ const GOOGLE_MAPS_URL = 'https://maps.app.goo.gl/W4Qtps1fKbArBvz17';
 
 const QUICK_LINKS = [
   { label: 'All Products',        to: '/products' },
-  { label: 'Lab Tests',           to: '/lab' },
   { label: 'Upload Prescription', to: '/prescriptions' },
   { label: 'My Orders',           to: '/orders' },
   { label: 'My Account',          to: '/account' },
