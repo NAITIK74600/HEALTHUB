@@ -9,11 +9,28 @@ import {
   Save, RefreshCw,
 } from 'lucide-react';
 
-/* â”€â”€ Quick-pick icons for medical/pharma categories â”€â”€ */
+/* ─── Quick-pick icons for medical/pharma categories ─── */
 const ICON_OPTIONS = [
-  'ðŸ’Š','ðŸ©º','ðŸ¥','ðŸ§ª','ðŸ’‰','ðŸ©¹','â¤ï¸','ðŸ§ ','ðŸ‘ï¸','ðŸ¦·','ðŸ¦´','ðŸ’ª',
-  'ðŸŒ¿','ðŸƒ','ðŸ§´','ðŸ§¼','ðŸ‘¶','ðŸ‘©','ðŸ‘¨','ðŸ§“','ðŸŒ¸','ðŸ”¬','âš•ï¸','ðŸ«€',
-  'ðŸ§¬','ðŸ©»','ðŸ©¸','ðŸ’†','ðŸƒ','ðŸ§˜','ðŸ›Œ','ðŸ¥—','ðŸ’§','ðŸŒ¡ï¸','ðŸ“¦','ðŸŽ¯',
+  '💊','🩺','🏥','🧪','💉','🩹','❤️','🧠','👁️','🦷','🦴','💪',
+  '🌿','🍃','🧴','🧼','👶','👩','👨','🧔','🌸','🔬','⚕️','🫀',
+  '🧬','🩻','🩸','💆','🏃','🧘','🛌','🥗','💧','🌡️','📦','🎯',
+];
+
+/* ─── Virtual lifestyle categories — matched by keyword search, not category_id ─── */
+const LIFESTYLE_CATS = [
+  { slug: 'hair-care',          label: 'Hair Care',            icon: '✂️' },
+  { slug: 'skin-care',          label: 'Skin Care',            icon: '🧴' },
+  { slug: 'baby-care',          label: 'Baby Care',            icon: '👶' },
+  { slug: 'fitness-health',     label: 'Fitness & Health',     icon: '🏃' },
+  { slug: 'vitamins-nutrition', label: 'Vitamins & Nutrition', icon: '💊' },
+  { slug: 'diabetes-care',      label: 'Diabetes Care',        icon: '🌡️' },
+  { slug: 'supports-braces',    label: 'Supports & Braces',    icon: '🦴' },
+  { slug: 'immunity-boosters',  label: 'Immunity Boosters',    icon: '🌿' },
+  { slug: 'sexual-wellness',    label: 'Sexual Wellness',      icon: '❤️' },
+  { slug: 'oral-care',          label: 'Oral Care',            icon: '🦷' },
+  { slug: 'women-care',         label: "Women's Care",         icon: '👩' },
+  { slug: 'men-grooming',       label: 'Men Grooming',         icon: '🧔' },
+  { slug: 'elderly-care',       label: 'Elderly Care',         icon: '🛌' },
 ];
 
 const EMPTY = { name: '', icon: '', order: 0 };
@@ -136,7 +153,7 @@ export default function AdminCategories() {
       display: 'flex', alignItems: 'center', gap: 12,
       marginBottom: 4,
     }}>
-      <span style={{ fontSize: 28, lineHeight: 1 }}>{form.icon || 'ðŸ“‚'}</span>
+      <span style={{ fontSize: 28, lineHeight: 1 }}>{form.icon || '📂'}</span>
       <div>
         <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#111' }}>{form.name || 'Category Name'}</div>
         <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
@@ -156,7 +173,7 @@ export default function AdminCategories() {
             <FolderOpen size={22} /> Categories
           </h1>
           <p style={{ fontSize: '0.82rem', color: '#6b7280', marginTop: 4 }}>
-            {categories.length} categories Â· {totalProducts.toLocaleString()} total products
+            {categories.length} categories · {totalProducts.toLocaleString()} total products
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -175,7 +192,7 @@ export default function AdminCategories() {
         <input
           className="form-input"
           style={{ paddingLeft: 32, margin: 0 }}
-          placeholder="Search categoriesâ€¦"
+          placeholder="Search categories…"
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
@@ -183,7 +200,7 @@ export default function AdminCategories() {
 
       {/* â”€â”€ Table â”€â”€ */}
       {loading ? (
-        <p style={{ textAlign: 'center', padding: 40, color: '#6b7280' }}>Loadingâ€¦</p>
+        <p style={{ textAlign: 'center', padding: 40, color: '#6b7280' }}>Loading…</p>
       ) : filtered.length === 0 ? (
         <p style={{ textAlign: 'center', padding: 40, color: '#6b7280' }}>
           {search ? 'No categories match your search.' : 'No categories yet.'}
@@ -262,7 +279,7 @@ export default function AdminCategories() {
                       </button>
                       <button
                         className="btn btn--sm btn--outline"
-                        title={c.productCount > 0 ? 'Has products â€” will ask for reassign' : 'Delete'}
+                        title={c.productCount > 0 ? 'Has products — will ask for reassign' : 'Delete'}
                         style={{ color: '#dc2626', borderColor: '#fca5a5' }}
                         onClick={() => { setDeleteTarget(c); setReassignTo(''); }}
                       >
@@ -278,7 +295,7 @@ export default function AdminCategories() {
       )}
 
       {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-          SLIDE-OVER PANEL â€” Add / Edit
+          SLIDE-OVER PANEL — Add / Edit
       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
       {panel && (
         <>
@@ -305,7 +322,7 @@ export default function AdminCategories() {
             }}>
               <div>
                 <h2 style={{ margin: 0, color: '#fff', fontSize: '1.05rem', fontWeight: 700 }}>
-                  {panel === 'add' ? 'âž• New Category' : 'âœï¸ Edit Category'}
+                  {panel === 'add' ? '➕ New Category' : '✏️ Edit Category'}
                 </h2>
                 <p style={{ margin: 0, fontSize: '0.75rem', color: 'rgba(255,255,255,0.75)', marginTop: 2 }}>
                   {panel === 'add' ? 'Create a new product category' : `Editing: ${categories.find(c => c._id === editId)?.name || ''}`}
@@ -373,7 +390,7 @@ export default function AdminCategories() {
                   <label className="form-label">Sort Order</label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <button type="button" className="btn btn--outline btn--sm"
-                      onClick={() => setForm(f => ({ ...f, order: Math.max(0, Number(f.order) - 1) }))}>âˆ’</button>
+                      onClick={() => setForm(f => ({ ...f, order: Math.max(0, Number(f.order) - 1) }))}>−</button>
                     <input
                       className="form-input"
                       type="number" min={0}
@@ -405,7 +422,7 @@ export default function AdminCategories() {
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
               >
                 <Save size={15} />
-                {saving ? 'Savingâ€¦' : panel === 'add' ? 'Create Category' : 'Save Changes'}
+                {saving ? 'Saving…' : panel === 'add' ? 'Create Category' : 'Save Changes'}
               </button>
             </div>
           </div>
@@ -439,7 +456,7 @@ export default function AdminCategories() {
                     onChange={e => setReassignTo(e.target.value)}
                     style={{ marginBottom: 0 }}
                   >
-                    <option value="">â€” Select target category â€”</option>
+                    <option value="">— Select target category —</option>
                     {categories
                       .filter(c => c._id !== deleteTarget._id)
                       .map(c => (
@@ -464,7 +481,7 @@ export default function AdminCategories() {
                 onClick={handleDelete}
                 disabled={deleteLoading || (deleteTarget.productCount > 0 && !reassignTo)}
               >
-                {deleteLoading ? 'Deletingâ€¦' : 'Delete'}
+                {deleteLoading ? 'Deleting…' : 'Delete'}
               </button>
             </div>
           </div>
@@ -477,6 +494,30 @@ export default function AdminCategories() {
           to   { transform: translateX(0);    opacity: 1; }
         }
       `}</style>
+
+      {/* ─── Virtual / Lifestyle categories (keyword-matched, not in DB) ─── */}
+      <div style={{ marginTop: 32 }}>
+        <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#374151', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+          🛍️ Lifestyle Categories <span style={{ fontSize: '0.75rem', fontWeight: 400, color: '#6b7280', background: '#f3f4f6', borderRadius: 6, padding: '2px 8px' }}>virtual — keyword search, read-only</span>
+        </h2>
+        <p style={{ fontSize: '0.78rem', color: '#9ca3af', marginBottom: 12 }}>
+          These categories are not stored in the database. Products are matched by keyword search on their name/company fields.
+          To change which products appear under a lifestyle category, update the product names or the backend <code>LIFESTYLE_SLUGS</code> config.
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {LIFESTYLE_CATS.map(cat => (
+            <div key={cat.slug} style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 10,
+              padding: '6px 12px', fontSize: '0.85rem', color: '#374151',
+            }}>
+              <span style={{ fontSize: 18 }}>{cat.icon}</span>
+              <span style={{ fontWeight: 600 }}>{cat.label}</span>
+              <code style={{ fontSize: '0.7rem', color: '#9ca3af', background: '#f3f4f6', borderRadius: 4, padding: '1px 5px' }}>{cat.slug}</code>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

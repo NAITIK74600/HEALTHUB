@@ -427,42 +427,43 @@ async function ensureCoreSchema() {
 // lifestyle slug (e.g. "sexual-wellness") — those are not DB categories.
 async function autoSeedBaseCategories() {
   const CATS = [
-    { name: 'Caps & Tablets',       slug: 'caps-tabs',        ord:  1 },
-    { name: 'Liquids & Syrups',     slug: 'liquids',          ord:  2 },
-    { name: 'Cream & Ointment',     slug: 'cream-ointment',   ord:  3 },
-    { name: 'Drops',                slug: 'drop',             ord:  4 },
-    { name: 'Powder',               slug: 'powder',           ord:  5 },
-    { name: 'Lotion',               slug: 'lotion',           ord:  6 },
-    { name: 'Injection',            slug: 'injection',        ord:  7 },
-    { name: 'Inhaler',              slug: 'inhaler',          ord:  8 },
-    { name: 'Softgel Capsules',     slug: 'softgel-capsules', ord:  9 },
-    { name: 'Fluids & IV',          slug: 'fluids',           ord: 10 },
-    { name: 'High Value Medicines', slug: 'high-value',       ord: 11 },
-    { name: 'FMCG / Consumer',      slug: 'fmcg',             ord: 12 },
-    { name: 'Surgical & Supports',  slug: 'surgicals',        ord: 13 },
-    { name: 'Generic Medicines',    slug: 'generic',          ord: 14 },
-    { name: 'Containers & Devices', slug: 'container',        ord: 15 },
-    { name: 'Pharma Misc',          slug: 'pharma-misc',      ord: 16 },
-    { name: 'Refrigerated',         slug: 'fridge',           ord: 17 },
-    { name: 'Allopathic',           slug: 'allopathic',       ord: 19 },
-    { name: 'Ayurvedic',            slug: 'ayurvedic',        ord: 20 },
-    { name: 'Homeopathy',           slug: 'homeopathy',       ord: 21 },
-    { name: 'Vaccines',             slug: 'vaccines',         ord: 22 },
-    { name: 'Dental Care',          slug: 'dental',           ord: 23 },
-    { name: 'OTC',                  slug: 'otc',              ord: 24 },
-    { name: 'Herbal',               slug: 'herbal',           ord: 25 },
-    { name: 'Nutrition',            slug: 'nutrition',        ord: 26 },
-    { name: 'Other',                slug: 'other',            ord: 99 },
+    { name: 'Caps & Tablets',       slug: 'caps-tabs',        icon: '💊', ord:  1 },
+    { name: 'Liquids & Syrups',     slug: 'liquids',          icon: '💧', ord:  2 },
+    { name: 'Cream & Ointment',     slug: 'cream-ointment',   icon: '🧴', ord:  3 },
+    { name: 'Drops',                slug: 'drop',             icon: '💧', ord:  4 },
+    { name: 'Powder',               slug: 'powder',           icon: '🧪', ord:  5 },
+    { name: 'Lotion',               slug: 'lotion',           icon: '🧴', ord:  6 },
+    { name: 'Injection',            slug: 'injection',        icon: '💉', ord:  7 },
+    { name: 'Inhaler',              slug: 'inhaler',          icon: '🌬️', ord:  8 },
+    { name: 'Softgel Capsules',     slug: 'softgel-capsules', icon: '💊', ord:  9 },
+    { name: 'Fluids & IV',          slug: 'fluids',           icon: '🩸', ord: 10 },
+    { name: 'High Value Medicines', slug: 'high-value',       icon: '⭐', ord: 11 },
+    { name: 'FMCG / Consumer',      slug: 'fmcg',             icon: '🛒', ord: 12 },
+    { name: 'Surgical & Supports',  slug: 'surgicals',        icon: '✂️', ord: 13 },
+    { name: 'Generic Medicines',    slug: 'generic',          icon: '📦', ord: 14 },
+    { name: 'Containers & Devices', slug: 'container',        icon: '📦', ord: 15 },
+    { name: 'Pharma Misc',          slug: 'pharma-misc',      icon: '🏥', ord: 16 },
+    { name: 'Refrigerated',         slug: 'fridge',           icon: '🌡️', ord: 17 },
+    { name: 'Allopathic',           slug: 'allopathic',       icon: '💊', ord: 19 },
+    { name: 'Ayurvedic',            slug: 'ayurvedic',        icon: '🌿', ord: 20 },
+    { name: 'Homeopathy',           slug: 'homeopathy',       icon: '💧', ord: 21 },
+    { name: 'Vaccines',             slug: 'vaccines',         icon: '💉', ord: 22 },
+    { name: 'Dental Care',          slug: 'dental',           icon: '🦷', ord: 23 },
+    { name: 'OTC',                  slug: 'otc',              icon: '🛒', ord: 24 },
+    { name: 'Herbal',               slug: 'herbal',           icon: '🍃', ord: 25 },
+    { name: 'Nutrition',            slug: 'nutrition',        icon: '🥗', ord: 26 },
+    { name: 'Other',                slug: 'other',            icon: '📦', ord: 99 },
   ];
 
   // Batch upsert all canonical categories in a single SQL round-trip
   // instead of 52+ sequential SELECT+UPDATE/INSERT queries
   if (CATS.length) {
-    const placeholders = CATS.map(() => '(?, ?, ?, 0)').join(', ');
-    const vals = CATS.flatMap(c => [c.name, c.slug, c.ord]);
+    const placeholders = CATS.map(() => '(?, ?, ?, ?, 0)').join(', ');
+    const vals = CATS.flatMap(c => [c.name, c.slug, c.icon, c.ord]);
     await execute(
-      `INSERT INTO categories (name, slug, ord, is_deleted) VALUES ${placeholders}
-       ON DUPLICATE KEY UPDATE name = VALUES(name), ord = VALUES(ord), is_deleted = 0`,
+      `INSERT INTO categories (name, slug, icon, ord, is_deleted) VALUES ${placeholders}
+       ON DUPLICATE KEY UPDATE name = VALUES(name), ord = VALUES(ord), is_deleted = 0,
+         icon = IF(COALESCE(icon, '') = '', VALUES(icon), icon)`,
       vals
     );
   }

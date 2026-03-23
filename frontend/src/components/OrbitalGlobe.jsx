@@ -21,14 +21,18 @@ import * as THREE from 'three';
 /* ── Data ──────────────────────────────────────────────────────────────── */
 
 const ICONS = [
-  { label: '💊', color: '#93C5FD' },
-  { label: '🌿', color: '#4ADE80' },
-  { label: '✚',  color: '#FF6B8A' },
-  { label: '🧪', color: '#FDE68A' },
-  { label: '💉', color: '#F9A8D4' },
-  { label: '❤️', color: '#FC8181' },
-  { label: '🩺', color: '#A78BFA' },
-  { label: '💧', color: '#67E8F9' },
+  { label: '💊', color: '#93C5FD' },  // caps & tablets
+  { label: '🌿', color: '#4ADE80' },  // ayurvedic / herbal
+  { label: '🩺', color: '#F9A8D4' },  // diagnostics
+  { label: '🧪', color: '#FDE68A' },  // lab / test tube
+  { label: '💉', color: '#FC8181' },  // injection / vaccine
+  { label: '❤️', color: '#FB7185' },  // heart health
+  { label: '🦷', color: '#A78BFA' },  // dental care
+  { label: '💧', color: '#67E8F9' },  // liquids / fluids
+  { label: '🧴', color: '#86EFAC' },  // cream / skincare
+  { label: '🌡️', color: '#FED7AA' },  // thermometer / fever
+  { label: '🧬', color: '#C4B5FD' },  // genetics / science
+  { label: '🏥', color: '#BAE6FD' },  // hospital / pharma
 ];
 
 /* ── Texture helpers ───────────────────────────────────────────────────── */
@@ -66,7 +70,7 @@ function makeIconTexture(label, ringColor, sz = 120) {
   ctx.restore();
 
   // Emoji / symbol
-  ctx.font = `${Math.floor(sz * 0.40)}px serif`;
+  ctx.font = `${Math.floor(sz * 0.40)}px 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = '#ffffff';
