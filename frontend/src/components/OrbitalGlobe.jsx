@@ -1,5 +1,8 @@
 /**
- * OrbitalGlobe v4 — Three.js 3D globe for Batla Medicos
+ * OrbitalGlobe v5 — Three.js 3D globe for Batla Medicos
+ *
+ * Sizing: CSS-driven (30 vw, clamped 180px–400px). ResizeObserver keeps
+ * the Three.js renderer in sync — no hard-coded pixel `size` prop needed.
  *
  * Background: DNA double-helix particle structure (two strands + rungs)
  * Layers (world units, FOV=55°, cam z=260):
@@ -148,17 +151,16 @@ const { pos1: DNA_POS1, pos2: DNA_POS2, rungPos: DNA_RUNG } = buildDNA();
 
 /* ── Component ─────────────────────────────────────────────────────────── */
 
-export default function OrbitalGlobe({ size = 380 }) {
+export default function OrbitalGlobe() {
   const mountRef = useRef(null);
 
   useEffect(() => {
     const el = mountRef.current;
     if (!el) return;
 
-    /* Renderer */
+    /* Renderer — sized to container; ResizeObserver keeps it in sync */
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(size, size);
     renderer.setClearColor(0x000000, 0);
     el.appendChild(renderer.domElement);
 
@@ -167,6 +169,24 @@ export default function OrbitalGlobe({ size = 380 }) {
     const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 1000);
     camera.position.set(0, 0, 260);
     camera.lookAt(0, 0, 0);
+
+    /* Resize helper — called by ResizeObserver and on first paint */
+    const onResize = (w, h) => {
+      renderer.setSize(w, h);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    };
+    // Initial size from CSS
+    onResize(el.clientWidth || 300, el.clientHeight || 300);
+
+    /* Watch container for CSS-driven size changes */
+    const ro = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        if (width > 0 && height > 0) onResize(Math.round(width), Math.round(height));
+      }
+    });
+    ro.observe(el);
 
     /* Lights */
     scene.add(new THREE.AmbientLight(0xffffff, 0.5));
@@ -331,23 +351,29 @@ export default function OrbitalGlobe({ size = 380 }) {
 
     const onMouseMove = (e) => {
       const rect = el.getBoundingClientRect();
-      mouse.tx = ((e.clientX - rect.left) / size - 0.5) * 2;
-      mouse.ty = -((e.clientY - rect.top) / size - 0.5) * 2;
+      mouse.tx = ((e.clientX - rect.left) / rect.width  - 0.5) * 2;
+      mouse.ty = -((e.clientY - rect.top)  / rect.height - 0.5) * 2;
     };
     el.addEventListener('mousemove', onMouseMove);
 
     return () => {
       cancelAnimationFrame(animId);
+      ro.disconnect();
       el.removeEventListener('mousemove', onMouseMove);
       renderer.dispose();
       if (renderer.domElement.parentNode === el) el.removeChild(renderer.domElement);
     };
-  }, [size]);
+  }, []);
 
   return (
     <div
       ref={mountRef}
-      style={{ width: size, height: size, flexShrink: 0, cursor: 'grab' }}
+      style={{
+        width: 'clamp(180px, 30vw, 400px)',
+        height: 'clamp(180px, 30vw, 400px)',
+        flexShrink: 0,
+        cursor: 'grab',
+      }}
       aria-hidden="true"
     />
   );
