@@ -210,7 +210,7 @@ export default function Home() {
   const [brandPromos, setBrandPromos] = useState([]);
   const [countdown, setCountdown]   = useState({ h: 0, m: 0, s: 0 });
   const [dealEndDate, setDealEndDate] = useState(null);
-  const [dealData, setDealData] = useState({ title: 'Up to 70% OFF', subtitle: 'On selected medicines, lab tests & health essentials. Don\'t miss out!', link: '/products' });
+  const [dealData, setDealData] = useState(null);
   const [labTests, setLabTests]       = useState([]);;
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -656,6 +656,7 @@ export default function Home() {
       </div>
 
       {/* ════════════ DEAL OF THE DAY ════════════════════════════════════ */}
+      {dealData && (
       <AnimatedSection animation={getAnimationSetting('dealOfDay')} as="section" className="deal-section" data-aos="fade-up">
         <div className="container">
           <div className="deal-card" ref={dealTilt}>
@@ -692,6 +693,7 @@ export default function Home() {
           </div>
         </div>
       </AnimatedSection>
+      )}
 
       {/* ════════════ PATHOLOGY TESTS ══════════════════════════════════ */}
       {labTests.length > 0 && (
