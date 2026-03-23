@@ -494,40 +494,35 @@ export default function Home() {
 
       {/* ═════════════════════ BRAND PROMOTION VIDEOS ══════════════════════ */}
       {brandPromos.length > 0 && (
-        <section style={{ background: '#0d0d1a', padding: '28px 0 24px', overflow: 'hidden' }}>
-          <div className="container">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <span style={{ fontSize: 22 }}>🎬</span>
-              <div>
-                <h2 style={{ color: '#fff', fontSize: '1.25rem', fontWeight: 700, margin: 0, letterSpacing: '-0.01em' }}>Brand Promotions</h2>
-                <p style={{ color: 'rgba(255,255,255,0.42)', fontSize: '0.78rem', margin: '2px 0 0' }}>Latest from our partner brands</p>
+        <section style={{ background: '#0d0d1a', padding: 0, overflow: 'hidden' }}>
+          {brandPromos.flatMap(promo => promo.videos.map((v, vi) => (
+            <div key={`${promo.brand._id}-${vi}`} style={{ position: 'relative', width: '100%' }}>
+              <video
+                src={v.url}
+                autoPlay
+                loop
+                muted
+                playsInline
+                style={{ width: '100%', display: 'block', objectFit: 'cover', maxHeight: '60vh' }}
+              />
+              <div style={{
+                position: 'absolute', bottom: 0, left: 0, right: 0,
+                background: 'linear-gradient(transparent, rgba(0,0,0,0.7))',
+                padding: '24px 20px 14px',
+                display: 'flex', alignItems: 'center', gap: 10,
+              }}>
+                {promo.brand.logoUrl
+                  ? <img src={resolveImageUrl(promo.brand.logoUrl)} alt={promo.brand.name}
+                      style={{ width: 32, height: 32, borderRadius: 7, objectFit: 'contain', background: '#fff', padding: 2, flexShrink: 0 }} />
+                  : <span style={{ width: 32, height: 32, borderRadius: 7, background: 'linear-gradient(135deg,#3451D1,#27AE60)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{promo.brand.name.slice(0, 2).toUpperCase()}</span>
+                }
+                <div>
+                  <div style={{ color: '#fff', fontSize: '1rem', fontWeight: 600, lineHeight: 1.2 }}>{v.title || promo.brand.name}</div>
+                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', marginTop: 2 }}>{promo.brand.name}</div>
+                </div>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 8, scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}>
-              {brandPromos.flatMap(promo => promo.videos.map((v, vi) => (
-                <div key={`${promo.brand._id}-${vi}`} style={{
-                  flexShrink: 0, width: 'min(340px, 84vw)', borderRadius: 12,
-                  overflow: 'hidden', background: '#1a1a2e',
-                  border: '1px solid rgba(255,255,255,0.09)', scrollSnapAlign: 'start',
-                  boxShadow: '0 4px 24px rgba(0,0,0,0.35)',
-                }}>
-                  <video src={v.url} controls muted playsInline
-                    style={{ width: '100%', maxHeight: 195, display: 'block', background: '#000' }} />
-                  <div style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                    {promo.brand.logoUrl
-                      ? <img src={resolveImageUrl(promo.brand.logoUrl)} alt={promo.brand.name}
-                          style={{ width: 30, height: 30, borderRadius: 7, objectFit: 'contain', background: '#fff', padding: 2, flexShrink: 0 }} />
-                      : <span style={{ width: 30, height: 30, borderRadius: 7, background: 'linear-gradient(135deg,#3451D1,#27AE60)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{promo.brand.name.slice(0, 2).toUpperCase()}</span>
-                    }
-                    <div>
-                      <div style={{ color: '#fff', fontSize: '0.85rem', fontWeight: 600, lineHeight: 1.2 }}>{v.title || promo.brand.name}</div>
-                      <div style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.72rem', marginTop: 1 }}>{promo.brand.name}</div>
-                    </div>
-                  </div>
-                </div>
-              )))}
-            </div>
-          </div>
+          )))}
         </section>
       )}
 

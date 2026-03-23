@@ -269,18 +269,27 @@ export default function ProductCatalog() {
       </div>
       {/* ── Brand Promo Videos (shown when filtering by a specific brand) ── */}
       {brand && brandPromoVideos.length > 0 && (
-        <div style={{ background: '#0d0d1a', padding: '20px 0 16px', overflowX: 'hidden' }}>
-          <div className="container">
-            <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>🎬 {brand} Promotions</p>
-            <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 4, scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}>
-              {brandPromoVideos.map((v, i) => (
-                <div key={i} style={{ flexShrink: 0, width: 'min(420px, 92vw)', borderRadius: 10, overflow: 'hidden', background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.09)', scrollSnapAlign: 'start', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
-                  <video src={v.url} controls muted playsInline style={{ width: '100%', maxHeight: 220, display: 'block', background: '#000' }} />
-                  {v.title && <div style={{ color: '#e0e0ff', fontSize: '0.85rem', fontWeight: 600, padding: '8px 14px' }}>{v.title}</div>}
-                </div>
-              ))}
+        <div style={{ background: '#0d0d1a', padding: 0, overflow: 'hidden' }}>
+          {brandPromoVideos.map((v, i) => (
+            <div key={i} style={{ position: 'relative', width: '100%' }}>
+              <video
+                src={v.url}
+                autoPlay
+                loop
+                muted
+                playsInline
+                style={{ width: '100%', display: 'block', objectFit: 'cover', maxHeight: '60vh' }}
+              />
+              {v.title && (
+                <div style={{
+                  position: 'absolute', bottom: 0, left: 0, right: 0,
+                  background: 'linear-gradient(transparent, rgba(0,0,0,0.7))',
+                  padding: '24px 20px 14px',
+                  color: '#fff', fontSize: '1rem', fontWeight: 600,
+                }}>{v.title}</div>
+              )}
             </div>
-          </div>
+          ))}
         </div>
       )}
       <div className="container">
