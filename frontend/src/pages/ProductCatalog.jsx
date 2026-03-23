@@ -7,6 +7,7 @@ import { getActiveOffers } from '../api/offers';
 import { getCategories } from '../api/categories';
 import ProductCard from '../components/ProductCard';
 import OfferBanner from '../components/OfferBanner';
+import PromoVideo from '../components/PromoVideo';
 import SEO from '../components/SEO';
 import { trackSearch } from '../utils/analytics';
 
@@ -277,24 +278,11 @@ export default function ProductCatalog() {
       {brand && brandPromoVideos.length > 0 && (
         <div style={{ background: '#0d0d1a', padding: 0, overflow: 'hidden' }}>
           {brandPromoVideos.map((v, i) => (
-            <div key={i} style={{ position: 'relative', width: '100%' }}>
-              <video
-                src={v.url}
-                autoPlay
-                loop
-                muted
-                playsInline
-                style={{ width: '100%', display: 'block', objectFit: 'cover', maxHeight: '60vh' }}
-              />
-              {v.title && (
-                <div style={{
-                  position: 'absolute', bottom: 0, left: 0, right: 0,
-                  background: 'linear-gradient(transparent, rgba(0,0,0,0.7))',
-                  padding: '24px 20px 14px',
-                  color: '#fff', fontSize: '1rem', fontWeight: 600,
-                }}>{v.title}</div>
-              )}
-            </div>
+            <PromoVideo
+              key={i}
+              url={v.url}
+              title={v.title}
+            />
           ))}
         </div>
       )}

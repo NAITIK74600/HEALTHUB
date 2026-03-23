@@ -18,6 +18,7 @@ import { getLabTests } from '../api/lab';
 import SEO from '../components/SEO';
 import ProductCard from '../components/ProductCard';
 import OfferBanner from '../components/OfferBanner';
+import PromoVideo from '../components/PromoVideo';
 import AnimatedSection from '../components/AnimatedSection';
 import OrbitalGlobe from '../components/OrbitalGlobe';
 import { useRipple, useParallaxMouse, useTilt3D } from '../hooks/useAnimations';
@@ -496,32 +497,14 @@ export default function Home() {
       {brandPromos.length > 0 && (
         <section style={{ background: '#0d0d1a', padding: 0, overflow: 'hidden' }}>
           {brandPromos.flatMap(promo => promo.videos.map((v, vi) => (
-            <div key={`${promo.brand._id}-${vi}`} style={{ position: 'relative', width: '100%' }}>
-              <video
-                src={v.url}
-                autoPlay
-                loop
-                muted
-                playsInline
-                style={{ width: '100%', display: 'block', objectFit: 'cover', maxHeight: '60vh' }}
-              />
-              <div style={{
-                position: 'absolute', bottom: 0, left: 0, right: 0,
-                background: 'linear-gradient(transparent, rgba(0,0,0,0.7))',
-                padding: '24px 20px 14px',
-                display: 'flex', alignItems: 'center', gap: 10,
-              }}>
-                {promo.brand.logoUrl
-                  ? <img src={resolveImageUrl(promo.brand.logoUrl)} alt={promo.brand.name}
-                      style={{ width: 32, height: 32, borderRadius: 7, objectFit: 'contain', background: '#fff', padding: 2, flexShrink: 0 }} />
-                  : <span style={{ width: 32, height: 32, borderRadius: 7, background: 'linear-gradient(135deg,#3451D1,#27AE60)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{promo.brand.name.slice(0, 2).toUpperCase()}</span>
-                }
-                <div>
-                  <div style={{ color: '#fff', fontSize: '1rem', fontWeight: 600, lineHeight: 1.2 }}>{v.title || promo.brand.name}</div>
-                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', marginTop: 2 }}>{promo.brand.name}</div>
-                </div>
-              </div>
-            </div>
+            <PromoVideo
+              key={`${promo.brand._id}-${vi}`}
+              url={v.url}
+              title={v.title || promo.brand.name}
+              brandName={promo.brand.name}
+              brandLogoUrl={promo.brand.logoUrl}
+              resolveImageUrl={resolveImageUrl}
+            />
           )))}
         </section>
       )}
