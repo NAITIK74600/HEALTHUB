@@ -6749,34 +6749,24 @@ svg { flex-shrink: 0; }
    Batla Medicos logo at centre, 3 concentric circular rings,
    6 pharma icons orbiting in full 360° (rotate+translateX)
    ================================================================ */
+/* ===== 3-D Globe Orbital ===== */
 .hero-orbital {
   width: 300px;
   height: 300px;
   position: relative;
   flex-shrink: 0;
-}
-/* Circular track rings (visual guides) */
-.orbit-track {
-  position: absolute;
-  top: 50%; left: 50%;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-}
-.orbit-track--1 {
-  width: 252px; height: 252px;
-  border: 1.5px dashed rgba(255,255,255,0.22);
-}
-.orbit-track--2 {
-  width: 178px; height: 178px;
-  border: 1.5px dashed rgba(74,222,128,0.32);
-}
-.orbit-track--3 {
-  width: 106px; height: 106px;
-  border: 1.5px dashed rgba(147,197,253,0.35);
+  perspective: 700px;
+  perspective-origin: 50% 40%;
 }
 
-/* Centre capsule logo */
+/* 3-D stage – children live in the perspective / 3-D space */
+.globe-stage {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+/* Centre logo – always in front of the 3-D scene (z-index) */
 .orbit-center {
   position: absolute;
   top: 50%; left: 50%;
@@ -6796,12 +6786,11 @@ svg { flex-shrink: 0; }
     inset 0 1px 0 rgba(255,255,255,0.12);
   animation: logo-glow 3s ease-in-out infinite;
   z-index: 10;
-  overflow: visible;
 }
-/* Capsule SVG in orbit center */
 .orbit-center__capsule {
   width: 52px;
   height: 52px;
+  object-fit: contain;
   filter: drop-shadow(0 0 7px rgba(147,197,253,0.5)) drop-shadow(0 0 3px rgba(74,222,128,0.4));
   pointer-events: none;
   user-select: none;
@@ -6821,21 +6810,54 @@ svg { flex-shrink: 0; }
   }
 }
 
-/* ── Orbit arms: zero-size pivot at centre, CSS rotation drives 360° ── */
-/* Technique: rotate(θ) translateX(r) puts dot on circle of radius r at angle θ */
-.orbit-arm {
+/* ── Orbit bands: tilted 3-D planes that look like globe rings ── */
+.orbit-band {
   position: absolute;
   top: 50%; left: 50%;
   width: 0; height: 0;
-  transform-origin: 0 0;
+  transform-style: preserve-3d;
 }
-.orbit-arm--r1 { animation: full-cw  7s  linear infinite; }
-.orbit-arm--r2 { animation: full-ccw 10s linear infinite; }
-.orbit-arm--r3 { animation: full-cw  5s  linear infinite; }
+/* Three rings at 120° apart around Y-axis, all tilted ~72° from horizontal */
+.orbit-band--1 { transform: rotateX(72deg); }
+.orbit-band--2 { transform: rotateX(72deg) rotateZ(60deg); }
+.orbit-band--3 { transform: rotateX(72deg) rotateZ(-60deg); }
+
+/* Visual dashed track of each ring */
+.orbit-band__track {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.orbit-band--1 .orbit-band__track {
+  width: 250px; height: 250px;
+  margin: -125px 0 0 -125px;
+  border: 1.5px dashed rgba(255,255,255,0.28);
+}
+.orbit-band--2 .orbit-band__track {
+  width: 176px; height: 176px;
+  margin: -88px 0 0 -88px;
+  border: 1.5px dashed rgba(74,222,128,0.40);
+}
+.orbit-band--3 .orbit-band__track {
+  width: 104px; height: 104px;
+  margin: -52px 0 0 -52px;
+  border: 1.5px dashed rgba(147,197,253,0.44);
+}
+
+/* ── Spinners: zero-size pivot at band centre – drives the orbit rotation ── */
+.orbit-spinner {
+  position: absolute;
+  top: 0; left: 0;
+  width: 0; height: 0;
+  will-change: transform;
+}
+.orbit-spinner--cw7  { animation: full-cw  7s  linear infinite; }
+.orbit-spinner--ccw10{ animation: full-ccw 10s linear infinite; }
+.orbit-spinner--cw5  { animation: full-cw  5s  linear infinite; }
 @keyframes full-cw  { to { transform: rotate( 360deg); } }
 @keyframes full-ccw { to { transform: rotate(-360deg); } }
 
-/* Icon dots */
+/* ── Icon dots: positioned at the orbit radius ── */
 .orbit-dot {
   position: absolute;
   width: 38px; height: 38px;
@@ -6848,14 +6870,13 @@ svg { flex-shrink: 0; }
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 0 14px rgba(255,255,255,0.22), 0 2px 10px rgba(0,0,0,0.35);
 }
-.orbit-arm--r1 .orbit-dot { left: calc(125px - 19px); }
-.orbit-arm--r2 .orbit-dot { left: calc(88px  - 19px); }
-.orbit-arm--r3 .orbit-dot { left: calc(52px  - 19px); }
+.orbit-band--1 .orbit-dot { left: calc(125px - 19px); }
+.orbit-band--2 .orbit-dot { left: calc(88px  - 19px); }
+.orbit-band--3 .orbit-dot { left: calc(52px  - 19px); }
 /* Colour variants */
-.orbit-dot--red    { background: rgba(252,129,129,0.2); border-color: rgba(252,129,129,0.55); box-shadow: 0 0 14px rgba(252,129,129,0.32), 0 2px 10px rgba(0,0,0,0.3); }
-.orbit-dot--green  { background: rgba(74,222,128,0.18); border-color: rgba(74,222,128,0.55);  box-shadow: 0 0 14px rgba(74,222,128,0.32),  0 2px 10px rgba(0,0,0,0.3); }
-.orbit-dot--blue   { background: rgba(147,197,253,0.18);border-color: rgba(147,197,253,0.55); box-shadow: 0 0 14px rgba(147,197,253,0.32), 0 2px 10px rgba(0,0,0,0.3); }
-.orbit-dot--yellow { background: rgba(253,230,138,0.16);border-color: rgba(253,230,138,0.5);  box-shadow: 0 0 14px rgba(253,230,138,0.28), 0 2px 10px rgba(0,0,0,0.3); }
+.orbit-dot--green  { background: rgba(74,222,128,0.18);  border-color: rgba(74,222,128,0.55);  box-shadow: 0 0 14px rgba(74,222,128,0.32),  0 2px 10px rgba(0,0,0,0.3); }
+.orbit-dot--blue   { background: rgba(147,197,253,0.18); border-color: rgba(147,197,253,0.55); box-shadow: 0 0 14px rgba(147,197,253,0.32), 0 2px 10px rgba(0,0,0,0.3); }
+.orbit-dot--yellow { background: rgba(253,230,138,0.16); border-color: rgba(253,230,138,0.5);  box-shadow: 0 0 14px rgba(253,230,138,0.28), 0 2px 10px rgba(0,0,0,0.3); }
 
 /* ---- Floating Particle Crosses ---- */
 .hero__particles {
@@ -7075,12 +7096,12 @@ svg { flex-shrink: 0; }
     overflow: visible;
     transform: none; margin-bottom: 0;
   }
-  .hero-orbital .orbit-track--1 { width: 200px; height: 200px; }
-  .hero-orbital .orbit-track--2 { width: 140px; height: 140px; }
-  .hero-orbital .orbit-track--3 { width: 84px; height: 84px; }
-  .hero-orbital .orbit-arm--r1 .orbit-dot { left: calc(100px - 18px); }
-  .hero-orbital .orbit-arm--r2 .orbit-dot { left: calc(70px  - 18px); }
-  .hero-orbital .orbit-arm--r3 .orbit-dot { left: calc(42px  - 18px); }
+  .hero-orbital .orbit-band--1 .orbit-band__track { width: 200px; height: 200px; margin: -100px 0 0 -100px; }
+  .hero-orbital .orbit-band--2 .orbit-band__track { width: 140px; height: 140px; margin: -70px 0 0 -70px; }
+  .hero-orbital .orbit-band--3 .orbit-band__track { width: 84px; height: 84px; margin: -42px 0 0 -42px; }
+  .hero-orbital .orbit-band--1 .orbit-dot { left: calc(100px - 18px); }
+  .hero-orbital .orbit-band--2 .orbit-dot { left: calc(70px  - 18px); }
+  .hero-orbital .orbit-band--3 .orbit-dot { left: calc(42px  - 18px); }
   .hero-orbital .orbit-center { width: 74px; height: 74px; }
   .hero-orbital .orbit-center__capsule { width: 42px; height: 42px; }
   .hero-orbital .orbit-dot { width: 36px; height: 36px; top: -18px; }
@@ -7089,12 +7110,12 @@ svg { flex-shrink: 0; }
   .hero-orbital {
     width: 200px; height: 200px;
   }
-  .hero-orbital .orbit-track--1 { width: 166px; height: 166px; }
-  .hero-orbital .orbit-track--2 { width: 116px; height: 116px; }
-  .hero-orbital .orbit-track--3 { width: 70px; height: 70px; }
-  .hero-orbital .orbit-arm--r1 .orbit-dot { left: calc(83px - 16px); }
-  .hero-orbital .orbit-arm--r2 .orbit-dot { left: calc(58px - 16px); }
-  .hero-orbital .orbit-arm--r3 .orbit-dot { left: calc(35px - 16px); }
+  .hero-orbital .orbit-band--1 .orbit-band__track { width: 166px; height: 166px; margin: -83px 0 0 -83px; }
+  .hero-orbital .orbit-band--2 .orbit-band__track { width: 116px; height: 116px; margin: -58px 0 0 -58px; }
+  .hero-orbital .orbit-band--3 .orbit-band__track { width: 70px; height: 70px; margin: -35px 0 0 -35px; }
+  .hero-orbital .orbit-band--1 .orbit-dot { left: calc(83px - 16px); }
+  .hero-orbital .orbit-band--2 .orbit-dot { left: calc(58px - 16px); }
+  .hero-orbital .orbit-band--3 .orbit-dot { left: calc(35px - 16px); }
   .hero-orbital .orbit-center { width: 62px; height: 62px; }
   .hero-orbital .orbit-center__capsule { width: 34px; height: 34px; }
   .hero-orbital .orbit-dot { width: 32px; height: 32px; top: -16px; }

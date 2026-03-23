@@ -401,47 +401,54 @@ export default function Home() {
         </div>
         <div className="hero__layout">
           <div className="hero-orbital" aria-hidden="true" data-depth="1.5">
-            {/* Circular track rings */}
-            <div className="orbit-track orbit-track--1" />
-            <div className="orbit-track orbit-track--2" />
-            <div className="orbit-track orbit-track--3" />
+            {/* 3-D globe stage – orbit bands live in perspective space */}
+            <div className="globe-stage">
+              {/* Band 1 – outer r=125 · tilted 72° · CW 7s */}
+              <div className="orbit-band orbit-band--1">
+                <div className="orbit-band__track" />
+                <div className="orbit-spinner orbit-spinner--cw7">
+                  <div className="orbit-dot"><Pill size={17} color="white" /></div>
+                </div>
+                <div className="orbit-spinner orbit-spinner--cw7" style={{animationDelay:'-2.33s'}}>
+                  <div className="orbit-dot orbit-dot--green"><Leaf size={16} color="#4ade80" /></div>
+                </div>
+                <div className="orbit-spinner orbit-spinner--cw7" style={{animationDelay:'-4.67s'}}>
+                  <div className="orbit-dot orbit-dot--blue"><Droplets size={16} color="#93C5FD" /></div>
+                </div>
+              </div>
 
-            {/* ── Centre: brand logo ── */}
+              {/* Band 2 – middle r=88 · tilted 72°+60°Z · CCW 10s */}
+              <div className="orbit-band orbit-band--2">
+                <div className="orbit-band__track" />
+                <div className="orbit-spinner orbit-spinner--ccw10">
+                  <div className="orbit-dot orbit-dot--green"><Leaf size={18} color="#4ade80" /></div>
+                </div>
+                <div className="orbit-spinner orbit-spinner--ccw10" style={{animationDelay:'-3.33s'}}>
+                  <div className="orbit-dot orbit-dot--blue"><FlaskConical size={17} color="#93C5FD" /></div>
+                </div>
+                <div className="orbit-spinner orbit-spinner--ccw10" style={{animationDelay:'-6.67s'}}>
+                  <div className="orbit-dot orbit-dot--yellow"><Syringe size={16} color="#FDE68A" /></div>
+                </div>
+              </div>
+
+              {/* Band 3 – inner r=52 · tilted 72°−60°Z · CW 5s */}
+              <div className="orbit-band orbit-band--3">
+                <div className="orbit-band__track" />
+                <div className="orbit-spinner orbit-spinner--cw5">
+                  <div className="orbit-dot"><Stethoscope size={15} color="white" /></div>
+                </div>
+                <div className="orbit-spinner orbit-spinner--cw5" style={{animationDelay:'-1.67s'}}>
+                  <div className="orbit-dot orbit-dot--green"><Activity size={14} color="#4ade80" /></div>
+                </div>
+                <div className="orbit-spinner orbit-spinner--cw5" style={{animationDelay:'-3.33s'}}>
+                  <div className="orbit-dot orbit-dot--yellow"><Heart size={14} color="#FDE68A" /></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Centre logo – rendered above the 3-D scene */}
             <div className="orbit-center" aria-label="Batla Medicos">
               <img src="/logo.png" className="orbit-center__capsule" alt="Batla Medicos" />
-            </div>
-
-            {/* Ring 1 – outer r=125px CW 7s – 3 particles (120° apart) */}
-            <div className="orbit-arm orbit-arm--r1">
-              <div className="orbit-dot"><Pill size={17} color="white" /></div>
-            </div>
-            <div className="orbit-arm orbit-arm--r1" style={{animationDelay:'-2.33s'}}>
-              <div className="orbit-dot orbit-dot--green"><Leaf size={16} color="#4ade80" /></div>
-            </div>
-            <div className="orbit-arm orbit-arm--r1" style={{animationDelay:'-4.67s'}}>
-              <div className="orbit-dot orbit-dot--blue"><Droplets size={16} color="#93C5FD" /></div>
-            </div>
-
-            {/* Ring 2 – middle r=88px CCW 10s – 3 particles (120° apart) */}
-            <div className="orbit-arm orbit-arm--r2">
-              <div className="orbit-dot orbit-dot--green"><Leaf size={18} color="#4ade80" /></div>
-            </div>
-            <div className="orbit-arm orbit-arm--r2" style={{animationDelay:'-3.33s'}}>
-              <div className="orbit-dot orbit-dot--blue"><FlaskConical size={17} color="#93C5FD" /></div>
-            </div>
-            <div className="orbit-arm orbit-arm--r2" style={{animationDelay:'-6.67s'}}>
-              <div className="orbit-dot orbit-dot--yellow"><Syringe size={16} color="#FDE68A" /></div>
-            </div>
-
-            {/* Ring 3 – inner r=52px CW 5s – 3 particles (120° apart) */}
-            <div className="orbit-arm orbit-arm--r3">
-              <div className="orbit-dot"><Stethoscope size={15} color="white" /></div>
-            </div>
-            <div className="orbit-arm orbit-arm--r3" style={{animationDelay:'-1.67s'}}>
-              <div className="orbit-dot orbit-dot--green"><Activity size={14} color="#4ade80" /></div>
-            </div>
-            <div className="orbit-arm orbit-arm--r3" style={{animationDelay:'-3.33s'}}>
-              <div className="orbit-dot orbit-dot--yellow"><Heart size={14} color="#FDE68A" /></div>
             </div>
           </div>
           <div className="hero__content" data-depth="0.5">
