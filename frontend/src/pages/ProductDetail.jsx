@@ -2,18 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ShoppingCart, FileText, Heart, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getProductBySlug, getRelatedProducts, getProducts } from '../api/products';
-
-// Resolve /uploads/ relative paths to absolute URLs (same logic as MedicineImage.jsx)
-const _API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/+$/, '');
-const _ASSET_BASE = _API_BASE.replace(/\/api\/?$/, '');
-function resolveAssetUrl(url) {
-  if (!url) return '';
-  if (/^https?:\/\//i.test(url)) return url;
-  if (url.startsWith('/uploads/')) return `${_ASSET_BASE}${url}`;
-  return url;
-}
 import { getProductReviews, submitReview } from '../api/reviews';
-import { getBrands } from '../api/brands';
 import MedicineImage from '../components/MedicineImage';
 import SEO from '../components/SEO';
 import { useCart } from '../context/CartContext';
@@ -23,6 +12,16 @@ import { trackViewItem, trackAddToCart } from '../utils/analytics';
 import { flyToCart } from '../utils/flyToCart';
 import toast from 'react-hot-toast';
 import ProductCard from '../components/ProductCard';
+
+// Resolve /uploads/ relative paths to absolute asset URLs
+const _API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/+$/, '');
+const _ASSET_BASE = _API_BASE.replace(/\/api\/?$/, '');
+function resolveAssetUrl(url) {
+  if (!url) return '';
+  if (/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith('/uploads/')) return `${_ASSET_BASE}${url}`;
+  return url;
+}
 
 function StarRating({ value, onChange, readonly = false }) {
   const [hover, setHover] = useState(0);
@@ -96,20 +95,11 @@ export default function ProductDetail() {
         const p = r.data;
         setProduct(p);
         trackViewItem(p);
+        // brandMedia is already attached by the backend on GET /products/:slug
+        setBrandMedia(Array.isArray(p.brandMedia) ? p.brandMedia : []);
         getRelatedProducts(p._id)
           .then(res => setRelated(res.data))
           .catch(() => {});
-        // Fetch brand media in same .then() so `p` is in scope
-        if (p.brand) {
-          getBrands()
-            .then(res => {
-              const match = (res.data.brands || []).find(
-                b => b.name.toLowerCase() === p.brand.toLowerCase()
-              );
-              setBrandMedia(match?.media || []);
-            })
-            .catch(() => {});
-        }
       })
       .catch(() => setProduct(null))
       .finally(() => setLoading(false));
@@ -413,7 +403,9 @@ export default function ProductDetail() {
               preload="metadata"
               playsInline
               style={{ width: '100%', borderRadius: 10, maxHeight: 400, background: '#000' }}
-            />
+            >
+              <p>Your browser does not support the video tag.</p>
+            </video>
           </section>
         )}
 
@@ -437,7 +429,7 @@ export default function ProductDetail() {
                     />
                   ) : (
                     <img
-                      src={m.url}
+                      src={resolveAssetUrl(m.url)}
                       alt={`${product.brand} ${i + 1}`}
                       className="brand-media-item__img"
                       loading="lazy"
