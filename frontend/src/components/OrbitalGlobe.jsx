@@ -1,17 +1,16 @@
 /**
- * OrbitalGlobe v3 — Three.js 3D globe for Batla Medicos
+ * OrbitalGlobe v4 — Three.js 3D globe for Batla Medicos
  *
- * Layers (world units, FOV=55°, cam z=260, visible half-height ≈ 135):
- *   Inner sphere     r = 22
- *   Logo billboard   z = 26  (scale 40×40)
- *   Ring 1 green     r = 40  (equatorial)
- *   Ring 2 blue      r = 56  (tilted)
- *   Ring 3 gold      r = 72  (tilted opposite)
- *   Icon sprites     r = 94  (edge 108 << 135 — no clip)
- *   Med-term labels  r = 105-117  (edge 128 < 135 — just fits)
- *
- * All elements share an orbitGroup that auto-rotates.
- * Mouse hover tilts the camera (not scene) for smooth parallax.
+ * Background: DNA double-helix particle structure (two strands + rungs)
+ * Layers (world units, FOV=55°, cam z=260):
+ *   DNA helix bg       z-offset=-60, radius=65, height=260
+ *   Wireframe globe    r = 55
+ *   Inner glow sphere  r = 22
+ *   Logo billboard     z = 26  (scale 40×40)
+ *   Ring 1 green       r = 40  (equatorial)
+ *   Ring 2 blue        r = 56  (tilted)
+ *   Ring 3 gold        r = 72  (counter-tilted)
+ *   Icon sprites       r = 94  (Fibonacci sphere, no overlap)
  */
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
@@ -27,27 +26,6 @@ const ICONS = [
   { label: '❤️', color: '#FC8181' },
   { label: '🩺', color: '#A78BFA' },
   { label: '💧', color: '#67E8F9' },
-];
-
-const MED_TERMS = [
-  { t: 'Rx',     c: '#93C5FD' },
-  { t: 'ECG',    c: '#4ADE80' },
-  { t: 'DNA',    c: '#FDE68A' },
-  { t: 'MRI',    c: '#D8B4FE' },
-  { t: 'ICU',    c: '#FC8181' },
-  { t: 'BP+',    c: '#67E8F9' },
-  { t: 'CBC',    c: '#A78BFA' },
-  { t: 'HDL',    c: '#4ADE80' },
-  { t: 'BMI',    c: '#93C5FD' },
-  { t: 'IVF',    c: '#FDE68A' },
-  { t: 'OPD',    c: '#FC8181' },
-  { t: 'O2',     c: '#67E8F9' },
-  { t: 'NaCl',   c: '#4ADE80' },
-  { t: 'H2O',    c: '#93C5FD' },
-  { t: 'EEG',    c: '#A78BFA' },
-  { t: 'INR',    c: '#FC8181' },
-  { t: 'HbA1c',  c: '#4ADE80' },
-  { t: 'GFR',    c: '#FDE68A' },
 ];
 
 /* ── Texture helpers ───────────────────────────────────────────────────── */
@@ -73,7 +51,7 @@ function makeIconTexture(label, ringColor, sz = 120) {
   ctx.fillStyle = 'rgba(5,8,28,0.88)';
   ctx.fill();
 
-  // Coloured border with shadow glow
+  // Coloured border + glow
   ctx.save();
   ctx.shadowColor = ringColor;
   ctx.shadowBlur = 10;
@@ -90,47 +68,6 @@ function makeIconTexture(label, ringColor, sz = 120) {
   ctx.textBaseline = 'middle';
   ctx.fillStyle = '#ffffff';
   ctx.fillText(label, cx, cy + 2);
-
-  const tex = new THREE.CanvasTexture(c);
-  tex.needsUpdate = true;
-  return tex;
-}
-
-function makeMedTermTexture(term, color) {
-  const W = 100, H = 30;
-  const c = document.createElement('canvas');
-  c.width = W; c.height = H;
-  const ctx = c.getContext('2d');
-  const rx = H / 2;
-
-  // Pill background
-  ctx.beginPath();
-  ctx.moveTo(rx, 1);
-  ctx.lineTo(W - rx, 1);
-  ctx.quadraticCurveTo(W - 1, 1, W - 1, rx);
-  ctx.quadraticCurveTo(W - 1, H - 1, W - rx, H - 1);
-  ctx.lineTo(rx, H - 1);
-  ctx.quadraticCurveTo(1, H - 1, 1, rx);
-  ctx.quadraticCurveTo(1, 1, rx, 1);
-  ctx.closePath();
-  ctx.fillStyle = 'rgba(4,8,26,0.70)';
-  ctx.fill();
-
-  // Glowing pill border
-  ctx.save();
-  ctx.shadowColor = color;
-  ctx.shadowBlur = 8;
-  ctx.strokeStyle = color + 'cc';
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-  ctx.restore();
-
-  // Medical term text
-  ctx.font = 'bold 12px monospace';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = color;
-  ctx.fillText(term, W / 2, H / 2 + 0.5);
 
   const tex = new THREE.CanvasTexture(c);
   tex.needsUpdate = true;
@@ -168,6 +105,47 @@ function fibonacciSphere(count, radius) {
   return pts;
 }
 
+/* ── Build DNA double-helix particle geometry ──────────────────────────── */
+//
+//  Two intertwined helices (strand 1 = blue, strand 2 = green) + white rungs.
+//  Positions are computed once at module level so they never change at runtime.
+
+function buildDNA() {
+  const HELIX_R    = 65;   // helix tube radius
+  const HELIX_H    = 260;  // total height (y: -130 … +130)
+  const N_STRAND   = 240;  // particles per strand
+  const TURNS      = 5;    // full helical turns
+  const RUNG_STEP  = 12;   // place a rung every Nth particle
+
+  const pos1 = new Float32Array(N_STRAND * 3);
+  const pos2 = new Float32Array(N_STRAND * 3);
+  const rungFlat = [];
+
+  for (let i = 0; i < N_STRAND; i++) {
+    const t  = (i / N_STRAND) * Math.PI * 2 * TURNS;
+    const y  = (i / N_STRAND) * HELIX_H - HELIX_H / 2;
+    const x1 = Math.cos(t)             * HELIX_R;
+    const z1 = Math.sin(t)             * HELIX_R;
+    const x2 = Math.cos(t + Math.PI)  * HELIX_R;
+    const z2 = Math.sin(t + Math.PI)  * HELIX_R;
+
+    pos1[i * 3]     = x1;  pos1[i * 3 + 1] = y;  pos1[i * 3 + 2] = z1;
+    pos2[i * 3]     = x2;  pos2[i * 3 + 1] = y;  pos2[i * 3 + 2] = z2;
+
+    // Rung — 6 evenly-spaced points bridging the two strands
+    if (i % RUNG_STEP === 0) {
+      for (let r = 0; r <= 5; r++) {
+        const f = r / 5;
+        rungFlat.push(x1 + (x2 - x1) * f, y, z1 + (z2 - z1) * f);
+      }
+    }
+  }
+
+  return { pos1, pos2, rungPos: new Float32Array(rungFlat) };
+}
+
+const { pos1: DNA_POS1, pos2: DNA_POS2, rungPos: DNA_RUNG } = buildDNA();
+
 /* ── Component ─────────────────────────────────────────────────────────── */
 
 export default function OrbitalGlobe({ size = 380 }) {
@@ -199,7 +177,35 @@ export default function OrbitalGlobe({ size = 380 }) {
     fillLight.position.set(-5, -4, -6);
     scene.add(fillLight);
 
-    /* Wireframe globe shell r=55 */
+    /* ─── DNA double-helix background ─────────────────────────────── */
+    // Group slides back in Z so it appears behind / inside the globe.
+    const dnaGroup = new THREE.Group();
+    dnaGroup.position.z = -60;
+    scene.add(dnaGroup);
+
+    const mkDnaGeo = (flatArr) => {
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(flatArr.slice(), 3));
+      return geo;
+    };
+
+    // Strand 1 — brand blue
+    dnaGroup.add(new THREE.Points(
+      mkDnaGeo(DNA_POS1),
+      new THREE.PointsMaterial({ color: 0x93C5FD, size: 2.2, transparent: true, opacity: 0.55, sizeAttenuation: true }),
+    ));
+    // Strand 2 — brand green
+    dnaGroup.add(new THREE.Points(
+      mkDnaGeo(DNA_POS2),
+      new THREE.PointsMaterial({ color: 0x4ADE80, size: 2.2, transparent: true, opacity: 0.55, sizeAttenuation: true }),
+    ));
+    // Rungs — soft white
+    dnaGroup.add(new THREE.Points(
+      mkDnaGeo(DNA_RUNG),
+      new THREE.PointsMaterial({ color: 0xffffff, size: 1.5, transparent: true, opacity: 0.30, sizeAttenuation: true }),
+    ));
+
+    /* ─── Wireframe globe shell r=55 ─────────────────────────────── */
     const meshGlobe = new THREE.Mesh(
       new THREE.IcosahedronGeometry(55, 3),
       new THREE.MeshBasicMaterial({
@@ -229,7 +235,7 @@ export default function OrbitalGlobe({ size = 380 }) {
       scene.add(logo);
     });
 
-    /* ─── Orbit group: rings + icon sprites spin together ──────────── */
+    /* ─── Orbit group: rings + icon sprites spin together ────────── */
     const orbitGroup = new THREE.Group();
     scene.add(orbitGroup);
 
@@ -265,7 +271,7 @@ export default function OrbitalGlobe({ size = 380 }) {
     ring3.rotation.z = -Math.PI / 6;
     orbitGroup.add(ring3);
 
-    // Icon sprites at Fibonacci sphere r=94 (edge at 94+14=108 — fits in 135 ✓)
+    // Icon sprites at Fibonacci sphere r=94
     const spriteObjs = [];
     fibonacciSphere(ICONS.length, 94).forEach((pos, i) => {
       const { label, color } = ICONS[i];
@@ -281,35 +287,8 @@ export default function OrbitalGlobe({ size = 380 }) {
       spriteObjs.push({ sprite, base: pos.clone(), phase: (Math.PI * 2 * i) / ICONS.length });
     });
 
-    /* ─── Medical-term floating label sprites ───────────────────────── */
-    // Placed in an elliptical halo (r=105–117) around the globe.
-    // A separate termGroup counter-rotates for visual contrast.
-    const termGroup = new THREE.Group();
-    scene.add(termGroup);
-    const termObjs = [];
-
-    MED_TERMS.forEach(({ t, c }, i) => {
-      const angle = (i / MED_TERMS.length) * Math.PI * 2;
-      const r = 105 + (i % 4) * 4;           // 105 / 109 / 113 / 117
-      const xPos = Math.cos(angle) * r;
-      const yPos = Math.sin(angle) * r * 0.52; // flatten to ellipse
-      const zPos = ((i % 6) - 2.5) * 16;      // z spread ≈ ±40
-
-      const sprite = new THREE.Sprite(
-        new THREE.SpriteMaterial({
-          map: makeMedTermTexture(t, c),
-          transparent: true, opacity: 0.70, depthWrite: false,
-        }),
-      );
-      // scale: (worldWidth, worldHeight, 1) derived from texture aspect 100:30 ≈ 3.33
-      sprite.scale.set(22, 6.6, 1);
-      sprite.position.set(xPos, yPos, zPos);
-      termGroup.add(sprite);
-      termObjs.push({ sprite, phase: (Math.PI * 2 * i) / MED_TERMS.length });
-    });
-
     /* ─── Animation loop ────────────────────────────────────────────── */
-    const mouse = { tx: 0, ty: 0 }; // target camera tilt
+    const mouse = { tx: 0, ty: 0 };
     let animId;
     const clock = new THREE.Clock();
 
@@ -317,33 +296,28 @@ export default function OrbitalGlobe({ size = 380 }) {
       animId = requestAnimationFrame(animate);
       const t = clock.getElapsedTime();
 
+      // DNA helix slowly rotates + gentle wobble
+      dnaGroup.rotation.y = t * 0.14;
+      dnaGroup.rotation.x = Math.sin(t * 0.08) * 0.10;
+
       // Globe wireframe — gentle slow spin
       meshGlobe.rotation.y = t * 0.10;
       meshGlobe.rotation.x = t * 0.04;
       // Inner sphere — counter-spin
       meshInner.rotation.y = -t * 0.08;
 
-      // Orbit group rotates continuously — rings + icons as one unit
+      // Orbit group (rings + icons) auto-rotates
       orbitGroup.rotation.y = t * 0.28;
-      // Each ring also spins on its own local axis (extra dynamism)
+      // Each ring also spins on its own local axis
       ring1.rotation.z = t * 0.35;
-      ring2.rotation.z = t * 0.25 + Math.PI / 6;
+      ring2.rotation.z =  t * 0.25 + Math.PI / 6;
       ring3.rotation.z = -t * 0.18 - Math.PI / 6;
 
-      // Term (medical label) group counter-drifts
-      termGroup.rotation.y = -t * 0.09;
-      termGroup.rotation.x = Math.sin(t * 0.05) * 0.08;
-
-      // Icon sprite pulse + brightness flicker
+      // Icon sprite pulse + opacity flicker
       spriteObjs.forEach(({ sprite, base, phase }) => {
         const pulse = 1 + 0.05 * Math.sin(t * 1.4 + phase);
         sprite.position.set(base.x * pulse, base.y * pulse, base.z * pulse);
         sprite.material.opacity = 0.68 + 0.24 * Math.sin(t * 0.9 + phase);
-      });
-
-      // Med-term label fade in/out
-      termObjs.forEach(({ sprite, phase }) => {
-        sprite.material.opacity = 0.45 + 0.38 * Math.abs(Math.sin(t * 0.4 + phase));
       });
 
       // Smooth camera parallax toward mouse
@@ -355,7 +329,6 @@ export default function OrbitalGlobe({ size = 380 }) {
     };
     animate();
 
-    /* Mouse tilt */
     const onMouseMove = (e) => {
       const rect = el.getBoundingClientRect();
       mouse.tx = ((e.clientX - rect.left) / size - 0.5) * 2;
