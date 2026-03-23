@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';import { Search, SlidersHorizontal, X, Package, ChevronRight, Pill, Leaf, Sparkles, Baby, Scissors, LayoutGrid, Droplets, Droplet, FlaskConical, Wind, Syringe, Thermometer, ShoppingBag, Star, Box, TestTube, GlassWater, Gem, Tag, Shield, Apple, Smile, ShoppingCart, Flower2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getProducts, getTopBrands, requestMedicineAvailability } from '../api/products';
+import { getBrandPromotions } from '../api/brands';
 import { getCategories } from '../api/categories';
 import ProductCard from '../components/ProductCard';
 import SEO from '../components/SEO';
@@ -74,6 +75,7 @@ export default function ProductCatalog() {
   const [loading, setLoading]     = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [brands, setBrands] = useState([]);
+  const [brandPromoVideos, setBrandPromoVideos] = useState([]);
   const sidebarRef = useRef(null);
   const [requestName, setRequestName] = useState('');
   const [requestPhone, setRequestPhone] = useState('');
@@ -199,6 +201,17 @@ export default function ProductCatalog() {
     getTopBrands().then(r => setBrands(r.data.brands || [])).catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (!brand) { setBrandPromoVideos([]); return; }
+    getBrandPromotions('brand')
+      .then(r => {
+        const promos = r.data.promotions || [];
+        const match = promos.find(p => p.brand.name.toLowerCase() === brand.toLowerCase());
+        setBrandPromoVideos(match ? match.videos : []);
+      })
+      .catch(() => setBrandPromoVideos([]));
+  }, [brand]);
+
   // Keep the active category/brand button visible inside the (scrollable) sidebar.
   useEffect(() => {
     const root = sidebarRef.current;
@@ -254,7 +267,22 @@ export default function ProductCatalog() {
           </div>
         </div>
       </div>
-
+      {/* ── Brand Promo Videos (shown when filtering by a specific brand) ── */}
+      {brand && brandPromoVideos.length > 0 && (
+        <div style={{ background: '#0d0d1a', padding: '20px 0 16px', overflowX: 'hidden' }}>
+          <div className="container">
+            <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>🎬 {brand} Promotions</p>
+            <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 4, scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}>
+              {brandPromoVideos.map((v, i) => (
+                <div key={i} style={{ flexShrink: 0, width: 'min(420px, 92vw)', borderRadius: 10, overflow: 'hidden', background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.09)', scrollSnapAlign: 'start', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+                  <video src={v.url} controls muted playsInline style={{ width: '100%', maxHeight: 220, display: 'block', background: '#000' }} />
+                  {v.title && <div style={{ color: '#e0e0ff', fontSize: '0.85rem', fontWeight: 600, padding: '8px 14px' }}>{v.title}</div>}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       <div className="container">
         {/* ── Search + Sort toolbar ─────────────────────────────── */}
         <div className="catalog-toolbar">

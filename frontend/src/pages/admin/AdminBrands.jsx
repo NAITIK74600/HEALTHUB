@@ -40,6 +40,8 @@ export default function AdminBrands() {
   const [mediaType, setMediaType] = useState('image');
   const [mediaUploading, setMediaUploading] = useState(false);
   const [mediaProgress, setMediaProgress] = useState(0);
+  const [mediaTitle, setMediaTitle] = useState('');
+  const [mediaDisplayOn, setMediaDisplayOn] = useState('brand');
   const mediaVideoRef = useRef(null);
   const mediaImageRef = useRef(null);
 
@@ -55,19 +57,19 @@ export default function AdminBrands() {
   useEffect(() => { load(); }, []);
 
   const openAdd = () => {
-    setForm(EMPTY); setLogoFile(null); setPreview(null); setMediaUrl(''); setMediaType('image'); setMediaProgress(0); setModal('add');
+    setForm(EMPTY); setLogoFile(null); setPreview(null); setMediaUrl(''); setMediaType('image'); setMediaProgress(0); setMediaTitle(''); setMediaDisplayOn('brand'); setModal('add');
   };
 
   const openAddPC = (preset) => {
     setForm({ ...EMPTY, category: 'personal_care', name: preset.label, gradient: preset.gradient });
-    setLogoFile(null); setPreview(null); setMediaUrl(''); setMediaType('image'); setMediaProgress(0); setModal('add');
+    setLogoFile(null); setPreview(null); setMediaUrl(''); setMediaType('image'); setMediaProgress(0); setMediaTitle(''); setMediaDisplayOn('brand'); setModal('add');
   };
 
   const openEdit = (b) => {
     setForm({ name: b.name, category: b.category, ord: b.ord, logoUrl: b.logoUrl || '', isActive: b.isActive, _id: b._id, gradient: b.gradient || '', media: b.media || [] });
     setLogoFile(null);
     setPreview(b.logoUrl || null);
-    setMediaUrl(''); setMediaType('image'); setMediaProgress(0);
+    setMediaUrl(''); setMediaType('image'); setMediaProgress(0); setMediaTitle(''); setMediaDisplayOn('brand');
     setModal('edit');
   };
 
@@ -337,6 +339,22 @@ export default function AdminBrands() {
                             <Trash2 size={13} />
                           </button>
                         </div>
+                        {m.type === 'video' && (
+                          <div style={{ padding: '4px 10px 8px', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                            <input type="text" className="form-input" placeholder="Video title (optional)"
+                              value={m.title || ''}
+                              onChange={e => setForm(f => ({ ...f, media: f.media.map((item, j) => j === i ? { ...item, title: e.target.value } : item) }))}
+                              style={{ flex: 1, minWidth: 130, fontSize: 12, padding: '4px 8px', margin: 0 }} />
+                            <select className="form-input"
+                              value={m.displayOn || 'brand'}
+                              onChange={e => setForm(f => ({ ...f, media: f.media.map((item, j) => j === i ? { ...item, displayOn: e.target.value } : item) }))}
+                              style={{ width: 155, fontSize: 12, padding: '4px 6px', margin: 0 }}>
+                              <option value="brand">Brand page only</option>
+                              <option value="home">Home page only</option>
+                              <option value="both">Both (Home + Brand)</option>
+                            </select>
+                          </div>
+                        )}
                         {m.type === 'video' && m.url && (
                           <video src={m.url} controls muted playsInline
                             style={{ width: '100%', maxHeight: 140, display: 'block', background: '#000' }} />
@@ -360,12 +378,27 @@ export default function AdminBrands() {
                       <button type="button" className="btn btn--outline" style={{ flexShrink: 0, padding: '8px 12px' }}
                         onClick={() => {
                           if (!mediaUrl.trim() || !/^https?:\/\//i.test(mediaUrl.trim())) return toast.error('Enter a valid URL');
-                          setForm(f => ({ ...f, media: [...(f.media || []), { type: mediaType, url: mediaUrl.trim() }] }));
-                          setMediaUrl('');
+                          const entry = { type: mediaType, url: mediaUrl.trim() };
+                          if (mediaType === 'video') { if (mediaTitle.trim()) entry.title = mediaTitle.trim(); entry.displayOn = mediaDisplayOn; }
+                          setForm(f => ({ ...f, media: [...(f.media || []), entry] }));
+                          setMediaUrl(''); setMediaTitle(''); setMediaDisplayOn('brand');
                         }}>
                         <Plus size={14} /> Add URL
                       </button>
                     </div>
+
+                    {/* Video-specific: title + display location */}
+                    {mediaType === 'video' && (
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                        <input type="text" className="form-input" placeholder="Video title (e.g. New Summer Range)" style={{ flex: 1, minWidth: 170, margin: 0 }}
+                          value={mediaTitle} onChange={e => setMediaTitle(e.target.value)} />
+                        <select className="form-input" style={{ width: 165, margin: 0 }} value={mediaDisplayOn} onChange={e => setMediaDisplayOn(e.target.value)}>
+                          <option value="brand">Brand page only</option>
+                          <option value="home">Home page only</option>
+                          <option value="both">Both (Home + Brand)</option>
+                        </select>
+                      </div>
+                    )}
 
                     {/* Direct file upload */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -397,7 +430,11 @@ export default function AdminBrands() {
                               if (evt.total) setMediaProgress(Math.round((evt.loaded / evt.total) * 100));
                             });
                             if (res?.data?.url) {
-                              setForm(f => ({ ...f, media: [...(f.media || []), { type: 'video', url: res.data.url }] }));
+                              const vEntry = { type: 'video', url: res.data.url };
+                              if (mediaTitle.trim()) vEntry.title = mediaTitle.trim();
+                              vEntry.displayOn = mediaDisplayOn;
+                              setForm(f => ({ ...f, media: [...(f.media || []), vEntry] }));
+                              setMediaTitle(''); setMediaDisplayOn('brand');
                               toast.success('Video uploaded!');
                             }
                           } catch (err) { toast.error(err.response?.data?.message || 'Video upload failed.'); }

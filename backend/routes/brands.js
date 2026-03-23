@@ -88,6 +88,37 @@ router.get('/admin/all', requireAuth, requireAdmin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ── Public: brand promotion videos ──────────────────────────────────────────
+// GET /brands/promotions?display=home|brand   → videos set for that location
+// GET /brands/promotions?brand=slug           → limit to a specific brand
+router.get('/promotions', async (req, res, next) => {
+  try {
+    const display   = req.query.display;  // 'home' | 'brand' | undefined (all)
+    const brandSlug = req.query.brand;    // optional slug filter
+
+    let sql = 'SELECT * FROM brands WHERE is_active = 1';
+    const vals = [];
+    if (brandSlug) { sql += ' AND slug = ?'; vals.push(brandSlug); }
+    sql += ' ORDER BY ord ASC, name ASC';
+
+    const rows = await query(sql, vals);
+    const promotions = [];
+    for (const row of rows) {
+      const b = mapBrand(row);
+      const videos = b.media.filter(m => {
+        if (m.type !== 'video') return false;
+        if (!display) return true;
+        const on = m.displayOn || 'brand'; // default: brand page
+        return on === display || on === 'both';
+      });
+      if (videos.length) {
+        promotions.push({ brand: { _id: b._id, name: b.name, slug: b.slug, logoUrl: b.logoUrl }, videos });
+      }
+    }
+    res.json({ promotions });
+  } catch (err) { next(err); }
+});
+
 // ── Admin: create brand ───────────────────────────────────────────────────────
 router.post('/', requireAuth, requireAdmin, upload.single('logo'), [
   body('name').trim().notEmpty().isLength({ max: 150 }),
@@ -120,9 +151,15 @@ router.post('/', requireAuth, requireAdmin, upload.single('logo'), [
     if (req.body.media) {
       try { media = JSON.parse(req.body.media); } catch { media = []; }
     }
-    // Validate each entry: { type: 'image'|'video', url: string }
+    // Validate each entry: { type, url, title?, displayOn? }
     media = (Array.isArray(media) ? media : [])
       .filter(m => m && ['image', 'video'].includes(m.type) && typeof m.url === 'string' && /^https?:\/\//i.test(m.url))
+      .map(m => {
+        const entry = { type: m.type, url: m.url };
+        if (m.title) entry.title = String(m.title).slice(0, 100);
+        if (m.displayOn && ['home', 'brand', 'both'].includes(m.displayOn)) entry.displayOn = m.displayOn;
+        return entry;
+      })
       .slice(0, 10);
 
     const result = await execute(
@@ -190,6 +227,12 @@ router.put('/:id', requireAuth, requireAdmin, upload.single('logo'), [
       try { media = JSON.parse(req.body.media); } catch { media = []; }
       media = (Array.isArray(media) ? media : [])
         .filter(m => m && ['image', 'video'].includes(m.type) && typeof m.url === 'string' && /^https?:\/\//i.test(m.url))
+        .map(m => {
+          const entry = { type: m.type, url: m.url };
+          if (m.title) entry.title = String(m.title).slice(0, 100);
+          if (m.displayOn && ['home', 'brand', 'both'].includes(m.displayOn)) entry.displayOn = m.displayOn;
+          return entry;
+        })
         .slice(0, 10);
       mediaJson = media.length ? JSON.stringify(media) : null;
     }
