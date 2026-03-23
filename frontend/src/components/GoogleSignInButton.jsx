@@ -13,9 +13,9 @@ export default function GoogleSignInButton({ redirectTo }) {
   const [loading, setLoading] = useState(false);
 
   const getDefaultRedirectUri = () => {
-    const host = window.location.hostname.toLowerCase();
-    if (host === 'www.batlamedicos.shop') return 'https://batlamedicos.shop/google-callback';
-    return `${window.location.origin}/google-callback`;
+    // Normalise www → non-www so the URI matches Google Cloud Console registration
+    const origin = window.location.origin.replace(/^(https?:\/\/)www\./, '$1');
+    return `${origin}/api/auth/google/callback`;
   };
 
   const handleClick = () => {

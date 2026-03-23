@@ -1,60 +1,37 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { googleAuth } from '../api/auth';
-import { useAuth } from '../context/AuthContext';
+
+// Error messages for each google_error query param value set by the server-side callback
+const ERROR_MESSAGES = {
+  no_code:          'Google sign-in was cancelled.',
+  google_cancelled: 'Google sign-in was cancelled.',
+  unverified_email: 'Your Google account email is not verified.',
+  banned:           'This account has been suspended.',
+  failed:           'Google sign-in failed. Please try again.',
+};
 
 export default function GoogleCallback() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const { setUser } = useAuth();
-  const processed = useRef(false);
-
-  const getDefaultRedirectUri = () => {
-    const host = window.location.hostname.toLowerCase();
-    if (host === 'www.batlamedicos.shop') return 'https://batlamedicos.shop/google-callback';
-    return `${window.location.origin}/google-callback`;
-  };
 
   useEffect(() => {
-    if (processed.current) return;
-    processed.current = true;
-
-    const code = params.get('code');
-    const error = params.get('error');
-
-    if (error) {
-      toast.error('Google sign-in was cancelled.');
+    // The server-side callback at GET /api/auth/google/callback handles the OAuth
+    // exchange and redirects directly to the destination page. This component is
+    // only reached when the server redirects here with a ?google_error= param.
+    const errorKey = params.get('google_error');
+    if (errorKey) {
+      toast.error(ERROR_MESSAGES[errorKey] || 'Google sign-in failed. Please try again.');
       navigate('/login', { replace: true });
-      return;
+    } else {
+      // No error and no code — user navigated here directly; send them home.
+      navigate('/', { replace: true });
     }
-
-    if (!code) {
-      toast.error('No authorization code received.');
-      navigate('/login', { replace: true });
-      return;
-    }
-
-    const redirectUri = import.meta.env.VITE_GOOGLE_REDIRECT_URI || getDefaultRedirectUri();
-
-    (async () => {
-      try {
-        const res = await googleAuth({ code, redirectUri });
-        setUser(res.data.user);
-        toast.success('Welcome!');
-        const redirectTo = params.get('state') || '/';
-        navigate(redirectTo, { replace: true });
-      } catch (err) {
-        const msg = err.response?.data?.message || 'Google sign-in failed.';
-        toast.error(msg);
-        navigate('/login', { replace: true });
-      }
-    })();
-  }, [params, navigate, setUser]);
+  }, [params, navigate]);
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-      <p style={{ fontSize: '1.1rem', color: '#666' }}>Signing in with Google...</p>
+      <p style={{ fontSize: '1.1rem', color: '#666' }}>Signing in with Google…</p>
     </div>
   );
 }

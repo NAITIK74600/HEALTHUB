@@ -264,15 +264,89 @@ router.post('/login', loginLimiter, authLimiter, [
   } catch (err) { next(err); }
 });
 
+// ── GET /api/auth/google/callback — server-side OAuth2 callback ─────────────
+// Google redirects here after the user authorises the app.
+// Exchanges the code, creates/updates the user, sets cookies, then redirects
+// the browser to the frontend page stored in the `state` query param.
+router.get('/google/callback', authLimiter, async (req, res) => {
+  const { code, error, state } = req.query;
+  const frontendBase = (process.env.FRONTEND_URL || 'https://batlamedicos.shop')
+    .replace(/\/$/, '')
+    .replace(/^(https?:\/\/)www\./, '$1'); // normalise www → non-www
+
+  if (error || !code) {
+    const hint = typeof error === 'string' ? encodeURIComponent(error) : 'no_code';
+    return res.redirect(`${frontendBase}/login?google_error=${hint}`);
+  }
+
+  try {
+    // Reconstruct redirect_uri exactly as it was sent during authorisation.
+    // Both ends normalise www → non-www so the URI matches what is registered
+    // in Google Cloud Console.
+    const rawHost     = String(req.headers['x-forwarded-host'] || req.headers.host || '');
+    const host        = (rawHost || new URL(frontendBase).host).replace(/^www\./, '');
+    const proto       = req.headers['x-forwarded-proto'] || 'https';
+    const redirectUri = `${proto}://${host}/api/auth/google/callback`;
+
+    const tokens = await googleTokenExchange(code, redirectUri);
+    if (!tokens.id_token) throw new Error('No id_token received from Google.');
+
+    const payload = decodeIdToken(tokens.id_token);
+    if (payload.aud !== process.env.GOOGLE_CLIENT_ID) {
+      throw new Error('Token audience mismatch.');
+    }
+
+    const { sub: googleId, email, name, email_verified: emailVerified } = payload;
+    if (!emailVerified) {
+      return res.redirect(`${frontendBase}/login?google_error=unverified_email`);
+    }
+
+    let user = await findUserByGoogleOrEmail(email, googleId);
+    if (user) {
+      if (user.isBanned) return res.redirect(`${frontendBase}/login?google_error=banned`);
+      user.googleId      = googleId;
+      user.emailVerified = true;
+      user.authProvider  = user.authProvider === 'local' ? 'local' : 'google';
+      user = await updateUser(user);
+    } else {
+      user = await createUser({
+        name, email, phone: '', passwordHash: null,
+        role: 'customer', authProvider: 'google', googleId,
+        emailVerified: true, addresses: [], familyMembers: [], isBanned: false,
+      });
+    }
+
+    const accessToken  = signAccessToken(user._id);
+    const refreshToken = await signRefreshToken(user._id);
+    setAuthCookies(req, res, accessToken, refreshToken);
+
+    // Prevent open-redirect: only allow safe relative paths
+    const safePath = (() => {
+      if (!state) return '/';
+      try {
+        const decoded = decodeURIComponent(state);
+        return /^\/[^/\\]/.test(decoded) || decoded === '/' ? decoded : '/';
+      } catch { return '/'; }
+    })();
+    return res.redirect(`${frontendBase}${safePath}`);
+  } catch (err) {
+    console.error('[Google OAuth callback]', err.message);
+    return res.redirect(`${frontendBase}/login?google_error=failed`);
+  }
+});
+
+// ── POST /api/auth/google — legacy client-side flow (kept for compatibility) ──
 router.post('/google', authLimiter, async (req, res, next) => {
   try {
     const { code } = req.body;
     if (!code) return res.status(422).json({ message: 'Google authorization code required.' });
 
-    const rawRedirectUri = req.body.redirectUri || process.env.GOOGLE_REDIRECT_URI || 'https://batlamedicos.shop/google-callback';
-    const redirectUri = String(rawRedirectUri || '').replace(
-      /^https:\/\/www\.batlamedicos\.shop\/google-callback$/i,
-      'https://batlamedicos.shop/google-callback'
+    // Normalise redirect URI: www → non-www to match Google Cloud Console registration
+    const rawRedirectUri = req.body.redirectUri
+      || process.env.GOOGLE_REDIRECT_URI
+      || 'https://batlamedicos.shop/api/auth/google/callback';
+    const redirectUri = String(rawRedirectUri).replace(
+      /^(https?:\/\/)www\./i, '$1'
     );
     const tokens = await googleTokenExchange(code, redirectUri);
     if (!tokens.id_token) return res.status(401).json({ message: 'No id_token received from Google.' });
