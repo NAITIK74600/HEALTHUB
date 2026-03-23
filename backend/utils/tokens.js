@@ -41,7 +41,7 @@ const setAuthCookies = (req, res, accessToken, refreshToken) => {
 
   res.cookie('refreshToken', refreshToken, {
     ...cookieOptions,
-    maxAge: 24 * 60 * 60 * 1000, // 1 day — re-login needed after 24h inactivity
+    maxAge: 2 * 60 * 60 * 1000, // 2 hours — session expires after 2h
     path: '/api/auth/refresh',
   });
 };

@@ -250,7 +250,7 @@ async function sendEmailVerification(userEmail, userName, verifyUrl) {
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,sans-serif">
   <div style="max-width:560px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
-    <div style="background:#C0392B;padding:28px 32px;text-align:center">
+    <div style="background:#3451D1;padding:28px 32px;text-align:center">
       <img src="cid:${LOGO_CID}" alt="Batla Medicos" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
       <h1 style="color:#fff;margin:0;font-size:22px">✉️ Verify Your Email</h1>
       <p style="color:rgba(255,255,255,.8);margin:8px 0 0;font-size:14px">One last step to activate your account</p>
@@ -262,14 +262,14 @@ async function sendEmailVerification(userEmail, userName, verifyUrl) {
         your email address. This link expires in <strong>24 hours</strong>.
       </p>
       <div style="text-align:center;margin:28px 0">
-        <a href="${verifyUrl}" style="background:#C0392B;color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:16px;font-weight:700;display:inline-block">
+        <a href="${verifyUrl}" style="background:#3451D1;color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:16px;font-weight:700;display:inline-block">
           ✅ Verify My Email
         </a>
       </div>
       <p style="margin:24px 0 0;color:#888;font-size:13px;line-height:1.5">
         If you did not create an account, you can safely ignore this email.<br>
         Button not working? Copy this link into your browser:<br>
-        <a href="${verifyUrl}" style="color:#C0392B;word-break:break-all">${verifyUrl}</a>
+        <a href="${verifyUrl}" style="color:#3451D1;word-break:break-all">${verifyUrl}</a>
       </p>
     </div>
     <div style="background:#f9f9f9;padding:18px 32px;text-align:center;border-top:1px solid #eee">
@@ -567,7 +567,7 @@ async function sendEmailVerificationOtp(userEmail, userName, otp) {
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,sans-serif">
   <div style="max-width:520px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
-    <div style="background:#C0392B;padding:28px 32px;text-align:center">
+    <div style="background:#3451D1;padding:28px 32px;text-align:center">
       <img src="cid:${LOGO_CID}" alt="Batla Medicos" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
       <h1 style="color:#fff;margin:0;font-size:22px">✉️ Verify Your Email</h1>
       <p style="color:rgba(255,255,255,.8);margin:8px 0 0;font-size:14px">Batla Medicos — Account Activation</p>
@@ -580,7 +580,7 @@ async function sendEmailVerificationOtp(userEmail, userName, otp) {
       </p>
       <div style="background:#f0eded;border-radius:10px;padding:20px;text-align:center;margin:24px 0">
         <p style="margin:0 0 6px;font-size:13px;color:#888;letter-spacing:1px;text-transform:uppercase">Your OTP</p>
-        <p style="margin:0;font-size:40px;font-weight:700;letter-spacing:12px;color:#C0392B">${otp}</p>
+        <p style="margin:0;font-size:40px;font-weight:700;letter-spacing:12px;color:#3451D1">${otp}</p>
       </div>
       <p style="margin:0;color:#888;font-size:13px;line-height:1.5">
         If you didn't create an account, please ignore this email.
@@ -633,3 +633,4 @@ async function sendPasswordResetOtp(userEmail, userName, otp) {
 </html>`;
   await sendMail(userEmail, '🔐 Password Reset OTP — Batla Medicos', html);
 }
+

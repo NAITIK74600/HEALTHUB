@@ -40,7 +40,7 @@ export default function Navbar() {
           <Link to="/" className="navbar__brand">
             <div className="navbar__logo">
               <img
-                src="/logo.jpg"
+                src="/logo.png"
                 alt="Batla Medicos logo"
                 className="navbar__logo-img"
               />

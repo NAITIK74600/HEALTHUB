@@ -208,6 +208,106 @@ export default function Home() {
   const [showResults, setShowResults] = useState(false);
   const searchTimeout = useRef(null);
   const searchRef = useRef(null);
+  const particleCanvasRef = useRef(null);
+
+  // ── Interactive particle animation ──
+  useEffect(() => {
+    const canvas = particleCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let raf;
+    let mouse = { x: -9999, y: -9999 };
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const onMove = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const src = e.touches ? e.touches[0] : e;
+      mouse.x = src.clientX - rect.left;
+      mouse.y = src.clientY - rect.top;
+    };
+    const onLeave = () => { mouse.x = -9999; mouse.y = -9999; };
+    const section = canvas.parentElement;
+    section.addEventListener('mousemove', onMove);
+    section.addEventListener('touchmove', onMove, { passive: true });
+    section.addEventListener('mouseleave', onLeave);
+
+    const COLORS = ['rgba(120,147,245,', 'rgba(147,197,253,', 'rgba(104,211,145,', 'rgba(167,243,208,', 'rgba(255,255,255,'];
+    const N = 72;
+    const particles = Array.from({ length: N }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.55,
+      vy: (Math.random() - 0.5) * 0.55,
+      r: 1.5 + Math.random() * 2.5,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    }));
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const W = canvas.width, H = canvas.height;
+
+      for (const p of particles) {
+        // Mouse repulsion
+        const dx = p.x - mouse.x, dy = p.y - mouse.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 90) {
+          const force = (90 - dist) / 90 * 0.6;
+          p.vx += (dx / dist) * force;
+          p.vy += (dy / dist) * force;
+        }
+        // Speed cap + friction
+        const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+        if (speed > 1.8) { p.vx = p.vx / speed * 1.8; p.vy = p.vy / speed * 1.8; }
+        p.vx *= 0.99; p.vy *= 0.99;
+
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) { p.x = 0; p.vx *= -1; }
+        else if (p.x > W) { p.x = W; p.vx *= -1; }
+        if (p.y < 0) { p.y = 0; p.vy *= -1; }
+        else if (p.y > H) { p.y = H; p.vy *= -1; }
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.color + '0.75)';
+        ctx.fill();
+      }
+
+      // Draw connecting lines
+      for (let i = 0; i < N; i++) {
+        for (let j = i + 1; j < N; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d < 130) {
+            const alpha = (1 - d / 130) * 0.35;
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(180,200,255,${alpha})`;
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+          }
+        }
+      }
+
+      raf = requestAnimationFrame(draw);
+    };
+    draw();
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', resize);
+      section.removeEventListener('mousemove', onMove);
+      section.removeEventListener('touchmove', onMove);
+      section.removeEventListener('mouseleave', onLeave);
+    };
+  }, []);
 
   // Live search with debounce
   const handleSearch = useCallback((q) => {
@@ -286,6 +386,8 @@ export default function Home() {
       />
       {/* ══════════════════════════════ HERO ══════════════════════════════ */}
       <section className="hero" ref={heroParallax}>
+        {/* Interactive particle canvas */}
+        <canvas ref={particleCanvasRef} className="hero__canvas" aria-hidden="true" />
         <div className="hero__particles" aria-hidden="true" data-depth="3">
           {[1,2,3,4,5,6,7,8].map(n => <div key={n} className={`hero__particle hero__particle--${n}`} />)}
         </div>

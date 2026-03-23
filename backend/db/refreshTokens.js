@@ -5,7 +5,7 @@ const { execute, query } = require('./mysql');
 
 async function createRefreshToken(userId) {
   const token = crypto.randomBytes(64).toString('hex');
-  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 hours
 
   await execute(
     'INSERT INTO refresh_tokens (user_id, token, expires_at, used) VALUES (?, ?, ?, 0)',

@@ -11,12 +11,12 @@
 /* ── Design Tokens ─────────────────────────────────────────────── */
 :root {
   /* Brand */
-  --primary:        #C0392B;
-  --primary-dark:   #922B21;
-  --primary-light:  #FADBD8;
-  --primary-50:     #FEF2F2;
-  --green:          #1E8449;
-  --green-dark:     #196F3D;
+  --primary:        #3451D1;
+  --primary-dark:   #2338B0;
+  --primary-light:  #EEF1FD;
+  --primary-50:     #F0F4FF;
+  --green:          #27AE60;
+  --green-dark:     #1E8449;
   --green-light:    #D5F5E3;
   --green-50:       #F0FBF4;
 
@@ -37,7 +37,7 @@
   --text:           #1A202C;
   --text-muted:     #64748B;
   --border:         #E2E8F0;
-  --border-focus:   #C0392B;
+  --border-focus:   #3451D1;
   --bg:             #F8FAFC;
   --surface:        #FFFFFF;
 
@@ -47,7 +47,7 @@
   --shadow-md:  0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
   --shadow-lg:  0 10px 25px rgba(0,0,0,0.10), 0 4px 10px rgba(0,0,0,0.05);
   --shadow-xl:  0 20px 60px rgba(0,0,0,0.12);
-  --shadow-red: 0 4px 20px rgba(192,57,43,0.25);
+  --shadow-red: 0 4px 20px rgba(52,81,209,0.25);
 
   /* Border radius */
   --r-xs:   4px;
@@ -106,9 +106,9 @@ svg { flex-shrink: 0; }
 .red   { color: var(--primary); }
 .green { color: var(--green); }
 
-/* Red-to-green gradient text utility — used for brand name everywhere */
+/* Blue-to-green gradient text utility — used for brand name everywhere */
 .brand-gradient {
-  background: linear-gradient(90deg, #C0392B 0%, #1B8843 100%);
+  background: linear-gradient(90deg, #3451D1 0%, #27AE60 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -116,7 +116,7 @@ svg { flex-shrink: 0; }
 /* Lighter variant for dark backgrounds (footer, admin sidebar) */
 .footer .brand-gradient,
 .admin-sidebar .brand-gradient {
-  background: linear-gradient(90deg, #FC8181 0%, #68D391 100%);
+  background: linear-gradient(90deg, #7B93F5 0%, #68D391 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -180,7 +180,7 @@ svg { flex-shrink: 0; }
   color: #fff;
   box-shadow: var(--shadow-red);
 }
-.btn--primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(192,57,43,0.35); }
+.btn--primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(52,81,209,0.40); }
 
 .btn--secondary {
   background: var(--gray-100);
@@ -202,7 +202,7 @@ svg { flex-shrink: 0; }
   border: 2px solid var(--primary);
 }
 .btn--outline:hover { background: var(--primary-50); }
-.btn--outline::after { background: rgba(192,57,43,0.05); }
+.btn--outline::after { background: rgba(52,81,209,0.05); }
 
 .btn--ghost {
   background: rgba(255,255,255,0.15);
@@ -256,7 +256,7 @@ svg { flex-shrink: 0; }
    TOP ANNOUNCEMENT BAR
    ================================================================ */
 .topbar {
-  background: linear-gradient(90deg, var(--primary-dark) 0%, var(--primary) 50%, var(--primary-dark) 100%);
+  background: linear-gradient(90deg, #1a2fa0 0%, var(--primary) 50%, #1a2fa0 100%);
   background-size: 200% auto;
   animation: barGlow 4s linear infinite;
   color: #fff;
@@ -336,7 +336,7 @@ svg { flex-shrink: 0; }
 }
 .navbar__logo:hover {
   transform: scale(1.12) rotate(-4deg);
-  filter: drop-shadow(0 4px 14px rgba(192,57,43,.45));
+  filter: drop-shadow(0 4px 14px rgba(52,81,209,.50));
 }
 .navbar__logo-img {
   width: 100%;
@@ -355,7 +355,7 @@ svg { flex-shrink: 0; }
   font-size: 17px;
   font-weight: 800;
   letter-spacing: -0.3px;
-  background: linear-gradient(90deg, #C0392B 0%, #1B8843 100%);
+  background: linear-gradient(90deg, #3451D1 0%, #27AE60 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -418,7 +418,7 @@ svg { flex-shrink: 0; }
   box-shadow: var(--shadow-red);
   transition: all var(--t-base) var(--ease);
 }
-.navbar__cart-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(192,57,43,0.35); }
+.navbar__cart-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(52,81,209,0.45); }
 
 /* Fly-to-cart bounce */
 .navbar__cart-btn--bounce { animation: cartBounce 0.5s ease; }
@@ -493,7 +493,7 @@ svg { flex-shrink: 0; }
     font-size: 15px;
     line-height: 1.05;
     white-space: nowrap;
-    background: linear-gradient(90deg, #C0392B 0%, #1B8843 100%);
+    background: linear-gradient(90deg, #3451D1 0%, #27AE60 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -522,7 +522,7 @@ svg { flex-shrink: 0; }
   }
   .navbar__brand-red {
     font-size: 14px;
-    background: linear-gradient(90deg, #C0392B 0%, #1B8843 100%);
+    background: linear-gradient(90deg, #3451D1 0%, #27AE60 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -685,7 +685,7 @@ svg { flex-shrink: 0; }
   display: inline-block;
   width: 4px;
   height: 24px;
-  background: linear-gradient(180deg, #C0392B 0%, #1B8843 100%);
+  background: linear-gradient(180deg, #3451D1 0%, #27AE60 100%);
   border-radius: var(--r-full);
   margin-right: 4px;
 }
@@ -705,8 +705,20 @@ svg { flex-shrink: 0; }
 /* ================================================================
    HERO  —  HCI: Clear value proposition, strong CTA
    ================================================================ */
+.hero__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+.hero > *:not(.hero__canvas) {
+  position: relative;
+  z-index: 2;
+}
 .hero {
-  background: linear-gradient(135deg, #7B0D1E 0%, #C0392B 40%, #1E8449 100%);
+  background: linear-gradient(135deg, #0d1b8e 0%, #3451D1 40%, #27AE60 100%);
   position: relative;
   overflow: hidden;
   padding: 80px 0;
@@ -719,8 +731,8 @@ svg { flex-shrink: 0; }
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 75% 50%, rgba(30,132,73,0.4) 0%, transparent 60%),
-    radial-gradient(circle at 20% 80%, rgba(192,57,43,0.3) 0%, transparent 50%);
+    radial-gradient(circle at 75% 50%, rgba(39,174,96,0.35) 0%, transparent 60%),
+    radial-gradient(circle at 20% 80%, rgba(52,81,209,0.25) 0%, transparent 50%);
 }
 /* Decorative medical cross pattern */
 .hero::after {
@@ -1314,7 +1326,7 @@ svg { flex-shrink: 0; }
   align-items: center;
   justify-content: center;
   padding: 40px 16px;
-  background: linear-gradient(135deg, #FEF2F2 0%, #F0FBF4 50%, #EFF6FF 100%);
+  background: linear-gradient(135deg, #EEF1FD 0%, #F0FBF4 50%, #F0F4FF 100%);
   position: relative;
   overflow: hidden;
 }
@@ -1323,7 +1335,7 @@ svg { flex-shrink: 0; }
   content: '✚ ✚ ✚ ✚ ✚ ✚ ✚ ✚ ✚ ✚ ✚ ✚ ✚ ✚ ✚ ✚ ✚ ✚ ✚ ✚ ✚ ✚ ✚ ✚';
   position: absolute;
   font-size: 24px;
-  color: rgba(192, 57, 43, 0.04);
+  color: rgba(52, 81, 209, 0.04);
   line-height: 80px;
   letter-spacing: 40px;
   white-space: pre-wrap;
@@ -1351,6 +1363,12 @@ svg { flex-shrink: 0; }
   gap: 6px;
   margin-bottom: 28px;
   text-align: center;
+}
+.auth-card__logo-img {
+  width: 120px;
+  height: auto;
+  object-fit: contain;
+  margin-bottom: 4px;
 }
 .auth-card__logo-icon {
   width: 56px; height: 56px;
