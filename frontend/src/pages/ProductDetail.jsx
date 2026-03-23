@@ -2,6 +2,16 @@ import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ShoppingCart, FileText, Heart, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getProductBySlug, getRelatedProducts, getProducts } from '../api/products';
+
+// Resolve /uploads/ relative paths to absolute URLs (same logic as MedicineImage.jsx)
+const _API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/+$/, '');
+const _ASSET_BASE = _API_BASE.replace(/\/api\/?$/, '');
+function resolveAssetUrl(url) {
+  if (!url) return '';
+  if (/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith('/uploads/')) return `${_ASSET_BASE}${url}`;
+  return url;
+}
 import { getProductReviews, submitReview } from '../api/reviews';
 import { getBrands } from '../api/brands';
 import MedicineImage from '../components/MedicineImage';
@@ -83,19 +93,18 @@ export default function ProductDetail() {
     setRecHasMore(true);
     getProductBySlug(slug)
       .then(r => {
-        setProduct(r.data);
-        trackViewItem(r.data);
-        getRelatedProducts(r.data._id)
+        const p = r.data;
+        setProduct(p);
+        trackViewItem(p);
+        getRelatedProducts(p._id)
           .then(res => setRelated(res.data))
           .catch(() => {});
-      })
-      .then(r => {
-        // Fetch brand media after product loads
-        if (r.data?.brand) {
+        // Fetch brand media in same .then() so `p` is in scope
+        if (p.brand) {
           getBrands()
             .then(res => {
               const match = (res.data.brands || []).find(
-                b => b.name.toLowerCase() === r.data.brand.toLowerCase()
+                b => b.name.toLowerCase() === p.brand.toLowerCase()
               );
               setBrandMedia(match?.media || []);
             })
@@ -399,7 +408,7 @@ export default function ProductDetail() {
           <section className="product-detail__video" style={{ gridColumn: '1 / -1', marginTop: 8 }}>
             <h3 style={{ marginBottom: 10, fontSize: '1rem', fontWeight: 700, color: '#1a1a1a' }}>Product Video</h3>
             <video
-              src={product.videoUrl}
+              src={resolveAssetUrl(product.videoUrl)}
               controls
               preload="metadata"
               playsInline
@@ -419,7 +428,7 @@ export default function ProductDetail() {
                 <div className="brand-media-item" key={i}>
                   {m.type === 'video' ? (
                     <video
-                      src={m.url}
+                      src={resolveAssetUrl(m.url)}
                       controls
                       preload="metadata"
                       className="brand-media-item__video"
