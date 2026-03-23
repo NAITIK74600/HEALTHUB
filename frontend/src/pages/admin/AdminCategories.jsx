@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Plus, Pencil, Trash2, X, FolderOpen, Package,
   ChevronUp, ChevronDown, Search, AlertTriangle, ExternalLink,
-  Save, RefreshCw,
+  Save, RefreshCw, ArrowLeftRight,
 } from 'lucide-react';
 
 /* ─── Quick-pick icons for medical/pharma categories ─── */
@@ -48,9 +48,20 @@ export default function AdminCategories() {
   const [saving, setSaving] = useState(false);
 
   /* delete confirmation */
-  const [deleteTarget, setDeleteTarget]     = useState(null); // category obj
+  const [deleteTarget, setDeleteTarget]     = useState(null);
   const [reassignTo, setReassignTo]         = useState('');
   const [deleteLoading, setDeleteLoading]   = useState(false);
+
+  /* ── Product Management Panel ── */
+  const [prodPanel, setProdPanel]           = useState(null); // null | category obj
+  const [catProducts, setCatProducts]       = useState([]);
+  const [catProdLoading, setCatProdLoading] = useState(false);
+  const [prodTab, setProdTab]               = useState('in'); // 'in' | 'add'
+  const [addSearch, setAddSearch]           = useState('');
+  const [addResults, setAddResults]         = useState([]);
+  const [addSearching, setAddSearching]     = useState(false);
+  const [reassigningId, setReassigningId]   = useState(null); // product._id being moved
+  const addSearchTimer = useRef(null);
 
   const nameRef = useRef(null);
 
@@ -91,7 +102,62 @@ export default function AdminCategories() {
 
   const closePanel = () => { setPanel(null); setEditId(null); setForm(EMPTY); };
 
-  /* â”€â”€ order +/- inline â”€â”€ */
+  /* ── product management panel ── */
+  const loadCatProducts = async (catId) => {
+    setCatProdLoading(true);
+    try {
+      const r = await api.get('/products/admin/list', { params: { category: catId, limit: 100, page: 1 } });
+      setCatProducts(r.data.products || []);
+    } catch { toast.error('Failed to load products.'); }
+    finally { setCatProdLoading(false); }
+  };
+
+  const openProdPanel = async (cat) => {
+    setProdPanel(cat); setProdTab('in'); setAddSearch(''); setAddResults([]); setReassigningId(null);
+    await loadCatProducts(cat._id);
+  };
+
+  const closeProdPanel = () => {
+    setProdPanel(null); setCatProducts([]); setAddSearch(''); setAddResults([]);
+    clearTimeout(addSearchTimer.current);
+  };
+
+  const handleAddSearch = (q) => {
+    setAddSearch(q);
+    clearTimeout(addSearchTimer.current);
+    if (!q.trim()) { setAddResults([]); return; }
+    setAddSearching(true);
+    addSearchTimer.current = setTimeout(async () => {
+      try {
+        const r = await api.get('/products/admin/list', { params: { search: q.trim(), limit: 20, page: 1 } });
+        setAddResults((r.data.products || []).filter(p => p.category?._id !== prodPanel?._id));
+      } catch {}
+      finally { setAddSearching(false); }
+    }, 400);
+  };
+
+  const doAddProduct = async (product) => {
+    try {
+      await api.put(`/products/${product._id}`, { category: prodPanel._id });
+      toast.success(`"${product.name}" added to ${prodPanel.name}.`);
+      setAddResults(rs => rs.filter(p => p._id !== product._id));
+      await loadCatProducts(prodPanel._id);
+      load();
+    } catch (err) { toast.error(err?.response?.data?.message || 'Failed.'); }
+  };
+
+  const doReassignProduct = async (product, targetCatId) => {
+    try {
+      await api.put(`/products/${product._id}`, { category: targetCatId });
+      const tc = categories.find(c => c._id === targetCatId);
+      toast.success(`"${product.name}" moved to ${tc?.name || 'category'}.`);
+      setReassigningId(null);
+      await loadCatProducts(prodPanel._id);
+      load();
+    } catch (err) { toast.error(err?.response?.data?.message || 'Failed.'); }
+  };
+
+  /* ── order +/- inline ── */
   const shiftOrder = async (cat, dir) => {
     try {
       await updateCategory(cat._id, { order: (cat.order || 0) + dir });
@@ -236,7 +302,7 @@ export default function AdminCategories() {
                   <td>
                     {c.productCount > 0 ? (
                       <button
-                        onClick={() => navigate(`/admin/products?category=${c._id}`)}
+                        onClick={() => openProdPanel(c)}
                         style={{
                           display: 'inline-flex', alignItems: 'center', gap: 4,
                           background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0',
@@ -280,7 +346,7 @@ export default function AdminCategories() {
                       <button
                         className="btn btn--sm btn--outline"
                         title="Manage products in this category"
-                        onClick={() => navigate(`/admin/products?category=${c._id}`)}
+                        onClick={() => openProdPanel(c)}
                         style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: '#3451D1', borderColor: '#93C5FD' }}
                       >
                         <Package size={13} /> Products
@@ -502,6 +568,188 @@ export default function AdminCategories() {
           to   { transform: translateX(0);    opacity: 1; }
         }
       `}</style>
+
+      {/* ═════════════════════════════════════════════════════
+          PRODUCT MANAGEMENT PANEL
+      ═════════════════════════════════════════════════════ */}
+      {prodPanel && (
+        <>
+          {/* backdrop */}
+          <div
+            onClick={closeProdPanel}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 300, backdropFilter: 'blur(3px)' }}
+          />
+          {/* panel */}
+          <div style={{
+            position: 'fixed', top: 0, right: 0, bottom: 0, width: 'min(580px, 100vw)',
+            background: '#fff', boxShadow: '-4px 0 40px rgba(0,0,0,0.22)',
+            zIndex: 301, display: 'flex', flexDirection: 'column',
+            animation: 'slideInRight 0.22s ease',
+          }}>
+            {/* header */}
+            <div style={{
+              padding: '18px 22px', borderBottom: '1px solid #e5e7eb',
+              background: 'linear-gradient(135deg,#1E40AF,#3451D1)',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
+              <div>
+                <h2 style={{ margin: 0, color: '#fff', fontSize: '1.05rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <Package size={18} /> {prodPanel.icon} {prodPanel.name}
+                </h2>
+                <p style={{ margin: '3px 0 0', fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)' }}>
+                  {catProdLoading ? 'Loading…' : `${catProducts.length} product${catProducts.length !== 1 ? 's' : ''} in this category`}
+                </p>
+              </div>
+              <button onClick={closeProdPanel} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 8, cursor: 'pointer', padding: 6, color: '#fff', display: 'flex' }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* tabs */}
+            <div style={{ display: 'flex', borderBottom: '1px solid #e5e7eb', background: '#f9fafb', flexShrink: 0 }}>
+              {[['in', '📋 In Category', catProducts.length], ['add', '➕ Find & Add', null]].map(([key, label, count]) => (
+                <button key={key}
+                  onClick={() => { setProdTab(key); if (key === 'add') { setAddSearch(''); setAddResults([]); } }}
+                  style={{
+                    flex: 1, padding: '11px 0', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
+                    color: prodTab === key ? '#3451D1' : '#6b7280',
+                    background: prodTab === key ? '#fff' : 'transparent',
+                    borderBottom: prodTab === key ? '2px solid #3451D1' : '2px solid transparent',
+                  }}
+                >
+                  {label}
+                  {count != null && count > 0 && (
+                    <span style={{ marginLeft: 6, background: '#dbeafe', color: '#1d4ed8', borderRadius: 10, padding: '1px 7px', fontSize: '0.73rem' }}>{count}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* body */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
+
+              {/* ── IN CATEGORY TAB ── */}
+              {prodTab === 'in' && (
+                catProdLoading
+                  ? <p style={{ textAlign: 'center', color: '#9ca3af', padding: 40 }}>Loading products…</p>
+                  : catProducts.length === 0
+                  ? (
+                    <div style={{ textAlign: 'center', padding: 50, color: '#9ca3af' }}>
+                      <Package size={42} style={{ opacity: 0.25, marginBottom: 10 }} />
+                      <p style={{ margin: 0 }}>No products in this category yet.</p>
+                      <button className="btn btn--outline btn--sm" onClick={() => setProdTab('add')} style={{ marginTop: 12 }}>
+                        Find &amp; Add Products →
+                      </button>
+                    </div>
+                  )
+                  : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                      <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginBottom: 4 }}>
+                        Click <strong>Move out</strong> to reassign a product to a different category.
+                      </p>
+                      {catProducts.map(p => (
+                        <div key={p._id} style={{
+                          display: 'flex', alignItems: 'center', gap: 10,
+                          background: '#f9fafb', borderRadius: 10, border: '1px solid #e5e7eb', padding: '9px 13px',
+                        }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 600, fontSize: '0.87rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
+                            <div style={{ fontSize: '0.72rem', color: '#9ca3af', marginTop: 2, display: 'flex', gap: 8 }}>
+                              {p.brand && <span>{p.brand}</span>}
+                              <span style={{ color: '#16a34a', fontWeight: 600 }}>₹{p.price}</span>
+                              <span style={{ color: p.stock > 10 ? '#6b7280' : p.stock > 0 ? '#d97706' : '#dc2626' }}>Stock: {p.stock}</span>
+                            </div>
+                          </div>
+                          {reassigningId === p._id ? (
+                            <div style={{ display: 'flex', gap: 5, alignItems: 'center', flexShrink: 0 }}>
+                              <select
+                                className="form-input"
+                                style={{ padding: '4px 6px', fontSize: '0.78rem', width: 150, margin: 0 }}
+                                defaultValue=""
+                                onChange={async e => { if (e.target.value) await doReassignProduct(p, e.target.value); }}
+                              >
+                                <option value="">Move to…</option>
+                                {categories.filter(c => c._id !== prodPanel._id).map(c => (
+                                  <option key={c._id} value={c._id}>{c.icon} {c.name}</option>
+                                ))}
+                              </select>
+                              <button onClick={() => setReassigningId(null)}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 2, display: 'flex' }}>
+                                <X size={13} />
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setReassigningId(p._id)}
+                              style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 4, background: 'none', border: '1px solid #fca5a5', color: '#dc2626', borderRadius: 7, cursor: 'pointer', padding: '4px 9px', fontSize: '0.75rem', fontWeight: 600 }}
+                            >
+                              <ArrowLeftRight size={12} /> Move out
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )
+              )}
+
+              {/* ── FIND & ADD TAB ── */}
+              {prodTab === 'add' && (
+                <div>
+                  <div style={{ position: 'relative', marginBottom: 14 }}>
+                    <Search size={15} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', pointerEvents: 'none' }} />
+                    <input
+                      className="form-input"
+                      style={{ paddingLeft: 32, margin: 0 }}
+                      placeholder="Search product name or brand…"
+                      value={addSearch}
+                      onChange={e => handleAddSearch(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
+                  {!addSearch && (
+                    <p style={{ textAlign: 'center', color: '#9ca3af', fontSize: '0.82rem', padding: 24 }}>Type a product name or brand to search across all products.</p>
+                  )}
+                  {addSearching && <p style={{ textAlign: 'center', color: '#9ca3af', fontSize: '0.82rem' }}>Searching…</p>}
+                  {!addSearching && addSearch && addResults.length === 0 && (
+                    <p style={{ textAlign: 'center', color: '#9ca3af', padding: 20 }}>No matching products found.</p>
+                  )}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                    {addResults.map(p => (
+                      <div key={p._id} style={{
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        background: '#f9fafb', borderRadius: 10, border: '1px solid #e5e7eb', padding: '9px 13px',
+                      }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 600, fontSize: '0.87rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
+                          <div style={{ fontSize: '0.72rem', color: '#9ca3af', marginTop: 2, display: 'flex', gap: 8 }}>
+                            {p.brand && <span>{p.brand}</span>}
+                            <span style={{ background: '#f3f4f6', borderRadius: 4, padding: '1px 5px', color: '#6b7280' }}>{p.category?.name || '—'}</span>
+                            <span style={{ color: '#16a34a', fontWeight: 600 }}>₹{p.price}</span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => doAddProduct(p)}
+                          style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 4, background: '#3451D1', color: '#fff', border: 'none', borderRadius: 7, cursor: 'pointer', padding: '5px 11px', fontSize: '0.78rem', fontWeight: 600 }}
+                        >
+                          <Plus size={12} /> Add
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* footer */}
+            <div style={{ padding: '12px 22px', borderTop: '1px solid #e5e7eb', background: '#f9fafb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+              <span style={{ fontSize: '0.78rem', color: '#9ca3af' }}>
+                {catProducts.length} product{catProducts.length !== 1 ? 's' : ''} in <strong>{prodPanel.name}</strong>
+              </span>
+              <button className="btn btn--outline btn--sm" onClick={closeProdPanel}>Close</button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* ─── Virtual / Lifestyle categories (keyword-matched, not in DB) ─── */}
       <div style={{ marginTop: 32 }}>

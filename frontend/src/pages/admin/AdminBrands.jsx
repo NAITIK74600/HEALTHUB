@@ -41,7 +41,7 @@ export default function AdminBrands() {
   const [mediaUploading, setMediaUploading] = useState(false);
   const [mediaProgress, setMediaProgress] = useState(0);
   const [mediaTitle, setMediaTitle] = useState('');
-  const [mediaDisplayOn, setMediaDisplayOn] = useState('brand');
+  const [mediaDisplayOn, setMediaDisplayOn] = useState('both');
   const mediaVideoRef = useRef(null);
   const mediaImageRef = useRef(null);
 
@@ -57,19 +57,19 @@ export default function AdminBrands() {
   useEffect(() => { load(); }, []);
 
   const openAdd = () => {
-    setForm(EMPTY); setLogoFile(null); setPreview(null); setMediaUrl(''); setMediaType('image'); setMediaProgress(0); setMediaTitle(''); setMediaDisplayOn('brand'); setModal('add');
+    setForm(EMPTY); setLogoFile(null); setPreview(null); setMediaUrl(''); setMediaType('image'); setMediaProgress(0); setMediaTitle(''); setMediaDisplayOn('both'); setModal('add');
   };
 
   const openAddPC = (preset) => {
     setForm({ ...EMPTY, category: 'personal_care', name: preset.label, gradient: preset.gradient });
-    setLogoFile(null); setPreview(null); setMediaUrl(''); setMediaType('image'); setMediaProgress(0); setMediaTitle(''); setMediaDisplayOn('brand'); setModal('add');
+    setLogoFile(null); setPreview(null); setMediaUrl(''); setMediaType('image'); setMediaProgress(0); setMediaTitle(''); setMediaDisplayOn('both'); setModal('add');
   };
 
   const openEdit = (b) => {
     setForm({ name: b.name, category: b.category, ord: b.ord, logoUrl: b.logoUrl || '', isActive: b.isActive, _id: b._id, gradient: b.gradient || '', media: b.media || [] });
     setLogoFile(null);
     setPreview(b.logoUrl || null);
-    setMediaUrl(''); setMediaType('image'); setMediaProgress(0); setMediaTitle(''); setMediaDisplayOn('brand');
+    setMediaUrl(''); setMediaType('image'); setMediaProgress(0); setMediaTitle(''); setMediaDisplayOn('both');
     setModal('edit');
   };
 
@@ -346,12 +346,12 @@ export default function AdminBrands() {
                               onChange={e => setForm(f => ({ ...f, media: f.media.map((item, j) => j === i ? { ...item, title: e.target.value } : item) }))}
                               style={{ flex: 1, minWidth: 130, fontSize: 12, padding: '4px 8px', margin: 0 }} />
                             <select className="form-input"
-                              value={m.displayOn || 'brand'}
+                              value={m.displayOn || 'both'}
                               onChange={e => setForm(f => ({ ...f, media: f.media.map((item, j) => j === i ? { ...item, displayOn: e.target.value } : item) }))}
                               style={{ width: 155, fontSize: 12, padding: '4px 6px', margin: 0 }}>
-                              <option value="brand">Brand page only</option>
-                              <option value="home">Home page only</option>
                               <option value="both">Both (Home + Brand)</option>
+                              <option value="home">Home page only</option>
+                              <option value="brand">Brand page only</option>
                             </select>
                           </div>
                         )}
@@ -393,9 +393,9 @@ export default function AdminBrands() {
                         <input type="text" className="form-input" placeholder="Video title (e.g. New Summer Range)" style={{ flex: 1, minWidth: 170, margin: 0 }}
                           value={mediaTitle} onChange={e => setMediaTitle(e.target.value)} />
                         <select className="form-input" style={{ width: 165, margin: 0 }} value={mediaDisplayOn} onChange={e => setMediaDisplayOn(e.target.value)}>
-                          <option value="brand">Brand page only</option>
-                          <option value="home">Home page only</option>
                           <option value="both">Both (Home + Brand)</option>
+                          <option value="home">Home page only</option>
+                          <option value="brand">Brand page only</option>
                         </select>
                       </div>
                     )}

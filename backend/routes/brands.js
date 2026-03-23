@@ -108,7 +108,7 @@ router.get('/promotions', async (req, res, next) => {
       const videos = b.media.filter(m => {
         if (m.type !== 'video') return false;
         if (!display) return true;
-        const on = m.displayOn || 'brand'; // default: brand page
+        const on = m.displayOn || 'both'; // default: show everywhere
         return on === display || on === 'both';
       });
       if (videos.length) {
