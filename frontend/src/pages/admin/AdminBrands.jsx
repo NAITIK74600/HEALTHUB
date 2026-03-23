@@ -327,14 +327,20 @@ export default function AdminBrands() {
                 {(form.media || []).length > 0 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 }}>
                     {form.media.map((m, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', background: 'var(--gray-50)', borderRadius: 8, border: '1px solid var(--border)' }}>
-                        {m.type === 'video' ? <Film size={14} style={{ color: '#e74c3c', flexShrink: 0 }} /> : <Image size={14} style={{ color: '#2ecc71', flexShrink: 0 }} />}
-                        <span style={{ fontSize: 12, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.url}</span>
-                        <span style={{ fontSize: 10, color: 'var(--gray-400)', textTransform: 'uppercase', flexShrink: 0 }}>{m.type}</span>
-                        <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#e74c3c', padding: 2 }}
-                          onClick={() => setForm(f => ({ ...f, media: f.media.filter((_, j) => j !== i) }))}>
-                          <Trash2 size={13} />
-                        </button>
+                      <div key={i} style={{ background: 'var(--gray-50)', borderRadius: 8, border: '1px solid var(--border)', overflow: 'hidden' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px' }}>
+                          {m.type === 'video' ? <Film size={14} style={{ color: '#e74c3c', flexShrink: 0 }} /> : <Image size={14} style={{ color: '#2ecc71', flexShrink: 0 }} />}
+                          <span style={{ fontSize: 12, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.url}</span>
+                          <span style={{ fontSize: 10, color: 'var(--gray-400)', textTransform: 'uppercase', flexShrink: 0 }}>{m.type}</span>
+                          <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#e74c3c', padding: 2 }}
+                            onClick={() => setForm(f => ({ ...f, media: f.media.filter((_, j) => j !== i) }))}>
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                        {m.type === 'video' && m.url && (
+                          <video src={m.url} controls muted playsInline
+                            style={{ width: '100%', maxHeight: 140, display: 'block', background: '#000' }} />
+                        )}
                       </div>
                     ))}
                   </div>

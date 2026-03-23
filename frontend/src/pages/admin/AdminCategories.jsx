@@ -236,7 +236,7 @@ export default function AdminCategories() {
                   <td>
                     {c.productCount > 0 ? (
                       <button
-                        onClick={() => navigate(`/admin/products?category=${c.slug}`)}
+                        onClick={() => navigate(`/admin/products?category=${c._id}`)}
                         style={{
                           display: 'inline-flex', alignItems: 'center', gap: 4,
                           background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0',
@@ -276,6 +276,14 @@ export default function AdminCategories() {
                         style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}
                       >
                         <Pencil size={13} /> Edit
+                      </button>
+                      <button
+                        className="btn btn--sm btn--outline"
+                        title="Manage products in this category"
+                        onClick={() => navigate(`/admin/products?category=${c._id}`)}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: '#3451D1', borderColor: '#93C5FD' }}
+                      >
+                        <Package size={13} /> Products
                       </button>
                       <button
                         className="btn btn--sm btn--outline"

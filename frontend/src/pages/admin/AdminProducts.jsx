@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import {
   getAdminProducts, quickUpdateProduct, createProduct, updateProduct, updateProductImages,
   deleteProduct, bulkImportProducts, downloadImportTemplate, bulkUpdateProducts, bulkDiscountProducts,
@@ -62,6 +62,14 @@ export default function AdminProducts() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy,       setSortBy]       = useState('newest');
   const searchTimer = useRef(null);
+
+  /* ── Pre-apply URL ?category= filter (from AdminCategories click-through) ── */
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    const catId = searchParams.get('category');
+    if (catId) setCatFilter(catId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* ── Form ── */
   const [form,           setForm]           = useState(EMPTY);

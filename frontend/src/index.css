@@ -1528,7 +1528,7 @@ svg { flex-shrink: 0; }
 .footer__logo-name {
   font-size: 1.1rem;
   font-weight: 800;
-  background: linear-gradient(90deg, #FC8181, #FBBF24, #68D391);
+  background: linear-gradient(90deg, #ffffff 0%, #93C5FD 55%, #68D391 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -9397,20 +9397,18 @@ svg { flex-shrink: 0; }
   100% { opacity: 1; transform: perspective(700px) rotate3d(1, 1, 0, 0deg) scale(1); }
 }
 
-/* ── 3D Spring from Behind ── */
+/* ── 3D Smooth Enter ── */
 .anim--bounce-in {
-  transform: perspective(600px) translateZ(-250px) scale(0.45) rotateY(22deg);
+  transform: perspective(600px) translateZ(-60px) scale(0.92);
 }
 .anim--bounce-in.anim--visible {
   animation-name: anim-bounceIn;
-  animation-duration: 0.95s;
-  animation-timing-function: cubic-bezier(0.34, 1.65, 0.64, 1);
+  animation-duration: 0.55s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 @keyframes anim-bounceIn {
-  0%   { opacity: 0; transform: perspective(600px) translateZ(-250px) scale(0.45) rotateY(22deg); }
-  40%  { opacity: 1; transform: perspective(600px) translateZ(22px) scale(1.06) rotateY(-3deg); }
-  70%  { transform: perspective(600px) translateZ(-8px) scale(0.97) rotateY(1deg); }
-  100% { opacity: 1; transform: perspective(600px) translateZ(0) scale(1) rotateY(0); }
+  0%   { opacity: 0; transform: perspective(600px) translateZ(-60px) scale(0.92); }
+  100% { opacity: 1; transform: perspective(600px) translateZ(0) scale(1); }
 }
 
 /* ── 3D Glow Emerge ── */
