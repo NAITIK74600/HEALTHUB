@@ -240,12 +240,41 @@ export default function ProductCatalog() {
     ? `Buy ${selectedCatName} online at best prices from Batla Medicos. Free delivery above ₹499. Trusted pharmacy since 2005 in New Delhi.`
     : 'Browse medicines, Ayurvedic products, vitamins, cosmetics, baby care & more. Free delivery above ₹499. Buy online from Batla Medicos, New Delhi.';
 
+  // JSON-LD ItemList schema for product listings (fixes Google "offers" warning)
+  const catalogSchema = products.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: seoTitle,
+    numberOfItems: products.length,
+    itemListElement: products.slice(0, 30).map((p, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      item: {
+        '@type': 'Product',
+        name: p.name,
+        url: `https://www.batlamedicos.shop/products/${p.slug}`,
+        ...(p.image_url ? { image: p.image_url } : {}),
+        ...(p.brand ? { brand: { '@type': 'Brand', name: p.brand } } : {}),
+        sku: String(p._id),
+        offers: {
+          '@type': 'Offer',
+          url: `https://www.batlamedicos.shop/products/${p.slug}`,
+          priceCurrency: 'INR',
+          price: p.price,
+          availability: p.inStock !== false ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+          seller: { '@type': 'Organization', name: 'Batla Medicos' },
+        },
+      },
+    })),
+  } : undefined;
+
   return (
     <div className="catalog-page-wrap">
       <SEO
         title={seoTitle}
         description={seoDesc}
         path={`/products${categoryParam ? `?category=${categoryParam}` : ''}`}
+        schema={catalogSchema}
       />
 
       {/* ── Page Hero Banner ─────────────────────────────────────── */}
