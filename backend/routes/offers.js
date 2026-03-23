@@ -66,11 +66,11 @@ router.post('/', requireAuth, requireAdmin, [
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
-    const { title, description, imageUrl, link, badge, isActive, startDate, endDate } = req.body;
+    const { title, description, imageUrl, link, badge, isActive, startDate, endDate, ord } = req.body;
     const result = await execute(
-      `INSERT INTO offers (title, description, image_url, link, badge, is_active, start_date, end_date)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [title, description || '', imageUrl || '', link || '', badge || '', isActive !== false ? 1 : 0, startDate || null, endDate || null]
+      `INSERT INTO offers (title, description, image_url, link, badge, is_active, start_date, end_date, ord)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [title, description || '', imageUrl || '', link || '', badge || '', isActive !== false ? 1 : 0, startDate || null, endDate || null, ord || 0]
     );
     const rows = await query('SELECT * FROM offers WHERE id = ?', [result.insertId]);
     res.status(201).json(mapOffer(rows[0]));

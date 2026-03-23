@@ -37,11 +37,8 @@ export default function AdminPromotions() {
       const r = await api.get('/brands/promotions');
       const flat = [];
       for (const p of (r.data.promotions || [])) {
-        const brandRow = await api.get(`/brands/${p.brand.slug || p.brand._id}`).catch(() => null);
-        const fullMedia = brandRow?.data?.brand?.media || [];
         p.videos.forEach((v) => {
-          const idx = fullMedia.findIndex(m => m.url === v.url && m.type === 'video');
-          flat.push({ brand: p.brand, video: v, brandId: p.brand._id, mediaIndex: idx, allMedia: fullMedia });
+          flat.push({ brand: p.brand, video: v, brandId: p.brand._id });
         });
       }
       setPromos(flat);

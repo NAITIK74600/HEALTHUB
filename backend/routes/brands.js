@@ -119,6 +119,20 @@ router.get('/promotions', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ── Public: get single brand by slug or id ────────────────────────────────────
+router.get('/:slugOrId', async (req, res, next) => {
+  try {
+    const val = req.params.slugOrId;
+    const isId = /^\d+$/.test(val);
+    const sql = isId
+      ? 'SELECT * FROM brands WHERE id = ? LIMIT 1'
+      : 'SELECT * FROM brands WHERE slug = ? LIMIT 1';
+    const rows = await query(sql, [val]);
+    if (!rows.length) return res.status(404).json({ message: 'Brand not found.' });
+    res.json({ brand: mapBrand(rows[0]) });
+  } catch (err) { next(err); }
+});
+
 // ── Admin: create brand ───────────────────────────────────────────────────────
 router.post('/', requireAuth, requireAdmin, upload.single('logo'), [
   body('name').trim().notEmpty().isLength({ max: 150 }),

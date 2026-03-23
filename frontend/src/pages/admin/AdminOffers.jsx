@@ -100,7 +100,7 @@ export default function AdminOffers() {
         ...form,
         link: computedLink,
         freeDeliveryMin: form.freeDeliveryMin ? Number(form.freeDeliveryMin) : 0,
-        priority: Number(form.priority) || 0,
+        ord: Number(form.priority) || 0,
         badge: form.isDealOfDay ? 'deal_of_day' : '',
       };
       if (editing) {
