@@ -406,22 +406,9 @@ export default function Home() {
             <div className="orbit-track orbit-track--2" />
             <div className="orbit-track orbit-track--3" />
 
-            {/* ── Centre: capsule logo ── */}
+            {/* ── Centre: brand logo ── */}
             <div className="orbit-center" aria-label="Batla Medicos">
-              <svg viewBox="0 0 56 96" xmlns="http://www.w3.org/2000/svg" className="orbit-center__capsule" aria-hidden="true">
-                <rect x="6" y="4" width="44" height="88" rx="22" fill="white" stroke="#27AE60" strokeWidth="3.5"/>
-                <clipPath id="oc-cap-top"><rect x="0" y="0" width="56" height="50"/></clipPath>
-                <rect x="6" y="4" width="44" height="88" rx="22" fill="#5b70e8" clipPath="url(#oc-cap-top)"/>
-                <line x1="6" y1="48" x2="50" y2="48" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5"/>
-                <ellipse cx="22" cy="10" rx="7" ry="13" fill="#4ade80" transform="rotate(-25 22 10)"/>
-                <ellipse cx="34" cy="6" rx="7" ry="13" fill="#86efac" transform="rotate(18 34 6)"/>
-                <line x1="28" y1="58" x2="28" y2="78" stroke="#5b70e8" strokeWidth="5.5" strokeLinecap="round"/>
-                <line x1="18" y1="68" x2="38" y2="68" stroke="#5b70e8" strokeWidth="5.5" strokeLinecap="round"/>
-                <line x1="18" y1="84" x2="18" y2="91" stroke="#93c5fd" strokeWidth="3.5" strokeLinecap="round" opacity="0.9"/>
-                <line x1="14" y1="88" x2="22" y2="88" stroke="#93c5fd" strokeWidth="3.5" strokeLinecap="round" opacity="0.9"/>
-                <line x1="38" y1="84" x2="38" y2="91" stroke="#93c5fd" strokeWidth="3.5" strokeLinecap="round" opacity="0.9"/>
-                <line x1="34" y1="88" x2="42" y2="88" stroke="#93c5fd" strokeWidth="3.5" strokeLinecap="round" opacity="0.9"/>
-              </svg>
+              <img src="/logo.png" className="orbit-center__capsule" alt="Batla Medicos" />
             </div>
 
             {/* Ring 1 – outer r=125px CW 7s – 3 particles (120° apart) */}

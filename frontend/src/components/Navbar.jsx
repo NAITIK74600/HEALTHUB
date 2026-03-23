@@ -7,25 +7,6 @@ import { useWishlist } from '../context/WishlistContext';
 import CartDrawer from './CartDrawer';
 import NotificationBell from './NotificationBell';
 
-function CapsuleLogo({ className }) {
-  return (
-    <svg viewBox="0 0 56 96" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
-      <rect x="6" y="4" width="44" height="88" rx="22" fill="white" stroke="#27AE60" strokeWidth="3.5"/>
-      <clipPath id="nv-cap-top"><rect x="0" y="0" width="56" height="50"/></clipPath>
-      <rect x="6" y="4" width="44" height="88" rx="22" fill="#3451D1" clipPath="url(#nv-cap-top)"/>
-      <line x1="6" y1="48" x2="50" y2="48" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5"/>
-      <ellipse cx="22" cy="10" rx="7" ry="13" fill="#27AE60" transform="rotate(-25 22 10)"/>
-      <ellipse cx="34" cy="6" rx="7" ry="13" fill="#1E9e55" transform="rotate(18 34 6)"/>
-      <line x1="28" y1="58" x2="28" y2="78" stroke="#3451D1" strokeWidth="5.5" strokeLinecap="round"/>
-      <line x1="18" y1="68" x2="38" y2="68" stroke="#3451D1" strokeWidth="5.5" strokeLinecap="round"/>
-      <line x1="18" y1="84" x2="18" y2="91" stroke="#3451D1" strokeWidth="3.5" strokeLinecap="round" opacity="0.8"/>
-      <line x1="14" y1="88" x2="22" y2="88" stroke="#3451D1" strokeWidth="3.5" strokeLinecap="round" opacity="0.8"/>
-      <line x1="38" y1="84" x2="38" y2="91" stroke="#3451D1" strokeWidth="3.5" strokeLinecap="round" opacity="0.8"/>
-      <line x1="34" y1="88" x2="42" y2="88" stroke="#3451D1" strokeWidth="3.5" strokeLinecap="round" opacity="0.8"/>
-    </svg>
-  );
-}
-
 export default function Navbar() {
   const { user, logout, isAdmin } = useAuth();
   const { totalItems } = useCart();
@@ -58,7 +39,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="navbar__brand">
             <div className="navbar__logo">
-              <CapsuleLogo className="navbar__logo-img" />
+              <img src="/logo.png" className="navbar__logo-img" alt="Batla Medicos" />
             </div>
             <div className="navbar__brand-text">
               <span className="navbar__brand-red">Batla Medicos</span>
