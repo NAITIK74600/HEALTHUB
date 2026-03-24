@@ -720,8 +720,7 @@ svg { flex-shrink: 0; }
 .hero {
   background: linear-gradient(135deg, #0d1b8e 0%, #3451D1 40%, #27AE60 100%);
   position: relative;
-  overflow-x: hidden;
-  overflow-y: visible;
+  overflow: hidden;
   padding: 80px 0;
   min-height: 480px;
   display: flex;
@@ -9843,11 +9842,8 @@ input:focus, select:focus, textarea:focus {
 .hero-search__btn:hover { background: linear-gradient(135deg, #a93226, #c0392b); transform: scale(1.02); }
 .hero-search__btn:active { transform: scale(0.97); }
 
-/* Search dropdown */
+/* Search dropdown — rendered via portal at body level */
 .hero-search__dropdown {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0; right: 0;
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.15);
@@ -9855,7 +9851,6 @@ input:focus, select:focus, textarea:focus {
   animation: anim-fadeUp 0.2s ease;
   max-height: 400px;
   overflow-y: auto;
-  z-index: 9999;
 }
 .hero-search__result {
   display: flex;
@@ -10445,7 +10440,6 @@ input:focus, select:focus, textarea:focus {
 /* ── Hero 3D enhancements ── */
 .hero {
   transform-style: preserve-3d;
-  isolation: isolate;
 }
 
 /* Glassmorphism overlay strip at bottom of hero */
@@ -10464,6 +10458,7 @@ input:focus, select:focus, textarea:focus {
   pointer-events: none;
   z-index: 1;
   transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
 }
 
 .hero__shape {

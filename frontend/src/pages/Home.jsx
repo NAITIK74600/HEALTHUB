@@ -1,4 +1,5 @@
 ﻿import { useEffect, useState, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Truck, MapPin, ShieldCheck, Clock, ChevronRight, ChevronLeft,
@@ -218,7 +219,30 @@ export default function Home() {
   const [showResults, setShowResults] = useState(false);
   const searchTimeout = useRef(null);
   const searchRef = useRef(null);
+  const [dropdownStyle, setDropdownStyle] = useState({});
   const particleCanvasRef = useRef(null);
+
+  // Update dropdown position when showing results
+  useEffect(() => {
+    if (!showResults || !searchRef.current) return;
+    const updatePos = () => {
+      const rect = searchRef.current.getBoundingClientRect();
+      setDropdownStyle({
+        position: 'fixed',
+        top: rect.bottom + 6,
+        left: rect.left,
+        width: rect.width,
+        zIndex: 99999,
+      });
+    };
+    updatePos();
+    window.addEventListener('scroll', updatePos, true);
+    window.addEventListener('resize', updatePos);
+    return () => {
+      window.removeEventListener('scroll', updatePos, true);
+      window.removeEventListener('resize', updatePos);
+    };
+  }, [showResults, searchResults]);
 
   // ── Interactive particle animation ──
   useEffect(() => {
@@ -341,7 +365,10 @@ export default function Home() {
 
   // Close search dropdown on outside click
   useEffect(() => {
-    const handleClick = (e) => { if (searchRef.current && !searchRef.current.contains(e.target)) setShowResults(false); };
+    const handleClick = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target) && !e.target.closest('.hero-search__dropdown'))
+        setShowResults(false);
+    };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
@@ -442,8 +469,8 @@ export default function Home() {
                 )}
                 <button type="submit" className="hero-search__btn ripple-btn" onClick={ripple}>Search</button>
               </form>
-              {showResults && searchResults.length > 0 && (
-                <div className="hero-search__dropdown">
+              {showResults && searchResults.length > 0 && createPortal(
+                <div className="hero-search__dropdown" style={dropdownStyle}>
                   {searchResults.map(p => (
                     <Link
                       key={p._id}
@@ -461,12 +488,14 @@ export default function Home() {
                   <Link to={`/products?search=${encodeURIComponent(searchQuery)}`} className="hero-search__all" onClick={() => setShowResults(false)}>
                     View all results <ChevronRight size={14} />
                   </Link>
-                </div>
+                </div>,
+                document.body
               )}
-              {showResults && searchResults.length === 0 && searchQuery.trim() && (
-                <div className="hero-search__dropdown">
+              {showResults && searchResults.length === 0 && searchQuery.trim() && createPortal(
+                <div className="hero-search__dropdown" style={dropdownStyle}>
                   <div className="hero-search__empty">No products found for "{searchQuery}"</div>
-                </div>
+                </div>,
+                document.body
               )}
             </div>
           </div>

@@ -11,10 +11,30 @@ const router = express.Router();
 
 // Fetch order items with product image fallback for old orders
 const ORDER_ITEMS_SQL = `
-  SELECT oi.*, COALESCE(oi.image, p.images) AS fallback_images
+  SELECT oi.id, oi.order_id, oi.product_id, oi.name, oi.price, oi.qty, oi.created_at,
+         oi.image, p.images AS p_images
   FROM order_items oi
   LEFT JOIN products p ON p.id = oi.product_id
   WHERE oi.order_id = ?`;
+
+// Fallback SQL if image column doesn't exist yet
+const ORDER_ITEMS_SQL_FALLBACK = `
+  SELECT oi.id, oi.order_id, oi.product_id, oi.name, oi.price, oi.qty, oi.created_at,
+         NULL AS image, p.images AS p_images
+  FROM order_items oi
+  LEFT JOIN products p ON p.id = oi.product_id
+  WHERE oi.order_id = ?`;
+
+async function getOrderItems(orderId) {
+  try {
+    return await query(ORDER_ITEMS_SQL, [orderId]);
+  } catch (err) {
+    if (err.code === 'ER_BAD_FIELD_ERROR') {
+      return await query(ORDER_ITEMS_SQL_FALLBACK, [orderId]);
+    }
+    throw err;
+  }
+}
 
 function mapOrder(row, items = []) {
   return {
@@ -23,9 +43,9 @@ function mapOrder(row, items = []) {
     items: items.map(i => {
       // Resolve image: direct image field, or extract first from product images JSON
       let image = i.image || null;
-      if (!image && i.fallback_images) {
+      if (!image && i.p_images) {
         try {
-          const parsed = typeof i.fallback_images === 'string' ? JSON.parse(i.fallback_images) : i.fallback_images;
+          const parsed = typeof i.p_images === 'string' ? JSON.parse(i.p_images) : i.p_images;
           if (Array.isArray(parsed) && parsed.length) image = parsed[0];
           else if (typeof parsed === 'string') image = parsed;
         } catch { image = null; }
@@ -109,10 +129,20 @@ router.post('/', requireAuth, [
 
     // Insert items
     for (const item of orderItems) {
-      await execute(
-        'INSERT INTO order_items (order_id, product_id, name, price, qty, image) VALUES (?, ?, ?, ?, ?, ?)',
-        [orderId, item.product_id, item.name, item.price, item.qty, item.image]
-      );
+      try {
+        await execute(
+          'INSERT INTO order_items (order_id, product_id, name, price, qty, image) VALUES (?, ?, ?, ?, ?, ?)',
+          [orderId, item.product_id, item.name, item.price, item.qty, item.image]
+        );
+      } catch (colErr) {
+        // Fallback: image column may not exist yet (migration pending)
+        if (colErr.code === 'ER_BAD_FIELD_ERROR') {
+          await execute(
+            'INSERT INTO order_items (order_id, product_id, name, price, qty) VALUES (?, ?, ?, ?, ?)',
+            [orderId, item.product_id, item.name, item.price, item.qty]
+          );
+        } else throw colErr;
+      }
     }
 
     // If online payment requested, create Razorpay order
@@ -134,7 +164,7 @@ router.post('/', requireAuth, [
            FROM orders o LEFT JOIN users u ON u.id = o.user_id WHERE o.id = ?`,
           [orderId]
         );
-        const orderItemRows = await query('SELECT * FROM order_items WHERE order_id = ?', [orderId]);
+        const orderItemRows = await getOrderItems(orderId);
         return res.status(201).json({
           order: mapOrder(rows[0], orderItemRows),
           razorpayOrderId: rzpOrder.id,
@@ -152,7 +182,7 @@ router.post('/', requireAuth, [
        FROM orders o LEFT JOIN users u ON u.id = o.user_id WHERE o.id = ?`,
       [orderId]
     );
-    const orderItemRows = await query('SELECT * FROM order_items WHERE order_id = ?', [orderId]);
+    const orderItemRows = await getOrderItems(orderId);
 
     // Fire notifications (fire-and-forget — don't block the response)
     const itemNames = orderItems.slice(0, 2).map(i => i.name).join(', ');
@@ -239,7 +269,7 @@ router.get('/my', requireAuth, async (req, res, next) => {
     );
     const orders = [];
     for (const row of rows) {
-      const items = await query(ORDER_ITEMS_SQL, [row.id]);
+      const items = await getOrderItems(row.id);
       orders.push(mapOrder(row, items));
     }
     res.json({ orders });
@@ -264,7 +294,7 @@ router.get('/:id', requireAuth, [param('id').isInt({ min: 1 })], async (req, res
       return res.status(403).json({ message: 'Not authorized.' });
     }
 
-    const items = await query(ORDER_ITEMS_SQL, [req.params.id]);
+    const items = await getOrderItems(req.params.id);
     res.json(mapOrder(rows[0], items));
   } catch (err) { next(err); }
 });
@@ -298,7 +328,7 @@ router.get('/', requireAuth, requireAdmin, [
     const total = Number(countRows[0]?.total || 0);
     const orders = [];
     for (const row of rows) {
-      const items = await query(ORDER_ITEMS_SQL, [row.id]);
+      const items = await getOrderItems(row.id);
       orders.push(mapOrder(row, items));
     }
     res.json({ orders, total, page, pages: Math.ceil(total / limit) });
@@ -395,10 +425,22 @@ router.post('/:id/reorder', requireAuth, [param('id').isInt({ min: 1 })], async 
   try {
     const rows = await query('SELECT * FROM orders WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
     if (!rows.length) return res.status(404).json({ message: 'Order not found.' });
-    const items = await query(
-      `SELECT oi.*, p.images AS p_images, p.slug, p.stock, p.price AS current_price, p.requires_prescription
-       FROM order_items oi LEFT JOIN products p ON p.id = oi.product_id
-       WHERE oi.order_id = ?`, [req.params.id]);
+    let items;
+    try {
+      items = await query(
+        `SELECT oi.id, oi.product_id, oi.name, oi.price, oi.qty, oi.image,
+                p.images AS p_images, p.slug, p.stock, p.price AS current_price, p.requires_prescription
+         FROM order_items oi LEFT JOIN products p ON p.id = oi.product_id
+         WHERE oi.order_id = ?`, [req.params.id]);
+    } catch (colErr) {
+      if (colErr.code === 'ER_BAD_FIELD_ERROR') {
+        items = await query(
+          `SELECT oi.id, oi.product_id, oi.name, oi.price, oi.qty, NULL AS image,
+                  p.images AS p_images, p.slug, p.stock, p.price AS current_price, p.requires_prescription
+           FROM order_items oi LEFT JOIN products p ON p.id = oi.product_id
+           WHERE oi.order_id = ?`, [req.params.id]);
+      } else throw colErr;
+    }
     res.json({ items: items.map(i => {
       let image = i.image || null;
       if (!image && i.p_images) {
@@ -439,7 +481,7 @@ router.get('/:id/receipt', requireAuth, [param('id').isInt({ min: 1 })], async (
       return res.status(403).json({ message: 'Not authorized.' });
     }
 
-    const items = await query('SELECT * FROM order_items WHERE order_id = ?', [req.params.id]);
+    const items = await getOrderItems(req.params.id);
     const r = rows[0];
 
     let addr = {};
