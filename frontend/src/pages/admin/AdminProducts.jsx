@@ -5,6 +5,7 @@ import {
   deleteProduct, bulkImportProducts, downloadImportTemplate, bulkUpdateProducts, bulkDiscountProducts,
   exportProductsExcel,
 } from '../../api/products';
+import { importStock, getImportStockStatus } from '../../api/admin';
 import { uploadImage, uploadVideo } from '../../api/upload';
 import { getCategories } from '../../api/categories';
 import toast from 'react-hot-toast';
@@ -87,6 +88,9 @@ export default function AdminProducts() {
   const [importResult,    setImportResult]    = useState(null);
   const [importModeModal, setImportModeModal] = useState({ open: false, file: null });
   const csvInputRef = useRef(null);
+  const stockInputRef = useRef(null);
+  const [stockImporting, setStockImporting] = useState(false);
+  const [stockImportResult, setStockImportResult] = useState(null);
 
   /* ── Inline image upload ── */
   const inlineUploadRef = useRef(null);
@@ -369,6 +373,44 @@ export default function AdminProducts() {
     finally { setImporting(false); }
   };
 
+  /* ── Stock Import (from billing software export) ── */
+  const handleStockImport = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    e.target.value = '';
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!['xlsx', 'xls', 'csv'].includes(ext)) { toast.error('Upload .xlsx, .xls, or .csv file.'); return; }
+    setStockImporting(true);
+    try {
+      await importStock(file);
+      toast.success('Stock import started! Checking progress...');
+      // Poll for completion
+      const poll = setInterval(async () => {
+        try {
+          const { data: st } = await getImportStockStatus();
+          if (!st.running) {
+            clearInterval(poll);
+            setStockImporting(false);
+            if (st.error) {
+              toast.error('Stock import failed: ' + st.error);
+            } else {
+              const parts = [];
+              if (st.updated)  parts.push(`${st.updated} updated`);
+              if (st.inserted) parts.push(`${st.inserted} added`);
+              if (st.skipped)  parts.push(`${st.skipped} unchanged`);
+              toast.success(`Stock import done: ${parts.join(', ') || 'no changes'}.`);
+              setStockImportResult(st);
+              refresh();
+            }
+          }
+        } catch { clearInterval(poll); setStockImporting(false); }
+      }, 3000);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Stock import failed.');
+      setStockImporting(false);
+    }
+  };
+
   const handleExportExcel = async () => {
     try {
       const { data } = await exportProductsExcel({ search, category: catFilter || undefined, brand: brandFilter || undefined, status: statusFilter, stockFilter });
@@ -508,6 +550,10 @@ export default function AdminProducts() {
             <Upload size={16} /> {importing ? 'Importing...' : 'Import CSV/Excel'}
           </button>
           <input ref={csvInputRef} type="file" accept=".xlsx,.xls,.csv" style={{ display: 'none' }} onChange={handleExcelImport} />
+          <button className="btn btn--outline" style={{ borderColor: '#10b981', color: '#10b981' }} onClick={() => stockInputRef.current?.click()} disabled={stockImporting}>
+            <Upload size={16} /> {stockImporting ? 'Importing Stock...' : 'Import Stock'}
+          </button>
+          <input ref={stockInputRef} type="file" accept=".xlsx,.xls,.csv" style={{ display: 'none' }} onChange={handleStockImport} />
           <button className="btn btn--primary" onClick={() => { setShowForm(!showForm); setEditing(null); setForm(EMPTY); setExistingImages([]); setRemoveImages([]); setImages([]); setImgPreviews([]); setFormImageUrls([]); setFormImageUrl(''); }}>
             <Plus size={16} /> {showForm && !editing ? 'Cancel' : 'Add Product'}
           </button>
@@ -573,6 +619,29 @@ export default function AdminProducts() {
               </div>
             )}
             <button className="btn btn--primary" style={{ marginTop: '1rem', width: '100%' }} onClick={() => setImportResult(null)}>Close</button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Stock Import Result Modal ── */}
+      {stockImportResult && (
+        <div className="import-modal-overlay" onClick={() => setStockImportResult(null)}>
+          <div className="import-modal" onClick={e => e.stopPropagation()}>
+            <button className="import-modal__close" onClick={() => setStockImportResult(null)}><X size={18} /></button>
+            <h2 style={{ marginBottom: '1rem' }}>Stock Import Results</h2>
+            <div className="import-modal__stats">
+              {(stockImportResult.updated > 0) && (
+                <div className="import-stat import-stat--ok"><Pencil size={22} /><span className="import-stat__num">{stockImportResult.updated}</span><span className="import-stat__lbl">Updated</span></div>
+              )}
+              {(stockImportResult.inserted > 0) && (
+                <div className="import-stat import-stat--ok"><CheckCircle size={22} /><span className="import-stat__num">{stockImportResult.inserted}</span><span className="import-stat__lbl">Added</span></div>
+              )}
+              {(stockImportResult.skipped > 0) && (
+                <div className="import-stat import-stat--skip"><AlertTriangle size={22} /><span className="import-stat__num">{stockImportResult.skipped}</span><span className="import-stat__lbl">Unchanged</span></div>
+              )}
+            </div>
+            <p style={{ fontSize: '0.82rem', color: '#888', marginTop: 12 }}>Total items processed: {stockImportResult.total}</p>
+            <button className="btn btn--primary" style={{ marginTop: '1rem', width: '100%' }} onClick={() => setStockImportResult(null)}>Close</button>
           </div>
         </div>
       )}

@@ -15,3 +15,5 @@ export const getCsvSyncStatus = () => api.get('/admin/sync-csv/status');
 export const getAvailabilityRequests = (params) => api.get('/admin/availability-requests', { params });
 export const updateAvailabilityRequestStatus = (id, status) => api.patch(`/admin/availability-requests/${id}/status`, { status });
 export const deleteAvailabilityRequest = (id) => api.delete(`/admin/availability-requests/${id}`);
+export const importStock = (file) => { const fd = new FormData(); fd.append('file', file); return api.post('/admin/import-stock', fd, { headers: { 'Content-Type': 'multipart/form-data' } }); };
+export const getImportStockStatus = () => api.get('/admin/import-stock/status');

@@ -19,10 +19,12 @@ const requireAdmin = require('../middleware/requireAdmin');
 const requireSuperAdmin = require('../middleware/requireSuperAdmin');
 const auditLogger = require('../middleware/auditLogger');
 const { classifyLifestyle } = require('../utils/classifyLifestyle');
+const { uploadSpreadsheet } = require('../middleware/upload');
 
 const router = express.Router();
 
 let syncStatus = { running: false, done: false, phase: 'idle', total: 0, processed: 0, matched: 0, updated: 0, added: 0, skipped: 0, error: null, startedAt: null, finishedAt: null };
+let stockImportStatus = { running: false, done: false, total: 0, updated: 0, inserted: 0, skipped: 0, error: null, startedAt: null, finishedAt: null };
 
 function mapAuditLog(row) {
   return {
@@ -538,5 +540,169 @@ router.delete('/availability-requests/:id', requireAuth, requireAdmin,
     } catch (err) { next(err); }
   }
 );
+
+// ── Stock Import from Excel ──────────────────────────────────────────────────
+router.post('/import-stock', requireAuth, requireAdmin, uploadSpreadsheet.single('file'), async (req, res) => {
+  if (stockImportStatus.running) {
+    return res.status(409).json({ message: 'Stock import already running.', status: stockImportStatus });
+  }
+  if (!req.file) {
+    return res.status(400).json({ message: 'No file uploaded. Upload an Excel (.xlsx/.xls) or CSV file.' });
+  }
+
+  stockImportStatus = { running: true, done: false, total: 0, updated: 0, inserted: 0, skipped: 0, error: null, startedAt: new Date().toISOString(), finishedAt: null };
+  res.json({ message: 'Stock import started.', status: stockImportStatus });
+
+  setImmediate(async () => {
+    try {
+      const wb = XLSX.read(req.file.buffer, { raw: false });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+      // ── Parse items ──────────────────────────────────────────────
+      let currentCompany = '';
+      const items = [];
+
+      // Find the header row offset (look for "Item Name" or "Barcode")
+      let startIdx = 0;
+      for (let i = 0; i < Math.min(rows.length, 20); i++) {
+        const vals = Object.values(rows[i]).map(v => String(v).trim().toLowerCase());
+        if (vals.includes('item name') || vals.includes('barcode')) {
+          startIdx = i + 1; // skip past sub-header row too
+          // Check if next row is also a header (Batch/Date/Expiry sub-header)
+          if (startIdx < rows.length) {
+            const nextVals = Object.values(rows[startIdx]).map(v => String(v).trim().toLowerCase());
+            if (nextVals.includes('batch') || nextVals.includes('expiry')) {
+              startIdx++;
+            }
+          }
+          break;
+        }
+      }
+      if (startIdx === 0) startIdx = 5; // fallback
+
+      const cols = Object.keys(rows[0] || {});
+
+      for (const r of rows.slice(startIdx)) {
+        const col0 = String(r[cols[0]] || '').trim();
+        const name = String(r[cols[1]] || '').trim();
+
+        // Company header row
+        if (col0.startsWith('Company')) {
+          currentCompany = col0.replace(/^Company\s*:\s*/i, '').trim();
+          continue;
+        }
+
+        // Skip non-item rows (totals, blanks, summary)
+        if (!name || name.length < 2) continue;
+        if (/^(total|grand total|sub total)/i.test(name)) continue;
+
+        const qty   = parseInt(r[cols[4]]) || 0;
+        const rate  = parseFloat(r[cols[7]]) || 0;
+        const pack  = String(r[cols[3]] || '').trim();
+        const unit  = String(r[cols[2]] || '').trim();
+        const barcode = /^\d+$/.test(col0) ? col0 : '';
+
+        items.push({
+          name,
+          company: currentCompany,
+          stock: qty > 0 ? qty : 0,
+          price: rate > 0 ? rate : 0,
+          pack: pack || (unit ? String(unit) : ''),
+          code: barcode,
+        });
+      }
+
+      stockImportStatus.total = items.length;
+
+      // ── Get default category ─────────────────────────────────────
+      const cats = await query('SELECT id FROM categories ORDER BY id ASC LIMIT 1');
+      const defaultCatId = cats.length ? cats[0].id : 1;
+
+      // ── Build name lookup ────────────────────────────────────────
+      const existingRows = await query(
+        'SELECT id, LOWER(name) AS name_key, price, stock FROM products WHERE is_deleted = 0'
+      );
+      const existingMap = new Map();
+      for (const row of existingRows) {
+        existingMap.set(row.name_key, row);
+      }
+
+      // ── Process items ────────────────────────────────────────────
+      for (const item of items) {
+        const nameKey = item.name.toLowerCase();
+        const existing = existingMap.get(nameKey);
+
+        if (existing) {
+          const updates = [];
+          const vals = [];
+
+          if (existing.stock !== item.stock) {
+            updates.push('stock = ?');
+            vals.push(item.stock);
+          }
+          if (item.price > 0 && Math.abs(Number(existing.price) - item.price) > 0.01) {
+            updates.push('price = ?', 'mrp = ?');
+            vals.push(item.price, item.price);
+          }
+          if (item.company && !existing.company) {
+            updates.push('company = ?', 'brand = ?');
+            vals.push(item.company, item.company);
+          }
+
+          if (updates.length > 0) {
+            vals.push(existing.id);
+            await execute(
+              `UPDATE products SET ${updates.join(', ')}, updated_at = NOW() WHERE id = ?`,
+              vals
+            );
+            stockImportStatus.updated++;
+          } else {
+            stockImportStatus.skipped++;
+          }
+        } else {
+          const slugBase = item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          const slug = `${slugBase}-${Math.random().toString(36).slice(2, 8)}`;
+          try {
+            await execute(
+              `INSERT INTO products
+                (code, name, slug, category_id, brand, company, pack, mrp, price, stock, is_active, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())`,
+              [item.code, item.name, slug, defaultCatId, item.company, item.company, item.pack, item.price, item.price, item.stock]
+            );
+            stockImportStatus.inserted++;
+          } catch {
+            try {
+              const slug2 = `${slugBase}-${Date.now().toString(36)}`;
+              await execute(
+                `INSERT INTO products
+                  (code, name, slug, category_id, brand, company, pack, mrp, price, stock, is_active, created_at, updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())`,
+                [item.code, item.name, slug2, defaultCatId, item.company, item.company, item.pack, item.price, item.price, item.stock]
+              );
+              stockImportStatus.inserted++;
+            } catch {
+              stockImportStatus.skipped++;
+            }
+          }
+          existingMap.set(nameKey, { id: -1, name_key: nameKey, price: item.price, stock: item.stock });
+        }
+      }
+
+      stockImportStatus.running = false;
+      stockImportStatus.done = true;
+      stockImportStatus.finishedAt = new Date().toISOString();
+    } catch (err) {
+      stockImportStatus.running = false;
+      stockImportStatus.done = true;
+      stockImportStatus.error = err.message;
+      stockImportStatus.finishedAt = new Date().toISOString();
+    }
+  });
+});
+
+router.get('/import-stock/status', requireAuth, requireAdmin, (req, res) => {
+  res.json(stockImportStatus);
+});
 
 module.exports = router;
