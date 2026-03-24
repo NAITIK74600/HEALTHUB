@@ -720,7 +720,8 @@ svg { flex-shrink: 0; }
 .hero {
   background: linear-gradient(135deg, #0d1b8e 0%, #3451D1 40%, #27AE60 100%);
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: visible;
   padding: 80px 0;
   min-height: 480px;
   display: flex;
@@ -9844,7 +9845,8 @@ input:focus, select:focus, textarea:focus {
 
 /* Search dropdown */
 .hero-search__dropdown {
-  position: fixed;
+  position: absolute;
+  top: calc(100% + 6px);
   left: 0; right: 0;
   background: #fff;
   border-radius: 16px;
@@ -9854,8 +9856,6 @@ input:focus, select:focus, textarea:focus {
   max-height: 400px;
   overflow-y: auto;
   z-index: 9999;
-  width: 100%;
-  max-width: 560px;
 }
 .hero-search__result {
   display: flex;
