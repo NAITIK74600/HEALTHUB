@@ -296,9 +296,9 @@ export default function OrderDetail() {
                 <tr key={i}>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      {item.product?.images?.[0] && (
+                      {item.image && (
                         <img
-                          src={item.product.images[0]}
+                          src={item.image}
                           alt={item.name}
                           className="receipt-item__img no-print"
                         />

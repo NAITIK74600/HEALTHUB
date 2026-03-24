@@ -9,17 +9,36 @@ const { sendOrderConfirmation, sendOrderStatusUpdate } = require('../utils/maile
 
 const router = express.Router();
 
+// Fetch order items with product image fallback for old orders
+const ORDER_ITEMS_SQL = `
+  SELECT oi.*, COALESCE(oi.image, p.images) AS fallback_images
+  FROM order_items oi
+  LEFT JOIN products p ON p.id = oi.product_id
+  WHERE oi.order_id = ?`;
+
 function mapOrder(row, items = []) {
   return {
     _id: String(row.id),
     user: row.user_id ? { _id: String(row.user_id), name: row.user_name || '', email: row.user_email || '', phone: row.user_phone || '' } : null,
-    items: items.map(i => ({
-      _id: String(i.id),
-      product: i.product_id ? String(i.product_id) : null,
-      name: i.name,
-      price: Number(i.price),
-      qty: Number(i.qty),
-    })),
+    items: items.map(i => {
+      // Resolve image: direct image field, or extract first from product images JSON
+      let image = i.image || null;
+      if (!image && i.fallback_images) {
+        try {
+          const parsed = typeof i.fallback_images === 'string' ? JSON.parse(i.fallback_images) : i.fallback_images;
+          if (Array.isArray(parsed) && parsed.length) image = parsed[0];
+          else if (typeof parsed === 'string') image = parsed;
+        } catch { image = null; }
+      }
+      return {
+        _id: String(i.id),
+        product: i.product_id ? String(i.product_id) : null,
+        name: i.name,
+        price: Number(i.price),
+        qty: Number(i.qty),
+        image,
+      };
+    }),
     total: Number(row.total || 0),
     discount: Number(row.discount || 0),
     deliveryCharge: Number(row.delivery_charge || 0),
@@ -59,6 +78,7 @@ router.post('/', requireAuth, [
         name: String(item.name || '').slice(0, 200),
         price,
         qty,
+        image: item.image ? String(item.image).slice(0, 500) : null,
       });
     }
 
@@ -90,8 +110,8 @@ router.post('/', requireAuth, [
     // Insert items
     for (const item of orderItems) {
       await execute(
-        'INSERT INTO order_items (order_id, product_id, name, price, qty) VALUES (?, ?, ?, ?, ?)',
-        [orderId, item.product_id, item.name, item.price, item.qty]
+        'INSERT INTO order_items (order_id, product_id, name, price, qty, image) VALUES (?, ?, ?, ?, ?, ?)',
+        [orderId, item.product_id, item.name, item.price, item.qty, item.image]
       );
     }
 
@@ -219,7 +239,7 @@ router.get('/my', requireAuth, async (req, res, next) => {
     );
     const orders = [];
     for (const row of rows) {
-      const items = await query('SELECT * FROM order_items WHERE order_id = ?', [row.id]);
+      const items = await query(ORDER_ITEMS_SQL, [row.id]);
       orders.push(mapOrder(row, items));
     }
     res.json({ orders });
@@ -244,7 +264,7 @@ router.get('/:id', requireAuth, [param('id').isInt({ min: 1 })], async (req, res
       return res.status(403).json({ message: 'Not authorized.' });
     }
 
-    const items = await query('SELECT * FROM order_items WHERE order_id = ?', [req.params.id]);
+    const items = await query(ORDER_ITEMS_SQL, [req.params.id]);
     res.json(mapOrder(rows[0], items));
   } catch (err) { next(err); }
 });
@@ -278,7 +298,7 @@ router.get('/', requireAuth, requireAdmin, [
     const total = Number(countRows[0]?.total || 0);
     const orders = [];
     for (const row of rows) {
-      const items = await query('SELECT * FROM order_items WHERE order_id = ?', [row.id]);
+      const items = await query(ORDER_ITEMS_SQL, [row.id]);
       orders.push(mapOrder(row, items));
     }
     res.json({ orders, total, page, pages: Math.ceil(total / limit) });
@@ -375,8 +395,25 @@ router.post('/:id/reorder', requireAuth, [param('id').isInt({ min: 1 })], async 
   try {
     const rows = await query('SELECT * FROM orders WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
     if (!rows.length) return res.status(404).json({ message: 'Order not found.' });
-    const items = await query('SELECT * FROM order_items WHERE order_id = ?', [req.params.id]);
-    res.json({ items: items.map(i => ({ productId: i.product_id, name: i.name, price: Number(i.price), qty: Number(i.qty) })) });
+    const items = await query(
+      `SELECT oi.*, p.images AS p_images, p.slug, p.stock, p.price AS current_price, p.requires_prescription
+       FROM order_items oi LEFT JOIN products p ON p.id = oi.product_id
+       WHERE oi.order_id = ?`, [req.params.id]);
+    res.json({ items: items.map(i => {
+      let image = i.image || null;
+      if (!image && i.p_images) {
+        try { const arr = JSON.parse(i.p_images); if (Array.isArray(arr) && arr.length) image = arr[0]; } catch {}
+      }
+      const available = i.product_id ? (i.stock > 0) : false;
+      return {
+        productId: i.product_id, name: i.name,
+        price: i.current_price != null ? Number(i.current_price) : Number(i.price),
+        qty: Number(i.qty), image, slug: i.slug || null,
+        requiresPrescription: !!i.requires_prescription,
+        stock: i.stock != null ? Number(i.stock) : 0,
+        available,
+      };
+    }) });
   } catch (err) { next(err); }
 });
 

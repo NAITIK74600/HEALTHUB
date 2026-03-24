@@ -177,7 +177,7 @@ export default function Checkout() {
       }
 
       const orderPayload = {
-        items: items.map(i => ({ productId: i.productId, name: i.name, price: i.price, qty: i.qty })),
+        items: items.map(i => ({ productId: i.productId, name: i.name, price: i.price, qty: i.qty, image: i.image || '' })),
         deliveryType: formData.deliveryType,
         address: formData.deliveryType === 'delivery'
           ? { line1: formData.line1, line2: formData.line2 || '', city: formData.city, pincode: formData.pincode, phone: formData.phone }

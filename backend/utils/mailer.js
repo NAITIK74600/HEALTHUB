@@ -93,12 +93,18 @@ async function sendMail(to, subject, html) {
   const from = process.env.MAIL_FROM || '"Batla Medicos" <ordersupport@batlamedicos.shop>';
 
   // Embed logo as inline CID attachment so email clients show it without blocking
-  const logoPath = path.resolve(__dirname, '../email-logo.jpg');
-  const attachments = [{
-    filename: 'logo.jpg',
-    path: logoPath,
-    cid: LOGO_CID,
-  }];
+  const logoPath = path.resolve(__dirname, '../../frontend/public/email-logo.png');
+  const attachments = [];
+  try {
+    const fs = require('fs');
+    if (fs.existsSync(logoPath)) {
+      attachments.push({
+        filename: 'logo.png',
+        path: logoPath,
+        cid: LOGO_CID,
+      });
+    }
+  } catch (_) { /* skip logo if not found */ }
 
   try {
     const info = await transport.sendMail({ from, to, subject, html, attachments });

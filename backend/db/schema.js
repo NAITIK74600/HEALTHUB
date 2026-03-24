@@ -317,6 +317,9 @@ async function ensureCoreSchema() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
 
+  // Add image column to order_items for product snapshot
+  await execute(`ALTER TABLE order_items ADD COLUMN IF NOT EXISTS image VARCHAR(500) NULL DEFAULT NULL`).catch(() => {});
+
   // Ensure orders table has needed columns
   await execute(`ALTER TABLE orders ADD COLUMN razorpay_order_id VARCHAR(100) NULL`).catch(() => {});
   await execute(`ALTER TABLE orders ADD COLUMN razorpay_payment_id VARCHAR(100) NULL`).catch(() => {});
