@@ -220,6 +220,13 @@ export default function Home() {
   const searchRef = useRef(null);
   const particleCanvasRef = useRef(null);
 
+  // Compute fixed position for search dropdown
+  const getDropdownStyle = () => {
+    if (!searchRef.current) return {};
+    const rect = searchRef.current.getBoundingClientRect();
+    return { top: rect.bottom + 6, left: rect.left, width: rect.width };
+  };
+
   // ── Interactive particle animation ──
   useEffect(() => {
     const canvas = particleCanvasRef.current;
@@ -443,7 +450,7 @@ export default function Home() {
                 <button type="submit" className="hero-search__btn ripple-btn" onClick={ripple}>Search</button>
               </form>
               {showResults && searchResults.length > 0 && (
-                <div className="hero-search__dropdown">
+                <div className="hero-search__dropdown" style={getDropdownStyle()}>
                   {searchResults.map(p => (
                     <Link
                       key={p._id}
@@ -464,7 +471,7 @@ export default function Home() {
                 </div>
               )}
               {showResults && searchResults.length === 0 && searchQuery.trim() && (
-                <div className="hero-search__dropdown">
+                <div className="hero-search__dropdown" style={getDropdownStyle()}>
                   <div className="hero-search__empty">No products found for "{searchQuery}"</div>
                 </div>
               )}

@@ -656,8 +656,18 @@ function buildProductWhere({ admin = false, params = {}, categoryIds = [] } = {}
       values.push(params.lifestyleCategory);
     }
   } else if (params.search) {
-    where.push('(p.name LIKE ? OR p.brand LIKE ? OR p.company LIKE ? OR p.description LIKE ? OR p.salt LIKE ?)');
-    values.push(`%${params.search}%`, `%${params.search}%`, `%${params.search}%`, `%${params.search}%`, `%${params.search}%`);
+    const raw = params.search;
+    const stripped = raw.replace(/[\s\-_.\/]+/g, '');
+    where.push(
+      '(p.name LIKE ? OR p.brand LIKE ? OR p.company LIKE ? OR p.description LIKE ? OR p.salt LIKE ?' +
+      ' OR REPLACE(REPLACE(REPLACE(REPLACE(p.name, " ", ""), "-", ""), ".", ""), "/", "") LIKE ?' +
+      ' OR REPLACE(REPLACE(REPLACE(REPLACE(p.brand, " ", ""), "-", ""), ".", ""), "/", "") LIKE ?' +
+      ' OR REPLACE(REPLACE(REPLACE(REPLACE(p.salt, " ", ""), "-", ""), ".", ""), "/", "") LIKE ?)'
+    );
+    values.push(
+      `%${raw}%`, `%${raw}%`, `%${raw}%`, `%${raw}%`, `%${raw}%`,
+      `%${stripped}%`, `%${stripped}%`, `%${stripped}%`
+    );
   }
 
   if (admin) {
