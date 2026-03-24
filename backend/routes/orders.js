@@ -12,7 +12,7 @@ const router = express.Router();
 // Fetch order items with product image fallback for old orders
 const ORDER_ITEMS_SQL = `
   SELECT oi.id, oi.order_id, oi.product_id, oi.name, oi.price, oi.qty, oi.created_at,
-         oi.image, p.images AS p_images
+         oi.image, p.images_json AS p_images
   FROM order_items oi
   LEFT JOIN products p ON p.id = oi.product_id
   WHERE oi.order_id = ?`;
@@ -20,7 +20,7 @@ const ORDER_ITEMS_SQL = `
 // Fallback SQL if image column doesn't exist yet
 const ORDER_ITEMS_SQL_FALLBACK = `
   SELECT oi.id, oi.order_id, oi.product_id, oi.name, oi.price, oi.qty, oi.created_at,
-         NULL AS image, p.images AS p_images
+         NULL AS image, p.images_json AS p_images
   FROM order_items oi
   LEFT JOIN products p ON p.id = oi.product_id
   WHERE oi.order_id = ?`;
@@ -429,14 +429,14 @@ router.post('/:id/reorder', requireAuth, [param('id').isInt({ min: 1 })], async 
     try {
       items = await query(
         `SELECT oi.id, oi.product_id, oi.name, oi.price, oi.qty, oi.image,
-                p.images AS p_images, p.slug, p.stock, p.price AS current_price, p.requires_prescription
+                p.images_json AS p_images, p.slug, p.stock, p.price AS current_price, p.requires_prescription
          FROM order_items oi LEFT JOIN products p ON p.id = oi.product_id
          WHERE oi.order_id = ?`, [req.params.id]);
     } catch (colErr) {
       if (colErr.code === 'ER_BAD_FIELD_ERROR') {
         items = await query(
           `SELECT oi.id, oi.product_id, oi.name, oi.price, oi.qty, NULL AS image,
-                  p.images AS p_images, p.slug, p.stock, p.price AS current_price, p.requires_prescription
+                  p.images_json AS p_images, p.slug, p.stock, p.price AS current_price, p.requires_prescription
            FROM order_items oi LEFT JOIN products p ON p.id = oi.product_id
            WHERE oi.order_id = ?`, [req.params.id]);
       } else throw colErr;
