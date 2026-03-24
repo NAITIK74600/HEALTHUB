@@ -1,6 +1,6 @@
 import { useState, useEffect, Component } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Percent, Shield, LogOut, ExternalLink, ChevronLeft, ChevronRight, Bell, FileText, FlaskConical, Menu, X, Truck, Ticket, Star, Sparkles, FolderOpen, Film } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Percent, Shield, LogOut, ExternalLink, ChevronLeft, ChevronRight, Bell, FileText, FlaskConical, Menu, X, Truck, Ticket, Star, Sparkles, FolderOpen, Film, ClipboardList } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import NotificationBell from '../../components/NotificationBell';
 import SEO from '../../components/SEO';
@@ -50,6 +50,7 @@ const NAV_GROUPS = [
       { to: '/admin/users',    label: 'Customers', icon: Users },
       { to: '/admin/coupons',  label: 'Coupons',   icon: Ticket },
       { to: '/admin/offers',   label: 'Offers',    icon: Tag },
+      { to: '/admin/requests', label: 'Requests',  icon: ClipboardList },
     ],
   },
   {
@@ -91,6 +92,7 @@ const PAGE_TITLES = {
   '/admin/notifications': 'Notifications',
   '/admin/admins': 'Admins',
   '/admin/audit': 'Audit Log',
+  '/admin/requests': 'Medicine Requests',
 };
 
 export default function AdminLayout() {

@@ -463,4 +463,80 @@ router.get('/export/orders', requireAuth, requireAdmin, async (req, res, next) =
   } catch (err) { next(err); }
 });
 
+// ── Availability Requests ────────────────────────────────────────────────────
+router.get('/availability-requests', requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 20;
+    const status = req.query.status || '';
+
+    let where = '1=1';
+    const params = [];
+    if (status) {
+      where += ' AND status = ?';
+      params.push(status);
+    }
+
+    const [rows, totalRows] = await Promise.all([
+      query(
+        `SELECT * FROM availability_requests WHERE ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+        [...params, limit, (page - 1) * limit]
+      ),
+      query(`SELECT COUNT(*) AS total FROM availability_requests WHERE ${where}`, params),
+    ]);
+
+    const total = Number(totalRows[0]?.total || 0);
+    res.json({
+      requests: rows.map(r => ({
+        _id: String(r.id),
+        medicineName: r.medicine_name,
+        customerName: r.customer_name,
+        phone: r.phone,
+        email: r.email,
+        searchQuery: r.search_query,
+        status: r.status,
+        createdAt: r.created_at,
+        updatedAt: r.updated_at,
+      })),
+      total,
+      page,
+      pages: Math.ceil(total / limit) || 1,
+    });
+  } catch (err) { next(err); }
+});
+
+router.patch('/availability-requests/:id/status', requireAuth, requireAdmin,
+  [
+    param('id').isInt({ min: 1 }),
+    body('status').isIn(['pending', 'reviewed', 'fulfilled', 'rejected']).withMessage('Invalid status.'),
+  ],
+  async (req, res, next) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) return res.status(422).json({ message: errors.array()[0].msg });
+
+      const result = await execute(
+        'UPDATE availability_requests SET status = ?, updated_at = NOW() WHERE id = ?',
+        [req.body.status, req.params.id]
+      );
+      if (result.affectedRows === 0) return res.status(404).json({ message: 'Request not found.' });
+      res.json({ message: `Status updated to ${req.body.status}.` });
+    } catch (err) { next(err); }
+  }
+);
+
+router.delete('/availability-requests/:id', requireAuth, requireAdmin,
+  [param('id').isInt({ min: 1 })],
+  async (req, res, next) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+
+      const result = await execute('DELETE FROM availability_requests WHERE id = ?', [req.params.id]);
+      if (result.affectedRows === 0) return res.status(404).json({ message: 'Request not found.' });
+      res.json({ message: 'Request deleted.' });
+    } catch (err) { next(err); }
+  }
+);
+
 module.exports = router;

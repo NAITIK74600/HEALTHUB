@@ -57,6 +57,7 @@ import AdminBrands from './pages/admin/AdminBrands';
 import AdminSiteSettings from './pages/admin/AdminSiteSettings';
 import AdminCategories from './pages/admin/AdminCategories';
 import AdminPromotions from './pages/admin/AdminPromotions';
+import AdminRequests from './pages/admin/AdminRequests';
 import InstallPrompt from './components/InstallPrompt';
 
 const PublicLayout = () => (
@@ -176,6 +177,7 @@ export default function App() {
                 <Route path="site-settings" element={<AdminSiteSettings />} />
                 <Route path="categories" element={<AdminCategories />} />
                 <Route path="promotions" element={<AdminPromotions />} />
+                <Route path="requests" element={<AdminRequests />} />
               </Route>
             </Routes>
           </CartProvider>

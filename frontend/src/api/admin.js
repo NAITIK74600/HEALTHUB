@@ -12,3 +12,6 @@ export const clearAuditLog = (password) => api.delete('/admin/audit-log/clear', 
 export const clearOrders = (password) => api.delete('/admin/orders/clear', { data: { password } });
 export const triggerCsvSync = () => api.post('/admin/sync-csv');
 export const getCsvSyncStatus = () => api.get('/admin/sync-csv/status');
+export const getAvailabilityRequests = (params) => api.get('/admin/availability-requests', { params });
+export const updateAvailabilityRequestStatus = (id, status) => api.patch(`/admin/availability-requests/${id}/status`, { status });
+export const deleteAvailabilityRequest = (id) => api.delete(`/admin/availability-requests/${id}`);
