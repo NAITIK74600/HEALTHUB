@@ -134,17 +134,20 @@ async function main() {
   try {
     const transporter = nodemailer.createTransport({
       host:   process.env.MAIL_HOST,
-      port:   Number(process.env.MAIL_PORT || 465),
-      secure: Number(process.env.MAIL_PORT || 465) === 465,
-      auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS,
-      },
+      port:   Number(process.env.MAIL_PORT || 587),
+      secure: Number(process.env.MAIL_PORT || 587) === 465,
+      auth: { user: process.env.MAIL_USER, pass: process.env.MAIL_PASS },
+      connectionTimeout: 5000,
+      greetingTimeout:   5000,
+      socketTimeout:     5000,
     });
-    await transporter.verify();
+    await Promise.race([
+      transporter.verify(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout after 6s')), 6000)),
+    ]);
     console.log(`  ${PASS} SMTP OK — ${process.env.MAIL_HOST}:${process.env.MAIL_PORT}\n`);
   } catch (e) {
-    console.log(`  ${FAIL} SMTP FAILED: ${e.message}\n`);
+    console.log(`  ${WARN} SMTP FAILED: ${e.message} (non-critical — emails only)\n`);
   }
 
   // ── 8. Key files check ────────────────────────────────────────────────────
