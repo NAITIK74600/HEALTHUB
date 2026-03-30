@@ -107,7 +107,7 @@ async function main() {
     console.log('\n── 6. SCHEMA COLUMNS CHECK ──────────────────────────');
     const colChecks = [
       { table: 'products', col: 'lifestyle_category' },
-      { table: 'products', col: 'discount_pct' },
+      { table: 'products', col: 'salt' },
       { table: 'users',    col: 'role' },
       { table: 'orders',   col: 'status' },
     ];
