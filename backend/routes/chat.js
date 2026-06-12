@@ -26,14 +26,14 @@ const RULES = [
   {
     patterns: [/^(hi|hello|hey|namaste|namaskar|salaam|salam|hola|yo|sup)\b/i, /\b(good\s*(morning|afternoon|evening|night))\b/i],
     replies: [
-      'Namaste! 👋 Welcome to Batla Medicos. How can I help you today?\n\nYou can ask me about medicines, store timings, home delivery, lab tests, or anything else!',
-      'Hello! Welcome to Batla Medicos. 😊 I\'m MedBot, your pharmacy assistant. What can I help you with?',
+      'Namaste! 👋 Welcome to Health Hub. How can I help you today?\n\nYou can ask me about medicines, store timings, home delivery, lab tests, or anything else!',
+      'Hello! Welcome to Health Hub. 😊 I\'m MedBot, your pharmacy assistant. What can I help you with?',
     ],
   },
   // ── How are you ────────────────────────────────────────────────────────────
   {
     patterns: [/how are you|kaise ho|kaisa hai|aap kaisa/i],
-    replies: ['I\'m doing great, thank you for asking! 😊 I\'m here to help you with medicines, lab tests, orders, and anything about Batla Medicos. What do you need?'],
+    replies: ['I\'m doing great, thank you for asking! 😊 I\'m here to help you with medicines, lab tests, orders, and anything about Health Hub. What do you need?'],
   },
   // ── Thanks ─────────────────────────────────────────────────────────────────
   {
@@ -46,55 +46,55 @@ const RULES = [
   // ── Bye / end ──────────────────────────────────────────────────────────────
   {
     patterns: [/\b(bye|goodbye|good bye|alvida|take care|quit|exit)\b/i],
-    replies: ['Thank you for visiting Batla Medicos! Stay healthy. 🙏 Feel free to chat anytime you need help.'],
+    replies: ['Thank you for visiting Health Hub! Stay healthy. 🙏 Feel free to chat anytime you need help.'],
   },
   // ── Store location / address ───────────────────────────────────────────────
   {
     patterns: [/\b(address|location|where|kahan|kha|direction|map|shop|store|dukan)\b/i],
     replies: [
-      '📍 **Batla Medicos** is located at:\n**Batla House, New Delhi – 110025**\n(Jamia Nagar area)\n\nYou can find us on Google Maps by searching "Batla Medicos". We\'re easily accessible by metro — Jamia Millia Islamia Metro Station is nearby.',
+      '📍 **Health Hub** is located at:\n**Block G, Connaught Place, New Delhi – 110001**\n\nYou can find us on Google Maps by searching "Health Hub". We\'re easily accessible by metro — Rajiv Chowk Metro Station is nearby.',
     ],
   },
   // ── Timings / hours ────────────────────────────────────────────────────────
   {
     patterns: [/\b(timing|time|hours|open|close|kab|schedule|baje|खुलना|बंद)\b/i],
     replies: [
-      '🕐 **Store Timings:**\n**Mon–Sun:** 9:00 AM – 11:45 PM\n\nWe are open all 7 days! For medicines, prescriptions, and urgent needs — you can also order online at batlamedicos.shop for home delivery! 🚚',
+      '🕐 **Store Timings:**\n**Mon–Sun:** 8:00 AM – 11:45 PM\n\nWe are open all 7 days! For medicines, prescriptions, and urgent needs — you can also order online at healthub.site for home delivery! 🚚',
     ],
   },
   // ── Contact / phone ────────────────────────────────────────────────────────
   {
     patterns: [/\b(contact|phone|number|call|helpline|whatsapp|reach|connect|mob)\b/i],
     replies: [
-      '📞 You can reach Batla Medicos at:\n**WhatsApp / Call:** +91 99901 65925\n**Website:** batlamedicos.shop\n\nOur team is available during store hours to help you.',
+      '📞 You can reach Health Hub at:\n**WhatsApp / Call:** +91 73032 40289\n**Website:** healthub.site\n\nOur team is available during store hours to help you.',
     ],
   },
   // ── Home delivery ──────────────────────────────────────────────────────────
   {
     patterns: [/\b(deliver|delivery|home delivery|ghar|ship|courier|doorstep|pickup|pick up)\b/i],
     replies: [
-      '🚚 Yes! We offer **home delivery** for medicines and healthcare products.\n\n✅ Order online at batlamedicos.shop\n✅ We deliver within the local area\n✅ Same-day delivery available for most orders\n\nFor large orders or urgent medicines, WhatsApp us at +91 99901 65925.',
+      '🚚 Yes! We offer **home delivery** for medicines and healthcare products.\n\n✅ Order online at healthub.site\n✅ We deliver within the local area\n✅ Same-day delivery available for most orders\n\nFor large orders or urgent medicines, WhatsApp us at +91 73032 40289.',
     ],
   },
   // ── Lab tests ──────────────────────────────────────────────────────────────
   {
     patterns: [/\b(lab|test|blood test|sample|report|pathology|thyroid|sugar|diabetes|cholesterol|haemoglobin|hemoglobin|CBC|urine|HbA1c)\b/i],
     replies: [
-      '🔬 We offer **home sample collection** for various lab tests including:\n\n• Blood tests (CBC, thyroid, diabetes, cholesterol, HbA1c)\n• Urine analysis\n• Hormone panels\n• And many more!\n\n📌 Book your lab test on the **Lab Tests** page on our website, or WhatsApp us at +91 99901 65925 to schedule a home visit.',
+      '🔬 We offer **home sample collection** for various lab tests including:\n\n• Blood tests (CBC, thyroid, diabetes, cholesterol, HbA1c)\n• Urine analysis\n• Hormone panels\n• And many more!\n\n📌 Book your lab test on the **Lab Tests** page on our website, or WhatsApp us at +91 73032 40289 to schedule a home visit.',
     ],
   },
   // ── Prescription ───────────────────────────────────────────────────────────
   {
     patterns: [/\b(prescription|rx|doctor|parchee|parchi|medicine prescription|prescribed)\b/i],
     replies: [
-      '📋 **Prescriptions:**\n\nYou can upload your prescription directly on batlamedicos.shop → "Prescriptions" section, and our pharmacist will prepare your medicines.\n\nFor controlled/Schedule H medicines, a valid doctor\'s prescription is required by law. 🏥\n\nIf you\'re unsure about a medicine, please consult your doctor first.',
+      '📋 **Prescriptions:**\n\nYou can upload your prescription directly on healthub.site → "Prescriptions" section, and our pharmacist will prepare your medicines.\n\nFor controlled/Schedule H medicines, a valid doctor\'s prescription is required by law. 🏥\n\nIf you\'re unsure about a medicine, please consult your doctor first.',
     ],
   },
   // ── Medicine availability ──────────────────────────────────────────────────
   {
     patterns: [/\b(available|stock|milega|milta|hai kya|do you have|in stock|out of stock|medicine available)\b/i],
     replies: [
-      '💊 You can search for any medicine on our website **batlamedicos.shop** to check availability.\n\nIf a medicine is not found, you can use the **"Request Availability"** form on the search results page and we\'ll try to arrange it for you!\n\nYou can also WhatsApp us at +91 99901 65925 to check stock directly.',
+      '💊 You can search for any medicine on our website **healthub.site** to check availability.\n\nIf a medicine is not found, you can use the **"Request Availability"** form on the search results page and we\'ll try to arrange it for you!\n\nYou can also WhatsApp us at +91 73032 40289 to check stock directly.',
     ],
   },
   // ── Payment ────────────────────────────────────────────────────────────────
@@ -108,21 +108,21 @@ const RULES = [
   {
     patterns: [/\b(discount|coupon|offer|promo|sale|cashback|deal|code|off)\b/i],
     replies: [
-      '🎉 Check our **Offers** page on batlamedicos.shop for current deals and discounts!\n\nWe regularly have offers on:\n• Generic medicines\n• Healthcare products\n• Lab test packages\n\nYou can also apply **coupon codes** at checkout. Ask us on WhatsApp (+91 99901 65925) for any active promo codes!',
+      '🎉 Check our **Offers** page on healthub.site for current deals and discounts!\n\nWe regularly have offers on:\n• Generic medicines\n• Healthcare products\n• Lab test packages\n\nYou can also apply **coupon codes** at checkout. Ask us on WhatsApp (+91 73032 40289) for any active promo codes!',
     ],
   },
   // ── Order status / tracking ────────────────────────────────────────────────
   {
     patterns: [/\b(order|my order|order status|track|tracking|where is my|kahan hai|dispatch)\b/i],
     replies: [
-      '📦 To check your order status:\n\n1. Log in to **batlamedicos.shop**\n2. Go to **"My Orders"** section\n3. Click on your order to see the latest status\n\nYou\'ll also receive WhatsApp/email updates as your order progresses. For urgent queries, WhatsApp us at +91 99901 65925.',
+      '📦 To check your order status:\n\n1. Log in to **healthub.site**\n2. Go to **"My Orders"** section\n3. Click on your order to see the latest status\n\nYou\'ll also receive WhatsApp/email updates as your order progresses. For urgent queries, WhatsApp us at +91 73032 40289.',
     ],
   },
   // ── Return / refund ────────────────────────────────────────────────────────
   {
     patterns: [/\b(return|refund|exchange|replace|wrong medicine|damaged|wapas)\b/i],
     replies: [
-      '↩️ **Returns & Refunds:**\n\nWe accept returns for:\n• Wrong item delivered\n• Damaged/expired products\n\nTo initiate a return, please contact us within **24 hours** of delivery:\n📞 WhatsApp: +91 99901 65925\n\nNote: Medicines cannot be returned once dispensed due to safety regulations, unless there was an error on our part.',
+      '↩️ **Returns & Refunds:**\n\nWe accept returns for:\n• Wrong item delivered\n• Damaged/expired products\n\nTo initiate a return, please contact us within **24 hours** of delivery:\n📞 WhatsApp: +91 73032 40289\n\nNote: Medicines cannot be returned once dispensed due to safety regulations, unless there was an error on our part.',
     ],
   },
   // ── Generic medicines / cheaper option ────────────────────────────────────
@@ -136,7 +136,7 @@ const RULES = [
   {
     patterns: [/\b(ayurved|ayurvedic|herbal|patanjali|dabur|himalaya|hamdard|unani|homeopathy|homeopathic)\b/i],
     replies: [
-      '🌿 **Ayurvedic & Herbal Products:**\n\nYes! We stock a wide range of Ayurvedic and herbal medicines including popular brands like Patanjali, Dabur, Himalaya, Hamdard, and more.\n\nBrowse the **Ayurvedic Brands** section on our homepage or search on batlamedicos.shop.',
+      '🌿 **Ayurvedic & Herbal Products:**\n\nYes! We stock a wide range of Ayurvedic and herbal medicines including popular brands like Patanjali, Dabur, Himalaya, Hamdard, and more.\n\nBrowse the **Ayurvedic Brands** section on our homepage or search on healthub.site.',
     ],
   },
   // ── Common health questions — fever ───────────────────────────────────────
@@ -171,7 +171,7 @@ const RULES = [
   {
     patterns: [/\b(vitamin|supplement|multivitamin|calcium|zinc|iron|omega|fish oil|protein|whey|immunity)\b/i],
     replies: [
-      '💪 **Vitamins & Supplements:**\n\nWe have a wide range available:\n• Vitamin C, D3, B12, B-Complex\n• Calcium + Vitamin D\n• Iron supplements\n• Omega-3 / Fish oil\n• Zinc and immunity boosters\n• Protein supplements\n\nMost vitamins and supplements are available without a prescription. Visit our store or order online at batlamedicos.shop!',
+      '💪 **Vitamins & Supplements:**\n\nWe have a wide range available:\n• Vitamin C, D3, B12, B-Complex\n• Calcium + Vitamin D\n• Iron supplements\n• Omega-3 / Fish oil\n• Zinc and immunity boosters\n• Protein supplements\n\nMost vitamins and supplements are available without a prescription. Visit our store or order online at healthub.site!',
     ],
   },
   // ── Baby / child products ──────────────────────────────────────────────────
@@ -185,7 +185,7 @@ const RULES = [
   {
     patterns: [/\b(skin|cream|lotion|sunscreen|moisturizer|acne|pimple|fairness|face wash|hair|shampoo|dandruff)\b/i],
     replies: [
-      '✨ **Skincare & Personal Care:**\n\nWe have a great range of skincare and personal care products:\n• Sunscreen, moisturizers, face wash\n• Acne treatments (Benzoyl peroxide, Clindamycin)\n• Hair care (anti-dandruff, hair fall)\n• Brands: Himalaya, Neutrogena, Cetaphil, Sebamed\n\nBrowse online at batlamedicos.shop or visit our store!',
+      '✨ **Skincare & Personal Care:**\n\nWe have a great range of skincare and personal care products:\n• Sunscreen, moisturizers, face wash\n• Acne treatments (Benzoyl peroxide, Clindamycin)\n• Hair care (anti-dandruff, hair fall)\n• Brands: Himalaya, Neutrogena, Cetaphil, Sebamed\n\nBrowse online at healthub.site or visit our store!',
     ],
   },
   // ── Surgical / dressing ───────────────────────────────────────────────────
@@ -199,22 +199,22 @@ const RULES = [
   {
     patterns: [/\b(how to order|order kaise|place order|register|account|login|sign up|website use|how does)\b/i],
     replies: [
-      '🛒 **How to Order Online:**\n\n1. Visit **batlamedicos.shop**\n2. Browse or search for your medicines\n3. Add items to cart 🛒\n4. Login / Create account\n5. Enter delivery address\n6. Choose payment method & place order\n\n📦 Your medicines will be delivered to your door!\n\nNeed help? WhatsApp us at +91 99901 65925 and we\'ll guide you.',
+      '🛒 **How to Order Online:**\n\n1. Visit **healthub.site**\n2. Browse or search for your medicines\n3. Add items to cart 🛒\n4. Login / Create account\n5. Enter delivery address\n6. Choose payment method & place order\n\n📦 Your medicines will be delivered to your door!\n\nNeed help? WhatsApp us at +91 73032 40289 and we\'ll guide you.',
     ],
   },
   // ── What medicines do you sell ───────────────────────────────────────────
   {
     patterns: [/\b(what.*medicine|medicine.*sell|sell what|products|kya bechte|kya milta|sab kuch|all medicine)\b/i],
     replies: [
-      '💊 **What We Sell:**\n\nBatla Medicos is a full-service pharmacy stocking:\n\n• **Prescription medicines** (all categories)\n• **OTC medicines** (pain relief, cold, digestive, etc.)\n• **Ayurvedic & herbal** products\n• **Vitamins & supplements**\n• **Baby & child products**\n• **Skincare & cosmetics**\n• **Surgical & first aid supplies**\n• **Medical devices** (BP monitors, glucometers)\n\nSearch for any product at batlamedicos.shop!',
+      '💊 **What We Sell:**\n\nHealth Hub is a full-service pharmacy stocking:\n\n• **Prescription medicines** (all categories)\n• **OTC medicines** (pain relief, cold, digestive, etc.)\n• **Ayurvedic & herbal** products\n• **Vitamins & supplements**\n• **Baby & child products**\n• **Skincare & cosmetics**\n• **Surgical & first aid supplies**\n• **Medical devices** (BP monitors, glucometers)\n\nSearch for any product at healthub.site!',
     ],
   },
   // ── Catch-all for anything unrecognised ──────────────────────────────────
   {
     patterns: [/.*/],
     replies: [
-      'I\'m not sure I fully understood that. 😊 Here are some things I can help you with:\n\n• 📍 Store location & timings\n• 🚚 Home delivery\n• 💊 Medicine availability\n• 🔬 Lab tests\n• 📋 Prescription upload\n• 💳 Payment options\n• 📦 Order tracking\n\nOr call/WhatsApp us at **+91 99901 65925** and our team will help you directly!',
-      'I didn\'t quite catch that. Could you rephrase your question? You can also:\n\n• WhatsApp us: **+91 99901 65925**\n• Visit: batlamedicos.shop\n• Come to our store at Batla House, New Delhi 110025\n\nHappy to assist with anything pharmacy-related! 💊',
+      'I\'m not sure I fully understood that. 😊 Here are some things I can help you with:\n\n• 📍 Store location & timings\n• 🚚 Home delivery\n• 💊 Medicine availability\n• 🔬 Lab tests\n• 📋 Prescription upload\n• 💳 Payment options\n• 📦 Order tracking\n\nOr call/WhatsApp us at **+91 73032 40289** and our team will help you directly!',
+      'I didn\'t quite catch that. Could you rephrase your question? You can also:\n\n• WhatsApp us: **+91 73032 40289**\n• Visit: healthub.site\n• Come to our store at Connaught Place, New Delhi 110001\n\nHappy to assist with anything pharmacy-related! 💊',
     ],
   },
 ];
@@ -238,7 +238,7 @@ function getRuleBasedReply(message) {
 // GEMINI AI PROMPT
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `You are MedBot, a helpful and friendly pharmacy assistant for Batla Medicos — a trusted medical store located in Batla House, New Delhi (Jamia Nagar area, 110025).
+const SYSTEM_PROMPT = `You are MedBot, a helpful and friendly pharmacy assistant for Health Hub — a trusted medical store located in Block G, Connaught Place, New Delhi – 110001.
 
 You help customers with:
 - Information about medicines, their common uses, general dosage guidance, and side effects
@@ -256,11 +256,11 @@ Always:
 - When unsure, say so honestly and suggest they call the store or visit in person
 
 Store details:
-- Name: Batla Medicos
-- Location: Batla House, New Delhi – 110025
-- Phone/WhatsApp: +91 99901 65925
+- Name: Health Hub
+- Location: Connaught Place, New Delhi – 110001
+- Phone/WhatsApp: +91 73032 40289
 - Services: Medicines, OTC products, lab tests, home delivery
-- Website: batlamedicos.shop`;
+- Website: healthub.site`;
 
 // Use the shared model list (configurable via GEMINI_MODEL in backend/.env)
 const { getGeminiModels } = require('../utils/gemini');

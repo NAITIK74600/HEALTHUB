@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { getCategories, createCategory, updateCategory, deleteCategory } from '../../api/categories';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -347,7 +347,7 @@ export default function AdminCategories() {
                         className="btn btn--sm btn--outline"
                         title="Manage products in this category"
                         onClick={() => openProdPanel(c)}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: '#3451D1', borderColor: '#93C5FD' }}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: '#6FA82E', borderColor: '#BFE29A' }}
                       >
                         <Package size={13} /> Products
                       </button>
@@ -589,7 +589,7 @@ export default function AdminCategories() {
             {/* header */}
             <div style={{
               padding: '18px 22px', borderBottom: '1px solid #e5e7eb',
-              background: 'linear-gradient(135deg,#1E40AF,#3451D1)',
+              background: 'linear-gradient(135deg,#3E6B1A,#6FA82E)',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
               <div>
@@ -612,9 +612,9 @@ export default function AdminCategories() {
                   onClick={() => { setProdTab(key); if (key === 'add') { setAddSearch(''); setAddResults([]); } }}
                   style={{
                     flex: 1, padding: '11px 0', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
-                    color: prodTab === key ? '#3451D1' : '#6b7280',
+                    color: prodTab === key ? '#6FA82E' : '#6b7280',
                     background: prodTab === key ? '#fff' : 'transparent',
-                    borderBottom: prodTab === key ? '2px solid #3451D1' : '2px solid transparent',
+                    borderBottom: prodTab === key ? '2px solid #6FA82E' : '2px solid transparent',
                   }}
                 >
                   {label}
@@ -729,7 +729,7 @@ export default function AdminCategories() {
                         </div>
                         <button
                           onClick={() => doAddProduct(p)}
-                          style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 4, background: '#3451D1', color: '#fff', border: 'none', borderRadius: 7, cursor: 'pointer', padding: '5px 11px', fontSize: '0.78rem', fontWeight: 600 }}
+                          style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 4, background: '#6FA82E', color: '#fff', border: 'none', borderRadius: 7, cursor: 'pointer', padding: '5px 11px', fontSize: '0.78rem', fontWeight: 600 }}
                         >
                           <Plus size={12} /> Add
                         </button>

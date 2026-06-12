@@ -56,7 +56,7 @@ export default function PromoVideo({ url, title, brandName, brandLogoUrl, resolv
             : brandName && (
               <span style={{
                 width: 30, height: 30, borderRadius: 7,
-                background: 'linear-gradient(135deg,#3451D1,#27AE60)',
+                background: 'linear-gradient(135deg,#6FA82E,#27AE60)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: '#fff', fontSize: 11, fontWeight: 700, flexShrink: 0,
               }}>{brandName.slice(0, 2).toUpperCase()}</span>

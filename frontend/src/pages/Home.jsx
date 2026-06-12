@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -52,7 +52,7 @@ const CATEGORY_ICONS = {
   'generic':          { icon: <Package size={28} />,      bg: '#F0FBF4', color: '#16A34A' },
   'container':        { icon: <Box size={28} />,          bg: '#FEFCE8', color: '#CA8A04' },
   'pharma-misc':      { icon: <LayoutGrid size={28} />,   bg: '#F5F3FF', color: '#7C3AED' },
-  'fridge':           { icon: <Thermometer size={28} />,  bg: '#E8EEFF', color: '#1E40AF' },
+  'fridge':           { icon: <Thermometer size={28} />,  bg: '#E8EEFF', color: '#3E6B1A' },
   allopathic:         { icon: <Pill size={28} />,         bg: '#FEF2F2', color: '#C0392B' },
   ayurvedic:          { icon: <Leaf size={28} />,         bg: '#F0FBF4', color: '#1E8449' },
   homeopathy:         { icon: <Droplet size={28} />,      bg: '#EFF6FF', color: '#2563EB' },
@@ -112,13 +112,13 @@ const PC_GRADIENT_BY_LABEL = Object.fromEntries(PERSONAL_CARE_CATS.map(c => [c.l
 const TRUST_FEATURES = [
   { icon: <Truck size={22} />,       bg: '#FEF2F2', color: '#C0392B', title: 'Free Delivery',           desc: 'On orders above ₹499' },
   { icon: <ShieldCheck size={22} />, bg: '#F0FBF4', color: '#1B8843', title: '100% Genuine',            desc: 'Licensed & verified sources' },
-  { icon: <Clock size={22} />,       bg: '#FEF2F2', color: '#C0392B', title: 'Open 9 AM – 11:45 PM',     desc: 'Monday to Sunday' },
+  { icon: <Clock size={22} />,       bg: '#FEF2F2', color: '#C0392B', title: 'Open 8 AM – 11:45 PM',     desc: 'Monday to Sunday' },
   { icon: <Stethoscope size={22} />, bg: '#F0FBF4', color: '#1B8843', title: 'Expert Pharmacists',      desc: 'Free consultation' },
   { icon: <Activity size={22} />,    bg: '#EFF6FF', color: '#2563EB', title: 'Lab Tests at Home',       desc: 'Up to 70% off' },
   { icon: <Users size={22} />,       bg: '#FFFBEB', color: '#D97706', title: '50,000+ Customers',       desc: 'Trusted since 2005' },
 ];
 
-const STORE_ADDRESS = 'F 41/2, Nafees Road, Batla House, Jamia Nagar, New Delhi - 110025';
+const STORE_ADDRESS = 'Block G, Connaught Place, New Delhi - 110001';
 const GOOGLE_MAPS_URL = 'https://maps.app.goo.gl/W4Qtps1fKbArBvz17';
 
 const HEALTH_TIPS = [
@@ -135,11 +135,11 @@ const HEALTH_TIPS = [
 ];
 
 const WHY_CHOOSE = [
-  { icon: <Award size={26} />,       bg: '#FEF2F2', color: '#C0392B', title: '20+ Years of Trust',   desc: 'Serving Jamia Nagar since 2005' },
+  { icon: <Award size={26} />,       bg: '#FEF2F2', color: '#C0392B', title: '20+ Years of Trust',   desc: 'Serving New Delhi' },
   { icon: <ShieldCheck size={26} />, bg: '#F0FBF4', color: '#1B8843', title: '100% Authentic',        desc: 'Direct from licensed distributors' },
-  { icon: <Truck size={26} />,       bg: '#EFF6FF', color: '#2563EB', title: 'Fast Delivery',         desc: 'Same-day delivery in Jamia Nagar' },
+  { icon: <Truck size={26} />,       bg: '#EFF6FF', color: '#2563EB', title: 'Fast Delivery',         desc: 'Same-day delivery in Connaught Place' },
   { icon: <Stethoscope size={26} />, bg: '#FDF4FF', color: '#9333EA', title: 'Free Consultation',     desc: 'Expert pharmacists, no charge' },
-  { icon: <Clock size={26} />,       bg: '#FFFBEB', color: '#D97706', title: 'Open 7 Days a Week',   desc: 'Monday to Sunday, 9 AM – 11:45 PM' },
+  { icon: <Clock size={26} />,       bg: '#FFFBEB', color: '#D97706', title: 'Open 7 Days a Week',   desc: 'Monday to Sunday, 8 AM – 11:45 PM' },
   { icon: <Heart size={26} />,       bg: '#FFF0F6', color: '#DB2777', title: 'Patient Care First',   desc: 'Your wellbeing is our mission' },
 ];
 
@@ -419,7 +419,7 @@ export default function Home() {
     <main>
       <SEO
         title="Online Pharmacy New Delhi – Buy Medicines, Lab Tests, Ayurvedic Products"
-        description="Batla Medicos – trusted pharmacy since 2005. Buy medicines, Ayurvedic products, vitamins, cosmetics & baby care online. Lab tests at home. Free delivery above ₹499. Open 9 AM – 11:45 PM daily."
+        description="Health Hub – trusted pharmacy. Buy medicines, Ayurvedic products, vitamins, cosmetics & baby care online. Lab tests at home. Free delivery above ₹499. Open 8 AM – 11:45 PM daily."
         path="/"
       />
       {/* ══════════════════════════════ HERO ══════════════════════════════ */}
@@ -739,8 +739,8 @@ export default function Home() {
       <AnimatedSection animation={getAnimationSetting('whyChoose')} as="section" className="section why-section" data-aos="fade-up">
         <div className="container">
           <div className="section__header" style={{ flexDirection: 'column', gap: '4px', textAlign: 'center' }}>
-            <h2 className="section__title" style={{ justifyContent: 'center' }}>Why Choose Batla Medicos?</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Trusted by 50,000+ families in Jamia Nagar</p>
+            <h2 className="section__title" style={{ justifyContent: 'center' }}>Why Choose Health Hub?</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Trusted by 50,000+ families in New Delhi</p>
           </div>
           <div className="why-grid">
             {WHY_CHOOSE.map((w, i) => (
@@ -761,7 +761,7 @@ export default function Home() {
           <div className="map-strip__left">
             <div className="map-strip__pin"><MapPin size={18} /></div>
             <div>
-              <div className="map-strip__name">Batla Medicos — Batla House, Jamia Nagar</div>
+              <div className="map-strip__name">Health Hub — Connaught Place</div>
               <div className="map-strip__addr">{STORE_ADDRESS}</div>
             </div>
           </div>

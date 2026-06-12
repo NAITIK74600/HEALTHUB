@@ -55,7 +55,7 @@ export default function Reminders() {
       if (!r.days.includes(dayName)) return;
       if (r.endDate && new Date(r.endDate) < now) return;
       if (r.times.includes(hhmm)) {
-        new Notification(`💊 Medicine Reminder — Batla Medicos`, {
+        new Notification(`💊 Medicine Reminder — Health Hub`, {
           body: `Time to take ${r.medicineName}${r.dosage ? ' · ' + r.dosage : ''}${r.notes ? '\n' + r.notes : ''}`,
           icon: '/favicon.svg',
         });
@@ -126,7 +126,7 @@ export default function Reminders() {
 
   return (
     <main className="rem-page container">
-      <SEO title="Medicine Reminders" description="Set medicine reminders and never miss a dose with Batla Medicos." path="/reminders" noIndex />
+      <SEO title="Medicine Reminders" description="Set medicine reminders and never miss a dose with Health Hub." path="/reminders" noIndex />
       <div className="rem-page__header">
         <div>
           <h1><Pill size={22} /> Medicine Reminders</h1>

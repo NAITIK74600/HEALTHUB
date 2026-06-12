@@ -17,17 +17,17 @@ const POLICY_LINKS = [
 ];
 
 export default function Footer() {
-  const WHATSAPP = import.meta.env.VITE_WHATSAPP_NUMBER || '919990165925';
+  const WHATSAPP = import.meta.env.VITE_WHATSAPP_NUMBER || '917303240289';
   const { pathname } = useLocation();
   const isMinimal = pathname.startsWith('/admin') || pathname.startsWith('/login') || pathname.startsWith('/register');
 
   if (isMinimal) {
     return (
       <footer className="footer footer--minimal">
-        <span>&copy; {new Date().getFullYear()} <strong>Batla Medicos</strong> — All rights reserved.</span>
-        <a href="tel:+919990165925" className="footer--minimal__link"><Phone size={13} /> 9990165925</a>
+        <span>&copy; {new Date().getFullYear()} <strong>Health Hub</strong> — All rights reserved.</span>
+        <a href="tel:+917303240289" className="footer--minimal__link"><Phone size={13} /> 7303240289</a>
         <a href={`https://wa.me/${WHATSAPP}`} target="_blank" rel="noopener noreferrer" className="footer--minimal__link"><MessageCircle size={13} /> WhatsApp</a>
-        <a href="mailto:ordersupport@batlamedicos.shop" className="footer--minimal__link"><Mail size={13} /> Email Us</a>
+        <a href="mailto:support@healthub.site" className="footer--minimal__link"><Mail size={13} /> Email Us</a>
       </footer>
     );
   }
@@ -39,13 +39,13 @@ export default function Footer() {
         {/* ── Column 1: Brand ── */}
         <div className="footer__brand">
           <div className="footer__logo">
-            <img src="/logo.png?v=3" alt="Batla Medicos" style={{ width: 48, height: 48, objectFit: 'contain', borderRadius: 10 }} />
+            <img src="/logo.jpg?v=4" alt="Health Hub" style={{ width: 48, height: 48, objectFit: 'contain', borderRadius: 10 }} />
             <div className="footer__logo-text">
-              <span className="footer__logo-name">Batla Medicos</span>
+              <span className="footer__logo-name">Health Hub</span>
               <span className="footer__logo-tagline">Chemist &amp; Cosmetics</span>
             </div>
           </div>
-          <p>Your trusted neighbourhood pharmacy serving Batla House, Jamia Nagar since 2005. Genuine medicines, free delivery.</p>
+          <p>Your trusted neighbourhood pharmacy serving Connaught Place, New Delhi. Genuine medicines, free delivery.</p>
           <div className="footer__services">
             {['Allopathic', 'Ayurvedic', 'Cosmetics', 'Baby Care', 'Surgical', 'Free Delivery'].map(s => (
               <span key={s} className="footer__service-chip"><Shield size={10} /> {s}</span>
@@ -58,15 +58,15 @@ export default function Footer() {
           <h4>Store Information</h4>
           <a href={GOOGLE_MAPS_URL} target="_blank" rel="noopener noreferrer">
             <MapPin size={15} />
-            <span>F 41/2, Nafees Road, Batla House,<br />Jamia Nagar, New Delhi – 110025</span>
+            <span>Block G, Connaught Place,<br />New Delhi – 110001</span>
           </a>
-          <a href="tel:+919990165925"><Phone size={14} /> +91 99901 65925</a>
-          <a href="mailto:ordersupport@batlamedicos.shop"><Mail size={14} /> ordersupport@batlamedicos.shop</a>
+          <a href="tel:+917303240289"><Phone size={14} /> +91 73032 40289</a>
+          <a href="mailto:support@healthub.site"><Mail size={14} /> support@healthub.site</a>
           <div className="footer__hours">
             <Clock size={14} />
             <div>
-              <div className="footer__hours-row"><span>Mon – Sat</span><span>9:00 AM – 11:45 PM</span></div>
-              <div className="footer__hours-row"><span>Sunday</span><span>9:00 AM – 11:45 PM</span></div>
+              <div className="footer__hours-row"><span>Mon – Sat</span><span>8:00 AM – 11:45 PM</span></div>
+              <div className="footer__hours-row"><span>Sunday</span><span>8:00 AM – 11:45 PM</span></div>
             </div>
           </div>
           <a href={GOOGLE_MAPS_URL} target="_blank" rel="noopener noreferrer" className="footer__map-link">
@@ -104,10 +104,10 @@ export default function Footer() {
           >
             <MessageCircle size={17} /> WhatsApp Order
           </a>
-          <a href="tel:+919990165925" className="footer__contact-btn footer__contact-btn--phone">
+          <a href="tel:+917303240289" className="footer__contact-btn footer__contact-btn--phone">
             <Phone size={17} /> Call the Store
           </a>
-          <a href="mailto:ordersupport@batlamedicos.shop" className="footer__contact-btn footer__contact-btn--email">
+          <a href="mailto:support@healthub.site" className="footer__contact-btn footer__contact-btn--email">
             <Mail size={17} /> Email Support
           </a>
           <div className="footer__note">
@@ -117,7 +117,7 @@ export default function Footer() {
 
       </div>
       <div className="footer__copy">
-        &copy; {new Date().getFullYear()} Batla Medicos Chemist &amp; Cosmetics, New Delhi — All rights reserved.
+        &copy; {new Date().getFullYear()} Health Hub Chemist &amp; Cosmetics, New Delhi — All rights reserved.
         <span className="footer__policy-links">
           <Link to="/privacy-policy">Privacy Policy</Link>
           <span>·</span>

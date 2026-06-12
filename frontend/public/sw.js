@@ -1,4 +1,4 @@
-// Batla Medicos – Service Worker (Cache-first for static, network-first for API)
+// Health Hub – Service Worker (Cache-first for static, network-first for API)
 const CACHE_NAME = 'batla-medicos-v1';
 const STATIC_ASSETS = [
   '/',

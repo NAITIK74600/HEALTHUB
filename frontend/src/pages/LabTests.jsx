@@ -176,7 +176,7 @@ export default function LabTests() {
     <div className="lab-page">
       <SEO
         title="Book Lab Tests Online – Home Collection in New Delhi"
-        description="Book lab tests at home from Batla Medicos. CBC, thyroid, diabetes, liver function, kidney function, vitamin D, lipid profile & more. NABL certified lab, reports in 24–48 hours. Free home collection."
+        description="Book lab tests at home from Health Hub. CBC, thyroid, diabetes, liver function, kidney function, vitamin D, lipid profile & more. NABL certified lab, reports in 24–48 hours. Free home collection."
         path="/lab"
       />
       {/* Hero */}
@@ -448,7 +448,7 @@ export default function LabTests() {
                 {form.collectionType === 'walkin' && (
                   <div style={{ background: '#F0FBF4', borderRadius: 10, padding: '12px 16px', margin: '14px 0', fontSize: 13, color: '#1B8843', lineHeight: 1.7 }}>
                     <strong>🏥 Lab Address</strong><br />
-                    F 41/2, Nafees Road, Batla House, New Delhi – 110025<br />
+                    Block G, Connaught Place, New Delhi – 110001<br />
                     <span style={{ color: 'var(--gray-500)' }}>Mon–Sun · 7:00 AM – 9:00 PM</span>
                   </div>
                 )}

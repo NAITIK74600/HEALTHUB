@@ -54,7 +54,7 @@ function getGeminiKey() {
 }
 
 function buildPrompt(name, brand, category) {
-  return `You are a pharmacy database assistant for an Indian medical store (Batla Medicos, New Delhi).
+  return `You are a pharmacy database assistant for an Indian medical store (Health Hub, New Delhi).
 Given this product:
   Name: "${name}"
   Brand: "${brand || 'Unknown'}"

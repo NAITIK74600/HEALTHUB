@@ -78,7 +78,7 @@ export default function Register() {
     try {
       const res = await verifyEmailOtp(registeredEmail, otpValue);
       setUser(res.data.user);
-      toast.success('Email verified! Welcome to Batla Medicos.');
+      toast.success('Email verified! Welcome to Health Hub.');
       navigate('/');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Invalid OTP. Please try again.');
@@ -166,7 +166,7 @@ export default function Register() {
       <div className="auth-card">
         {/* Logo */}
         <div className="auth-card__logo">
-          <img src="/logo.png" alt="Batla Medicos" className="auth-card__logo-img" />
+          <img src="/logo.jpg" alt="Health Hub" className="auth-card__logo-img" />
           <div className="auth-card__subtitle">Chemist &amp; Cosmetics</div>
         </div>
 

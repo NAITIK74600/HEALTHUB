@@ -216,16 +216,16 @@ export default function ProductDetail() {
     '@type': 'Product',
     name: product.name,
     description: useInConditions,
-    image: images[0] || 'https://www.batlamedicos.shop/og-image.jpg',
+    image: images[0] || 'https://www.healthub.site/og-image.jpg',
     brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
     sku: String(product._id),
     offers: {
       '@type': 'Offer',
-      url: `https://www.batlamedicos.shop/products/${slug}`,
+      url: `https://www.healthub.site/products/${slug}`,
       priceCurrency: 'INR',
       price: product.price,
       availability: product.inStock !== false ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-      seller: { '@type': 'Organization', name: 'Batla Medicos' },
+      seller: { '@type': 'Organization', name: 'Health Hub' },
     },
     ...(reviewMeta.ratingCount > 0 ? {
       aggregateRating: {
@@ -241,8 +241,8 @@ export default function ProductDetail() {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.batlamedicos.shop/' },
-      { '@type': 'ListItem', position: 2, name: 'Products', item: 'https://www.batlamedicos.shop/products' },
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.healthub.site/' },
+      { '@type': 'ListItem', position: 2, name: 'Products', item: 'https://www.healthub.site/products' },
       { '@type': 'ListItem', position: 3, name: product.name },
     ],
   };

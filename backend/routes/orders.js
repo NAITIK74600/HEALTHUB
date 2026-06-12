@@ -511,11 +511,11 @@ router.get('/:id/receipt', requireAuth, [param('id').isInt({ min: 1 })], async (
     const textX = L + 82;
     const textW = W - 82;
     doc.fillColor('#ffffff').fontSize(22).font('Helvetica-Bold')
-      .text('Batla Medicos', textX, 16, { width: textW });
+      .text('Health Hub', textX, 16, { width: textW });
     doc.fontSize(9).font('Helvetica')
-      .text('F 41/2 Nafees Road, Batla House, Jamia Nagar, New Delhi - 110025', textX, 46, { width: textW })
-      .text('Ph: +91 9990165925   |   ordersupport@batlamedicos.shop', textX, 60, { width: textW })
-      .text('www.batlamedicos.shop', textX, 74, { width: textW });
+      .text('Block G, Connaught Place, New Delhi - 110001', textX, 46, { width: textW })
+      .text('Ph: +91 7303240289   |   support@healthub.site', textX, 60, { width: textW })
+      .text('www.healthub.site', textX, 74, { width: textW });
 
     // ── Invoice meta ────────────────────────────────────────────────────────
     const invoiceNo = 'BM-' + String(r.id).padStart(6, '0');
@@ -603,7 +603,7 @@ router.get('/:id/receipt', requireAuth, [param('id').isInt({ min: 1 })], async (
     const footerY = 755;
     doc.moveTo(L, footerY).lineTo(R, footerY).lineWidth(0.5).strokeColor('#cccccc').stroke();
     doc.fillColor(GRAY).fontSize(8).font('Helvetica');
-    doc.text('Thank you for shopping with Batla Medicos!', L, footerY + 8, { width: W, align: 'center' });
+    doc.text('Thank you for shopping with Health Hub!', L, footerY + 8, { width: W, align: 'center' });
     doc.text('This is a computer-generated invoice and does not require a physical signature.', L, footerY + 20, { width: W, align: 'center' });
 
     doc.end();

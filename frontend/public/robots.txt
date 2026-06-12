@@ -1,4 +1,4 @@
-# robots.txt — batlamedicos.shop
+# robots.txt — healthub.site
 # Allow all crawlers to index public pages
 
 User-agent: *
@@ -19,4 +19,4 @@ Disallow: /reminders
 Disallow: /api/
 
 # ── Sitemap location ───────────────────────────────────────────────────────
-Sitemap: https://www.batlamedicos.shop/sitemap.xml
+Sitemap: https://www.healthub.site/sitemap.xml

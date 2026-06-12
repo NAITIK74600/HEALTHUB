@@ -1,5 +1,5 @@
 /**
- * OrbitalGlobe v5 — Three.js 3D globe for Batla Medicos
+ * OrbitalGlobe v5 — Three.js 3D globe for Health Hub
  *
  * Sizing: CSS-driven (30 vw, clamped 180px–400px). ResizeObserver keeps
  * the Three.js renderer in sync — no hard-coded pixel `size` prop needed.
@@ -21,7 +21,7 @@ import * as THREE from 'three';
 /* ── Data ──────────────────────────────────────────────────────────────── */
 
 const ICONS = [
-  { label: '💊', color: '#93C5FD' },
+  { label: '💊', color: '#BFE29A' },
   { label: '🌿', color: '#4ADE80' },
   { label: '✚',  color: '#FF6B8A' },
   { label: '🧪', color: '#FDE68A' },
@@ -80,7 +80,7 @@ function makeIconTexture(label, ringColor, sz = 120) {
 function makeLogoTexture(sz = 256) {
   return new Promise(resolve => {
     const img = new Image();
-    img.src = '/logo.png?v=3';
+    img.src = '/logo.jpg?v=4';
     img.onload = () => {
       const c = document.createElement('canvas');
       c.width = sz; c.height = sz;
@@ -229,7 +229,7 @@ export default function OrbitalGlobe() {
     const meshGlobe = new THREE.Mesh(
       new THREE.IcosahedronGeometry(55, 3),
       new THREE.MeshBasicMaterial({
-        color: 0x3451D1, wireframe: true, transparent: true, opacity: 0.18,
+        color: 0x6FA82E, wireframe: true, transparent: true, opacity: 0.18,
       }),
     );
     scene.add(meshGlobe);
@@ -238,7 +238,7 @@ export default function OrbitalGlobe() {
     const meshInner = new THREE.Mesh(
       new THREE.SphereGeometry(22, 48, 48),
       new THREE.MeshPhongMaterial({
-        color: 0x0a1f6e, emissive: 0x3451D1, emissiveIntensity: 0.55,
+        color: 0x274316, emissive: 0x6FA82E, emissiveIntensity: 0.55,
         transparent: true, opacity: 0.92, shininess: 130,
       }),
     );
@@ -271,7 +271,7 @@ export default function OrbitalGlobe() {
     const ring2 = new THREE.Mesh(
       new THREE.TorusGeometry(56, 0.75, 8, 120),
       new THREE.MeshBasicMaterial({
-        color: 0x3451D1, transparent: true, opacity: 0.55,
+        color: 0x6FA82E, transparent: true, opacity: 0.55,
         blending: THREE.AdditiveBlending,
       }),
     );

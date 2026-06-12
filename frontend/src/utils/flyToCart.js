@@ -30,7 +30,7 @@ export function flyToCart(sourceEl, cardEl = null) {
     ghost.appendChild(img);
   } else {
     // Branded pill ghost — shown when product has no image
-    ghost.style.background = 'linear-gradient(135deg,#3451D1,#27AE60)';
+    ghost.style.background = 'linear-gradient(135deg,#6FA82E,#27AE60)';
     const icon = document.createElement('span');
     icon.textContent = '💊';
     icon.style.cssText = 'font-size:26px;line-height:1;display:block;';

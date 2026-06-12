@@ -207,7 +207,7 @@ export default function AdminPromotions() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                   {item.brand.logoUrl
                     ? <img src={item.brand.logoUrl} alt="" style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'contain', background: '#f3f4f6', padding: 2, flexShrink: 0 }} />
-                    : <span style={{ width: 28, height: 28, borderRadius: 6, background: 'linear-gradient(135deg,#3451D1,#27AE60)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{item.brand.name?.slice(0, 2).toUpperCase()}</span>
+                    : <span style={{ width: 28, height: 28, borderRadius: 6, background: 'linear-gradient(135deg,#6FA82E,#27AE60)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{item.brand.name?.slice(0, 2).toUpperCase()}</span>
                   }
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 600, fontSize: '0.88rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>

@@ -55,7 +55,7 @@ export default function InstallPrompt() {
         style={{ borderRadius: 10, background: '#fff', padding: 2 }} />
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 700, fontSize: 15 }}>Install Batla Medicos</div>
+        <div style={{ fontWeight: 700, fontSize: 15 }}>Install Health Hub</div>
         <div style={{ fontSize: 12, opacity: .85 }}>Get the app for faster ordering & offline access</div>
       </div>
 

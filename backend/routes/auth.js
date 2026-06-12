@@ -270,7 +270,7 @@ router.post('/login', loginLimiter, authLimiter, [
 // the browser to the frontend page stored in the `state` query param.
 router.get('/google/callback', authLimiter, async (req, res) => {
   const { code, error, state } = req.query;
-  const frontendBase = (process.env.FRONTEND_URL || 'https://batlamedicos.shop')
+  const frontendBase = (process.env.FRONTEND_URL || 'https://healthub.site')
     .replace(/\/$/, '')
     .replace(/^(https?:\/\/)www\./, '$1'); // normalise www → non-www
 
@@ -344,7 +344,7 @@ router.post('/google', authLimiter, async (req, res, next) => {
     // Normalise redirect URI: www → non-www to match Google Cloud Console registration
     const rawRedirectUri = req.body.redirectUri
       || process.env.GOOGLE_REDIRECT_URI
-      || 'https://batlamedicos.shop/api/auth/google/callback';
+      || 'https://healthub.site/api/auth/google/callback';
     const redirectUri = String(rawRedirectUri).replace(
       /^(https?:\/\/)www\./i, '$1'
     );
@@ -456,7 +456,7 @@ router.post('/resend-verification', authLimiter, [body('email').isEmail().normal
     user.emailVerifyExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
     await updateUser(user);
 
-    const verifyUrl = `${process.env.FRONTEND_URL || 'https://batlamedicos.shop'}/verify-email?token=${plainToken}`;
+    const verifyUrl = `${process.env.FRONTEND_URL || 'https://healthub.site'}/verify-email?token=${plainToken}`;
     try {
       await sendEmailVerification(user.email, user.name, verifyUrl);
     } catch {
@@ -624,7 +624,7 @@ router.post('/test-smtp', requireAuth, requireAdmin, async (req, res, next) => {
 
     const to = req.body.to || req.user.email;
     try {
-      await sendMail(to, 'SMTP Test - Batla Medicos', `<p>This is a test email sent at ${new Date().toISOString()}.</p>`);
+      await sendMail(to, 'SMTP Test - Health Hub', `<p>This is a test email sent at ${new Date().toISOString()}.</p>`);
       return res.json({ ok: true, message: `Test email sent to ${to}` });
     } catch (mailErr) {
       return res.status(502).json({ ok: false, message: `SMTP connected but send failed: ${mailErr.message}` });

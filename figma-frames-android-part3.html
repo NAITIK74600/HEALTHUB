@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Batla Medicos – Android Frames Part 3 (Screens 11-15)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a1a2e;font-family:'Inter',sans-serif;padding:40px}
+h1{color:#fff;text-align:center;font-size:28px;margin-bottom:8px}
+.subtitle{color:#aaa;text-align:center;margin-bottom:40px;font-size:14px}
+.frames-row{display:flex;gap:40px;justify-content:center;flex-wrap:wrap;margin-bottom:60px}
+.frame-wrapper{text-align:center}
+.frame-label{color:#fff;font-size:13px;font-weight:600;margin-bottom:12px;letter-spacing:1px;text-transform:uppercase}
+.frame-sublabel{color:#888;font-size:11px;margin-bottom:8px}
+.phone{width:360px;height:800px;background:#fff;border-radius:32px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.5);border:2px solid #333}
+.status-bar{height:24px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:11px;font-weight:500;color:#333;position:relative;z-index:10;background:#fff}
+.status-icons{display:flex;gap:4px;align-items:center}
+.bottom-nav{position:absolute;bottom:0;left:0;right:0;height:80px;background:#fff;display:flex;align-items:center;justify-content:space-around;border-top:1px solid #e5e7eb;padding-bottom:8px;z-index:10}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:#9ca3af}
+.nav-item.active{color:#C0392B}
+.btn-primary{background:#C0392B;color:#fff;border:none;border-radius:28px;padding:14px 24px;font-size:15px;font-weight:600;width:100%;text-align:center}
+.btn-outlined{background:#fff;color:#C0392B;border:2px solid #C0392B;border-radius:28px;padding:12px 24px;font-size:14px;font-weight:600;width:100%;text-align:center}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;background:#f3f4f6;color:#374151}
+.chip.active{background:#C0392B;color:#fff}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}
+</style>
+</head>
+<body>
+
+<h1>Batla Medicos – Android App Frames</h1>
+<p class="subtitle">Part 3: Screens 11–15 | Checkout, Order Success, Orders, Order Detail, Prescriptions</p>
+
+<!-- ============================================ -->
+<!-- SCREEN 11: CHECKOUT                          -->
+<!-- ============================================ -->
+<div class="frames-row">
+<div class="frame-wrapper">
+  <div class="frame-label">11 — Checkout</div>
+  <div class="frame-sublabel">Delivery + Payment + Coupon + Place Order</div>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="status-icons">
+        <span class="material-icons-round" style="font-size:14px">signal_cellular_alt</span>
+        <span class="material-icons-round" style="font-size:14px">wifi</span>
+        <span class="material-icons-round" style="font-size:14px">battery_full</span>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;padding:12px 16px;gap:12px;border-bottom:1px solid #e5e7eb;">
+      <span class="material-icons-round" style="font-size:24px;color:#111;">arrow_back</span>
+      <div style="font-size:18px;font-weight:700;color:#111;">Checkout</div>
+    </div>
+
+    <div style="overflow-y:auto;height:calc(100% - 24px - 52px - 80px);padding:16px;">
+      <!-- Delivery Type -->
+      <div style="font-size:14px;font-weight:600;color:#111;margin-bottom:10px;">📦 Delivery Type</div>
+      <div style="display:flex;gap:10px;margin-bottom:20px;">
+        <div style="flex:1;border:2px solid #C0392B;border-radius:12px;padding:12px;text-align:center;background:#FEF2F2;">
+          <span class="material-icons-round" style="font-size:24px;color:#C0392B;">home</span>
+          <div style="font-size:12px;font-weight:600;color:#C0392B;margin-top:4px;">Home Delivery</div>
+        </div>
+        <div style="flex:1;border:2px solid #e5e7eb;border-radius:12px;padding:12px;text-align:center;">
+          <span class="material-icons-round" style="font-size:24px;color:#6b7280;">store</span>
+          <div style="font-size:12px;font-weight:600;color:#6b7280;margin-top:4px;">Store Pickup</div>
+        </div>
+      </div>
+
+      <!-- Delivery Slot -->
+      <div style="font-size:14px;font-weight:600;color:#111;margin-bottom:10px;">🕐 Delivery Slot</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
+        <span class="chip active" style="font-size:11px;">9–11 AM</span>
+        <span class="chip" style="font-size:11px;">11 AM–1 PM</span>
+        <span class="chip" style="font-size:11px;">2–4 PM</span>
+        <span class="chip" style="font-size:11px;">4–6 PM</span>
+        <span class="chip" style="font-size:11px;">6–9 PM</span>
+        <span class="chip" style="font-size:11px;">9–11:45 PM</span>
+      </div>
+
+      <!-- Address -->
+      <div style="font-size:14px;font-weight:600;color:#111;margin-bottom:10px;">📍 Delivery Address</div>
+      <div style="background:#EFF6FF;border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:8px;margin-bottom:12px;cursor:pointer;">
+        <span class="material-icons-round" style="font-size:20px;color:#2563EB;">my_location</span>
+        <span style="font-size:13px;color:#2563EB;font-weight:500;">Use Current Location</span>
+      </div>
+      <div style="margin-bottom:20px;">
+        <input style="width:100%;padding:10px 14px;border:1.5px solid #d1d5db;border-radius:10px;font-size:13px;margin-bottom:8px;font-family:Inter;" placeholder="Full Address" value="F 41/2, Nafees Road, Batla House">
+        <div style="display:flex;gap:8px;">
+          <input style="flex:1;padding:10px 14px;border:1.5px solid #d1d5db;border-radius:10px;font-size:13px;font-family:Inter;" placeholder="Pincode" value="110025">
+          <input style="flex:1;padding:10px 14px;border:1.5px solid #d1d5db;border-radius:10px;font-size:13px;font-family:Inter;" placeholder="Phone" value="9990165925">
+        </div>
+      </div>
+
+      <!-- Payment -->
+      <div style="font-size:14px;font-weight:600;color:#111;margin-bottom:10px;">💳 Payment Method</div>
+      <div style="margin-bottom:20px;">
+        <div style="border:2px solid #C0392B;border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px;margin-bottom:8px;background:#FEF2F2;">
+          <div style="width:18px;height:18px;border:2px solid #C0392B;border-radius:9px;display:flex;align-items:center;justify-content:center;">
+            <div style="width:10px;height:10px;background:#C0392B;border-radius:5px;"></div>
+          </div>
+          <span style="font-size:13px;font-weight:500;color:#111;">Razorpay (UPI, Card, NetBanking)</span>
+        </div>
+        <div style="border:1.5px solid #e5e7eb;border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <div style="width:18px;height:18px;border:2px solid #d1d5db;border-radius:9px;"></div>
+          <span style="font-size:13px;font-weight:500;color:#111;">Cash on Delivery</span>
+        </div>
+      </div>
+
+      <!-- Coupon -->
+      <div style="font-size:14px;font-weight:600;color:#111;margin-bottom:10px;">🎟️ Coupon Code</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <input style="flex:1;padding:10px 14px;border:1.5px solid #d1d5db;border-radius:10px;font-size:13px;font-family:Inter;" placeholder="Enter coupon code">
+        <button style="background:#C0392B;color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:600;">Apply</button>
+      </div>
+
+      <!-- Rx Alert -->
+      <div style="background:#FEF2F2;border:1px solid #E74C3C;border-radius:10px;padding:12px;display:flex;align-items:flex-start;gap:8px;margin-bottom:16px;">
+        <span class="material-icons-round" style="font-size:20px;color:#E74C3C;">warning</span>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#C0392B;">Prescription Required</div>
+          <div style="font-size:11px;color:#6b7280;margin-top:2px;">Your cart has Rx medicines. Upload prescription to proceed.</div>
+          <div style="font-size:12px;color:#2563EB;font-weight:500;margin-top:6px;">Upload Prescription →</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky Bottom -->
+    <div style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e5e7eb;padding:12px 16px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+        <span style="font-size:15px;font-weight:700;color:#111;">Total</span>
+        <span style="font-size:15px;font-weight:700;color:#C0392B;">₹1,212</span>
+      </div>
+      <button class="btn-primary" style="display:flex;align-items:center;justify-content:center;gap:6px;">
+        Place Order – ₹1,212
+      </button>
+      <div style="font-size:10px;color:#9ca3af;text-align:center;margin-top:6px;">By placing this order, you agree to our Terms & Conditions</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SCREEN 12: ORDER SUCCESS                     -->
+<!-- ============================================ -->
+<div class="frame-wrapper">
+  <div class="frame-label">12 — Order Success</div>
+  <div class="frame-sublabel">Confirmation • Lottie animation • ETA</div>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="status-icons">
+        <span class="material-icons-round" style="font-size:14px">signal_cellular_alt</span>
+        <span class="material-icons-round" style="font-size:14px">wifi</span>
+        <span class="material-icons-round" style="font-size:14px">battery_full</span>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:calc(100% - 24px);padding:32px 24px;">
+      <!-- Success Animation Placeholder -->
+      <div style="width:140px;height:140px;background:#F0FBF4;border-radius:70px;display:flex;align-items:center;justify-content:center;margin-bottom:24px;box-shadow:0 0 0 12px rgba(27,136,67,0.1);">
+        <span class="material-icons-round" style="font-size:72px;color:#1B8843;">check_circle</span>
+      </div>
+
+      <div style="font-size:24px;font-weight:700;color:#111;margin-bottom:4px;">Order Placed! 🎉</div>
+      <div style="font-size:14px;color:#6b7280;margin-bottom:24px;">Thank you for your order</div>
+
+      <!-- Order ID -->
+      <div style="background:#f9fafb;border-radius:12px;padding:16px;width:100%;margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+          <span style="font-size:13px;color:#6b7280;">Order ID</span>
+          <span style="font-size:13px;font-weight:700;color:#111;">#INV-2026-0347</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+          <span style="font-size:13px;color:#6b7280;">Amount Paid</span>
+          <span style="font-size:13px;font-weight:700;color:#C0392B;">₹1,212</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="font-size:13px;color:#6b7280;">Payment</span>
+          <span style="font-size:13px;font-weight:500;color:#111;">Razorpay</span>
+        </div>
+      </div>
+
+      <!-- ETA Card -->
+      <div style="background:#EFF6FF;border-radius:12px;padding:16px;width:100%;margin-bottom:24px;text-align:center;">
+        <span class="material-icons-round" style="font-size:28px;color:#2563EB;">local_shipping</span>
+        <div style="font-size:14px;font-weight:600;color:#111;margin-top:6px;">Expected Delivery</div>
+        <div style="font-size:20px;font-weight:700;color:#2563EB;">30–60 minutes</div>
+      </div>
+
+      <!-- Action Buttons -->
+      <button class="btn-primary" style="margin-bottom:10px;">View Order</button>
+      <button class="btn-outlined" style="margin-bottom:10px;">Continue Shopping</button>
+      <div style="display:flex;align-items:center;gap:6px;color:#2563EB;font-size:14px;font-weight:500;cursor:pointer;">
+        <span class="material-icons-round" style="font-size:18px;">share</span>
+        Share Receipt
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SCREEN 13: ORDERS LIST                       -->
+<!-- ============================================ -->
+<div class="frame-wrapper">
+  <div class="frame-label">13 — My Orders</div>
+  <div class="frame-sublabel">Order history • Status filters • Reorder</div>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="status-icons">
+        <span class="material-icons-round" style="font-size:14px">signal_cellular_alt</span>
+        <span class="material-icons-round" style="font-size:14px">wifi</span>
+        <span class="material-icons-round" style="font-size:14px">battery_full</span>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <div style="padding:12px 16px;border-bottom:1px solid #e5e7eb;">
+      <div style="font-size:18px;font-weight:700;color:#111;">My Orders</div>
+    </div>
+
+    <!-- Status Filter Chips -->
+    <div style="padding:12px 16px;display:flex;gap:8px;overflow-x:auto;">
+      <span class="chip active" style="font-size:11px;">All</span>
+      <span class="chip" style="font-size:11px;">Placed</span>
+      <span class="chip" style="font-size:11px;">Confirmed</span>
+      <span class="chip" style="font-size:11px;">Dispatched</span>
+      <span class="chip" style="font-size:11px;">Delivered</span>
+      <span class="chip" style="font-size:11px;">Cancelled</span>
+    </div>
+
+    <div style="overflow-y:auto;height:calc(100% - 24px - 52px - 48px - 80px);padding:0 16px;">
+      <!-- Order 1 -->
+      <div style="border:1px solid #f0f0f0;border-radius:14px;padding:14px;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#111;">#INV-2026-0347</div>
+            <div style="font-size:11px;color:#9ca3af;">27 Mar 2026, 10:30 AM</div>
+          </div>
+          <span class="badge" style="background:#EFF6FF;color:#2563EB;">Dispatched</span>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:10px;">
+          <div style="width:40px;height:40px;background:#f9fafb;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+            <span class="material-icons-round" style="font-size:20px;color:#d1d5db;">medication</span>
+          </div>
+          <div style="width:40px;height:40px;background:#f9fafb;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+            <span class="material-icons-round" style="font-size:20px;color:#d1d5db;">face</span>
+          </div>
+          <div style="width:40px;height:40px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+            <span style="font-size:11px;color:#6b7280;font-weight:600;">+1</span>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:15px;font-weight:700;color:#111;">₹1,212</span>
+          <div style="display:flex;gap:8px;">
+            <button style="background:none;border:1.5px solid #C0392B;color:#C0392B;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;">Reorder</button>
+            <button style="background:#C0392B;border:none;color:#fff;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;">View Details</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order 2 -->
+      <div style="border:1px solid #f0f0f0;border-radius:14px;padding:14px;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#111;">#INV-2026-0341</div>
+            <div style="font-size:11px;color:#9ca3af;">25 Mar 2026, 6:15 PM</div>
+          </div>
+          <span class="badge" style="background:#F0FBF4;color:#1B8843;">Delivered</span>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:10px;">
+          <div style="width:40px;height:40px;background:#f9fafb;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+            <span class="material-icons-round" style="font-size:20px;color:#d1d5db;">spa</span>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:15px;font-weight:700;color:#111;">₹225</span>
+          <div style="display:flex;gap:8px;">
+            <button style="background:none;border:1.5px solid #C0392B;color:#C0392B;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;">Reorder</button>
+            <button style="background:#C0392B;border:none;color:#fff;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;">View Details</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order 3 - Cancelled -->
+      <div style="border:1px solid #f0f0f0;border-radius:14px;padding:14px;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#111;">#INV-2026-0330</div>
+            <div style="font-size:11px;color:#9ca3af;">22 Mar 2026, 2:00 PM</div>
+          </div>
+          <span class="badge" style="background:#FEF2F2;color:#E74C3C;">Cancelled</span>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:10px;">
+          <div style="width:40px;height:40px;background:#f9fafb;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+            <span class="material-icons-round" style="font-size:20px;color:#d1d5db;">vaccines</span>
+          </div>
+          <div style="width:40px;height:40px;background:#f9fafb;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+            <span class="material-icons-round" style="font-size:20px;color:#d1d5db;">healing</span>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:15px;font-weight:700;color:#9ca3af;text-decoration:line-through;">₹456</span>
+          <button style="background:none;border:1.5px solid #C0392B;color:#C0392B;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;">Reorder</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="material-icons-round" style="font-size:24px">home</span><span>Home</span></div>
+      <div class="nav-item"><span class="material-icons-round" style="font-size:24px">search</span><span>Browse</span></div>
+      <div class="nav-item"><span class="material-icons-round" style="font-size:24px">photo_camera</span><span>Rx Upload</span></div>
+      <div class="nav-item active"><span class="material-icons-round" style="font-size:24px">inventory_2</span><span>Orders</span></div>
+      <div class="nav-item"><span class="material-icons-round" style="font-size:24px">person</span><span>Account</span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============================================ -->
+<!-- SCREEN 14: ORDER DETAIL + SCREEN 15: Rx      -->
+<!-- ============================================ -->
+<div class="frames-row">
+<div class="frame-wrapper">
+  <div class="frame-label">14 — Order Detail</div>
+  <div class="frame-sublabel">Status timeline • Delivery info • Items</div>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="status-icons">
+        <span class="material-icons-round" style="font-size:14px">signal_cellular_alt</span>
+        <span class="material-icons-round" style="font-size:14px">wifi</span>
+        <span class="material-icons-round" style="font-size:14px">battery_full</span>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;padding:12px 16px;gap:12px;border-bottom:1px solid #e5e7eb;">
+      <span class="material-icons-round" style="font-size:24px;color:#111;">arrow_back</span>
+      <div style="font-size:18px;font-weight:700;color:#111;">Order #INV-2026-0347</div>
+    </div>
+
+    <div style="overflow-y:auto;height:calc(100% - 24px - 52px);padding:16px;">
+      <!-- Status Timeline -->
+      <div style="font-size:14px;font-weight:600;color:#111;margin-bottom:12px;">Order Status</div>
+      <div style="margin-bottom:20px;padding-left:12px;">
+        <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:0;">
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div style="width:24px;height:24px;background:#1B8843;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+              <span class="material-icons-round" style="font-size:14px;color:#fff;">check</span>
+            </div>
+            <div style="width:2px;height:28px;background:#1B8843;"></div>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#1B8843;">Placed</div>
+            <div style="font-size:11px;color:#9ca3af;">27 Mar, 10:30 AM</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:0;">
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div style="width:24px;height:24px;background:#1B8843;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+              <span class="material-icons-round" style="font-size:14px;color:#fff;">check</span>
+            </div>
+            <div style="width:2px;height:28px;background:#1B8843;"></div>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#1B8843;">Confirmed</div>
+            <div style="font-size:11px;color:#9ca3af;">27 Mar, 10:35 AM</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:0;">
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div style="width:24px;height:24px;background:#2563EB;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+              <span class="material-icons-round" style="font-size:14px;color:#fff;">local_shipping</span>
+            </div>
+            <div style="width:2px;height:28px;background:#d1d5db;"></div>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#2563EB;">Dispatched</div>
+            <div style="font-size:11px;color:#9ca3af;">27 Mar, 10:50 AM</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px;">
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div style="width:24px;height:24px;background:#e5e7eb;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+              <span class="material-icons-round" style="font-size:14px;color:#9ca3af;">home</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:500;color:#9ca3af;">Delivered</div>
+            <div style="font-size:11px;color:#d1d5db;">Pending</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delivery Person Card -->
+      <div style="background:#EFF6FF;border-radius:12px;padding:14px;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:600;color:#111;margin-bottom:8px;">🚴 Delivery Partner</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:40px;height:40px;background:#2563EB;border-radius:20px;display:flex;align-items:center;justify-content:center;">
+            <span style="font-size:16px;color:#fff;font-weight:700;">AK</span>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:#111;">Amir Khan</div>
+            <div style="font-size:11px;color:#6b7280;">Delivery Executive</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button style="flex:1;background:#fff;border:1px solid #d1d5db;border-radius:8px;padding:8px;font-size:12px;display:flex;align-items:center;justify-content:center;gap:4px;">📞 Call</button>
+          <button style="flex:1;background:#25D366;border:none;color:#fff;border-radius:8px;padding:8px;font-size:12px;display:flex;align-items:center;justify-content:center;gap:4px;">💬 WhatsApp</button>
+        </div>
+        <div style="background:#fff;border-radius:8px;padding:10px;margin-top:10px;text-align:center;">
+          <div style="font-size:11px;color:#6b7280;">Delivery OTP</div>
+          <div style="font-size:24px;font-weight:700;color:#C0392B;letter-spacing:8px;">4 7 2 9</div>
+        </div>
+      </div>
+
+      <!-- Items -->
+      <div style="font-size:14px;font-weight:600;color:#111;margin-bottom:10px;">Items (3)</div>
+      <div style="border:1px solid #f0f0f0;border-radius:10px;padding:12px;margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px;">
+          <span style="color:#111;">Azithromycin 500mg × 1</span>
+          <span style="font-weight:600;">₹89</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px;">
+          <span style="color:#111;">Cetaphil Cleanser × 2</span>
+          <span style="font-weight:600;">₹898</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;">
+          <span style="color:#111;">Biotique Lotion × 1</span>
+          <span style="font-weight:600;">₹225</span>
+        </div>
+        <div style="border-top:1px solid #e5e7eb;margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;">
+          <span style="font-size:14px;font-weight:700;">Total</span>
+          <span style="font-size:14px;font-weight:700;color:#C0392B;">₹1,212</span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div style="display:flex;gap:8px;">
+        <button style="flex:1;background:#f3f4f6;border:none;border-radius:8px;padding:10px;font-size:12px;display:flex;align-items:center;justify-content:center;gap:4px;">📄 Receipt</button>
+        <button style="flex:1;background:#f3f4f6;border:none;border-radius:8px;padding:10px;font-size:12px;display:flex;align-items:center;justify-content:center;gap:4px;">📧 Email</button>
+        <button style="flex:1;background:#f3f4f6;border:none;border-radius:8px;padding:10px;font-size:12px;display:flex;align-items:center;justify-content:center;gap:4px;">🔄 Reorder</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SCREEN 15: PRESCRIPTIONS                     -->
+<!-- ============================================ -->
+<div class="frame-wrapper">
+  <div class="frame-label">15 — Prescriptions</div>
+  <div class="frame-sublabel">Upload + History + Status badges</div>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="status-icons">
+        <span class="material-icons-round" style="font-size:14px">signal_cellular_alt</span>
+        <span class="material-icons-round" style="font-size:14px">wifi</span>
+        <span class="material-icons-round" style="font-size:14px">battery_full</span>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;padding:12px 16px;gap:12px;border-bottom:1px solid #e5e7eb;">
+      <span class="material-icons-round" style="font-size:24px;color:#111;">arrow_back</span>
+      <div style="font-size:18px;font-weight:700;color:#111;">My Prescriptions</div>
+    </div>
+
+    <div style="overflow-y:auto;height:calc(100% - 24px - 52px - 80px);padding:16px;">
+      <!-- Upload CTA -->
+      <div style="border:2px dashed #C0392B;border-radius:16px;padding:24px;text-align:center;margin-bottom:20px;background:#FEF2F2;">
+        <span class="material-icons-round" style="font-size:48px;color:#C0392B;">cloud_upload</span>
+        <div style="font-size:15px;font-weight:600;color:#111;margin-top:8px;">Upload New Prescription</div>
+        <div style="font-size:12px;color:#6b7280;margin-top:4px;">Tap to upload or take a photo</div>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;">
+          <button style="background:#C0392B;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px;">
+            <span class="material-icons-round" style="font-size:16px;">photo_camera</span> Camera
+          </button>
+          <button style="background:#fff;color:#C0392B;border:1.5px solid #C0392B;border-radius:10px;padding:8px 16px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px;">
+            <span class="material-icons-round" style="font-size:16px;">photo_library</span> Gallery
+          </button>
+        </div>
+        <div style="font-size:10px;color:#9ca3af;margin-top:8px;">JPG, PNG, WebP, PDF • Max 5 MB</div>
+      </div>
+
+      <!-- Past Prescriptions -->
+      <div style="font-size:14px;font-weight:600;color:#111;margin-bottom:12px;">Recent Prescriptions</div>
+
+      <!-- Rx Card 1 - Approved -->
+      <div style="border:1px solid #f0f0f0;border-radius:12px;padding:12px;margin-bottom:10px;display:flex;gap:12px;">
+        <div style="width:56px;height:56px;background:#f9fafb;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+          <span class="material-icons-round" style="font-size:28px;color:#d1d5db;">description</span>
+        </div>
+        <div style="flex:1;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <div style="font-size:13px;font-weight:600;color:#111;">Prescription #RX-045</div>
+            <span class="badge" style="background:#F0FBF4;color:#1B8843;">Approved</span>
+          </div>
+          <div style="font-size:11px;color:#9ca3af;margin-bottom:4px;">Uploaded: 26 Mar 2026</div>
+          <div style="font-size:11px;color:#1B8843;">✓ Verified by pharmacist</div>
+        </div>
+      </div>
+
+      <!-- Rx Card 2 - Pending -->
+      <div style="border:1px solid #f0f0f0;border-radius:12px;padding:12px;margin-bottom:10px;display:flex;gap:12px;">
+        <div style="width:56px;height:56px;background:#f9fafb;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+          <span class="material-icons-round" style="font-size:28px;color:#d1d5db;">description</span>
+        </div>
+        <div style="flex:1;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <div style="font-size:13px;font-weight:600;color:#111;">Prescription #RX-046</div>
+            <span class="badge" style="background:#FFFBEB;color:#D97706;">Pending</span>
+          </div>
+          <div style="font-size:11px;color:#9ca3af;margin-bottom:4px;">Uploaded: 27 Mar 2026</div>
+          <div style="font-size:11px;color:#D97706;">⏳ Under review</div>
+        </div>
+      </div>
+
+      <!-- Rx Card 3 - Rejected -->
+      <div style="border:1px solid #f0f0f0;border-radius:12px;padding:12px;margin-bottom:10px;display:flex;gap:12px;">
+        <div style="width:56px;height:56px;background:#f9fafb;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+          <span class="material-icons-round" style="font-size:28px;color:#d1d5db;">description</span>
+        </div>
+        <div style="flex:1;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <div style="font-size:13px;font-weight:600;color:#111;">Prescription #RX-040</div>
+            <span class="badge" style="background:#FEF2F2;color:#E74C3C;">Rejected</span>
+          </div>
+          <div style="font-size:11px;color:#9ca3af;margin-bottom:4px;">Uploaded: 20 Mar 2026</div>
+          <div style="font-size:11px;color:#E74C3C;">✗ Image unclear, please re-upload</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="material-icons-round" style="font-size:24px">home</span><span>Home</span></div>
+      <div class="nav-item"><span class="material-icons-round" style="font-size:24px">search</span><span>Browse</span></div>
+      <div class="nav-item active"><span class="material-icons-round" style="font-size:24px">photo_camera</span><span>Rx Upload</span></div>
+      <div class="nav-item"><span class="material-icons-round" style="font-size:24px">inventory_2</span><span>Orders</span></div>
+      <div class="nav-item"><span class="material-icons-round" style="font-size:24px">person</span><span>Account</span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div style="text-align:center;padding:40px;color:#666;font-size:14px;border-top:1px solid #333;margin-top:20px;">
+  <strong style="color:#fff;">Batla Medicos Android App</strong> — Figma Frame Export Part 3/6<br>
+  Screens 11-15: Checkout, Order Success, Orders List, Order Detail, Prescriptions<br>
+  <span style="color:#888;">360×800dp • Material Design 3 • Inter Font</span>
+</div>
+
+</body>
+</html>

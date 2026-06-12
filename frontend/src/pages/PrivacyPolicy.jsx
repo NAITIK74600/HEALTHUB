@@ -5,7 +5,7 @@ import SEO from '../components/SEO';
 export default function PrivacyPolicy() {
   return (
     <main className="policy-page container">
-      <SEO title="Privacy Policy" description="Privacy policy of Batla Medicos. Learn how we collect, use, and protect your personal data when you shop medicines online." path="/privacy-policy" />
+      <SEO title="Privacy Policy" description="Privacy policy of Health Hub. Learn how we collect, use, and protect your personal data when you shop medicines online." path="/privacy-policy" />
       <div className="policy-hero">
         <div className="policy-hero__icon"><Shield size={32} /></div>
         <div>
@@ -19,9 +19,9 @@ export default function PrivacyPolicy() {
         <section>
           <h2>1. About Us</h2>
           <p>
-            Batla Medicos Chemist &amp; Cosmetics ("<strong>we</strong>", "<strong>us</strong>", "<strong>our</strong>") is a licensed retail pharmacy
-            operating at F 41/2, Nafees Road, Batla House, Jamia Nagar, New Delhi – 110025.
-            We operate the website <a href="https://batlamedicos.shop">batlamedicos.shop</a> ("<strong>Platform</strong>").
+            Health Hub Chemist &amp; Cosmetics ("<strong>we</strong>", "<strong>us</strong>", "<strong>our</strong>") is a licensed retail pharmacy
+            operating at Block G, Connaught Place, New Delhi – 110001.
+            We operate the website <a href="https://healthub.site">healthub.site</a> ("<strong>Platform</strong>").
           </p>
           <p>
             This Privacy Policy explains how we collect, use, store, and protect your personal information when you
@@ -111,7 +111,7 @@ export default function PrivacyPolicy() {
             <li>Request deletion of your account and associated data (subject to legal retention requirements).</li>
             <li>Withdraw consent for promotional communications at any time.</li>
           </ul>
-          <p>To exercise any of these rights, email us at <a href="mailto:ordersupport@batlamedicos.shop">ordersupport@batlamedicos.shop</a>.</p>
+          <p>To exercise any of these rights, email us at <a href="mailto:support@healthub.site">support@healthub.site</a>.</p>
         </section>
 
         <section>
@@ -136,9 +136,9 @@ export default function PrivacyPolicy() {
           <h2>11. Contact Us</h2>
           <p>For any privacy-related questions or complaints:</p>
           <ul className="policy-contact-list">
-            <li><MapPin size={15} /> F 41/2, Nafees Road, Batla House, Jamia Nagar, New Delhi – 110025</li>
-            <li><Phone size={15} /> +91 99901 65925</li>
-            <li><Mail size={15} /> <a href="mailto:ordersupport@batlamedicos.shop">ordersupport@batlamedicos.shop</a></li>
+            <li><MapPin size={15} /> Block G, Connaught Place, New Delhi – 110001</li>
+            <li><Phone size={15} /> +91 73032 40289</li>
+            <li><Mail size={15} /> <a href="mailto:support@healthub.site">support@healthub.site</a></li>
           </ul>
         </section>
 

@@ -452,7 +452,7 @@ export default function AdminBrands() {
                     {/* Progress bar */}
                     {mediaUploading && (
                       <div style={{ height: 5, borderRadius: 3, background: '#e5e7eb', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${mediaProgress}%`, background: '#3451D1', transition: 'width 0.2s' }} />
+                        <div style={{ height: '100%', width: `${mediaProgress}%`, background: '#6FA82E', transition: 'width 0.2s' }} />
                       </div>
                     )}
                   </div>

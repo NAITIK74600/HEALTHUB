@@ -1,6 +1,6 @@
 /* ================================================================
-   BATLA MEDICOS  •  Professional Medical E-Commerce Design System
-   Brand: Crimson #C0392B | Pharmacy Green #1E8449 | Clean White
+   HEALTH HUB  •  Professional Medical E-Commerce Design System
+   Brand: Leaf Green #6FA82E | Pharmacy Green #1E8449 | Clean White
    Typography: Inter (Google Fonts)
    HCI Principles: Visual Hierarchy, Feedback, Consistency,
                    Recognition, Error Prevention, Accessibility
@@ -11,10 +11,10 @@
 /* ── Design Tokens ─────────────────────────────────────────────── */
 :root {
   /* Brand */
-  --primary:        #3451D1;
-  --primary-dark:   #2338B0;
-  --primary-light:  #EEF1FD;
-  --primary-50:     #F0F4FF;
+  --primary:        #6FA82E;
+  --primary-dark:   #4F8C28;
+  --primary-light:  #EFF5E6;
+  --primary-50:     #F2F8EA;
   --green:          #27AE60;
   --green-dark:     #1E8449;
   --green-light:    #D5F5E3;
@@ -37,8 +37,8 @@
   --text:           #1A202C;
   --text-muted:     #64748B;
   --border:         #E2E8F0;
-  --border-focus:   #3451D1;
-  --bg:             #EEF3FF;
+  --border-focus:   #6FA82E;
+  --bg:             #F1F7EA;
   --surface:        #FFFFFF;
 
   /* Shadows */
@@ -47,7 +47,7 @@
   --shadow-md:  0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
   --shadow-lg:  0 10px 25px rgba(0,0,0,0.10), 0 4px 10px rgba(0,0,0,0.05);
   --shadow-xl:  0 20px 60px rgba(0,0,0,0.12);
-  --shadow-red: 0 4px 20px rgba(52,81,209,0.25);
+  --shadow-red: 0 4px 20px rgba(111,168,46,0.25);
 
   /* Border radius */
   --r-xs:   4px;
@@ -108,7 +108,7 @@ svg { flex-shrink: 0; }
 
 /* Blue-to-green gradient text utility — used for brand name everywhere */
 .brand-gradient {
-  background: linear-gradient(90deg, #3451D1 0%, #27AE60 100%);
+  background: linear-gradient(90deg, #6FA82E 0%, #27AE60 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -116,7 +116,7 @@ svg { flex-shrink: 0; }
 /* Lighter variant for dark backgrounds (footer, admin sidebar) */
 .footer .brand-gradient,
 .admin-sidebar .brand-gradient {
-  background: linear-gradient(90deg, #7B93F5 0%, #68D391 100%);
+  background: linear-gradient(90deg, #A6D17A 0%, #68D391 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -180,7 +180,7 @@ svg { flex-shrink: 0; }
   color: #fff;
   box-shadow: var(--shadow-red);
 }
-.btn--primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(52,81,209,0.40); }
+.btn--primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(111,168,46,0.40); }
 
 .btn--secondary {
   background: var(--gray-100);
@@ -202,7 +202,7 @@ svg { flex-shrink: 0; }
   border: 2px solid var(--primary);
 }
 .btn--outline:hover { background: var(--primary-50); }
-.btn--outline::after { background: rgba(52,81,209,0.05); }
+.btn--outline::after { background: rgba(111,168,46,0.05); }
 
 .btn--ghost {
   background: rgba(255,255,255,0.15);
@@ -256,7 +256,7 @@ svg { flex-shrink: 0; }
    TOP ANNOUNCEMENT BAR
    ================================================================ */
 .topbar {
-  background: linear-gradient(90deg, #1a2fa0 0%, var(--primary) 50%, #1a2fa0 100%);
+  background: linear-gradient(90deg, #3E6B1A 0%, var(--primary) 50%, #3E6B1A 100%);
   background-size: 200% auto;
   animation: barGlow 4s linear infinite;
   color: #fff;
@@ -336,7 +336,7 @@ svg { flex-shrink: 0; }
 }
 .navbar__logo:hover {
   transform: scale(1.12) rotate(-4deg);
-  filter: drop-shadow(0 4px 14px rgba(52,81,209,.50));
+  filter: drop-shadow(0 4px 14px rgba(111,168,46,.50));
 }
 .navbar__logo-img {
   width: 100%;
@@ -355,7 +355,7 @@ svg { flex-shrink: 0; }
   font-size: 17px;
   font-weight: 800;
   letter-spacing: -0.3px;
-  background: linear-gradient(90deg, #3451D1 0%, #27AE60 100%);
+  background: linear-gradient(90deg, #6FA82E 0%, #27AE60 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -418,7 +418,7 @@ svg { flex-shrink: 0; }
   box-shadow: var(--shadow-red);
   transition: all var(--t-base) var(--ease);
 }
-.navbar__cart-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(52,81,209,0.45); }
+.navbar__cart-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(111,168,46,0.45); }
 
 /* Fly-to-cart bounce */
 .navbar__cart-btn--bounce { animation: cartBounce 0.5s ease; }
@@ -493,7 +493,7 @@ svg { flex-shrink: 0; }
     font-size: 15px;
     line-height: 1.05;
     white-space: nowrap;
-    background: linear-gradient(90deg, #3451D1 0%, #27AE60 100%);
+    background: linear-gradient(90deg, #6FA82E 0%, #27AE60 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -522,7 +522,7 @@ svg { flex-shrink: 0; }
   }
   .navbar__brand-red {
     font-size: 14px;
-    background: linear-gradient(90deg, #3451D1 0%, #27AE60 100%);
+    background: linear-gradient(90deg, #6FA82E 0%, #27AE60 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -685,7 +685,7 @@ svg { flex-shrink: 0; }
   display: inline-block;
   width: 4px;
   height: 24px;
-  background: linear-gradient(180deg, #3451D1 0%, #27AE60 100%);
+  background: linear-gradient(180deg, #6FA82E 0%, #27AE60 100%);
   border-radius: var(--r-full);
   margin-right: 4px;
 }
@@ -718,7 +718,7 @@ svg { flex-shrink: 0; }
   z-index: 2;
 }
 .hero {
-  background: linear-gradient(135deg, #0d1b8e 0%, #3451D1 40%, #27AE60 100%);
+  background: linear-gradient(135deg, #2E5214 0%, #6FA82E 40%, #27AE60 100%);
   position: relative;
   overflow: hidden;
   padding: 80px 0;
@@ -732,7 +732,7 @@ svg { flex-shrink: 0; }
   inset: 0;
   background:
     radial-gradient(circle at 75% 50%, rgba(39,174,96,0.35) 0%, transparent 60%),
-    radial-gradient(circle at 20% 80%, rgba(52,81,209,0.25) 0%, transparent 50%);
+    radial-gradient(circle at 20% 80%, rgba(111,168,46,0.25) 0%, transparent 50%);
 }
 /* Decorative medical cross pattern */
 .hero::after {
@@ -1326,7 +1326,7 @@ svg { flex-shrink: 0; }
   align-items: center;
   justify-content: center;
   padding: 40px 16px;
-  background: linear-gradient(135deg, #EEF1FD 0%, #F0FBF4 50%, #F0F4FF 100%);
+  background: linear-gradient(135deg, #EFF5E6 0%, #F0FBF4 50%, #F2F8EA 100%);
   position: relative;
   overflow: hidden;
 }
@@ -1528,7 +1528,7 @@ svg { flex-shrink: 0; }
 .footer__logo-name {
   font-size: 1.1rem;
   font-weight: 800;
-  background: linear-gradient(90deg, #ffffff 0%, #93C5FD 55%, #68D391 100%);
+  background: linear-gradient(90deg, #ffffff 0%, #BFE29A 55%, #68D391 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -2109,7 +2109,7 @@ svg { flex-shrink: 0; }
 .catalog-sidebar__item:hover {
   background: var(--gray-50);
   color: var(--primary);
-  border-left-color: rgba(192,57,43,0.3);
+  border-left-color: rgba(111,168,46,0.3);
 }
 .catalog-sidebar__item:hover .catalog-sidebar__icon {
   background: rgba(192,57,43,0.10);
@@ -2839,7 +2839,7 @@ svg { flex-shrink: 0; }
   font-weight: 700;
   padding: 2px 6px;
   border-radius: 4px;
-  background: rgba(192,57,43,0.3);
+  background: rgba(111,168,46,0.3);
   color: #FC8181;
   letter-spacing: 0.5px;
   flex-shrink: 0;
@@ -3225,7 +3225,7 @@ svg { flex-shrink: 0; }
 }
 .alert--error   { background: var(--primary-50);  color: var(--primary-dark); border-left-color: var(--primary); }
 .alert--success { background: var(--green-50);    color: var(--green-dark);   border-left-color: var(--green); }
-.alert--info    { background: #EFF6FF; color: #1E40AF; border-left-color: #3B82F6; }
+.alert--info    { background: #EFF6FF; color: #3E6B1A; border-left-color: #3B82F6; }
 .alert--warn    { background: #FFFBEB; color: #92400E; border-left-color: #F59E0B; }
 
 /* ================================================================
@@ -6690,7 +6690,7 @@ svg { flex-shrink: 0; }
 }
 
 /* ================================================================
-   3D ANIMATIONS — BATLA MEDICOS CREATIVE
+   3D ANIMATIONS — HEALTH HUB CREATIVE
    ================================================================ */
 
 /* ---- Keyframes ---- */
@@ -6746,7 +6746,7 @@ svg { flex-shrink: 0; }
 
 /* ================================================================
    360° PHARMA ORBITAL  –  hero section
-   Batla Medicos logo at centre, 3 concentric circular rings,
+   Health Hub logo at centre, 3 concentric circular rings,
    6 pharma icons orbiting in full 360° (rotate+translateX)
    ================================================================ */
 /* ===== 3-D Globe Orbital ===== */
@@ -6773,14 +6773,14 @@ svg { flex-shrink: 0; }
   width: 90px; height: 90px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: linear-gradient(145deg, #0a1f6e 0%, #3451D1 48%, #0a3d1f 100%);
+  background: linear-gradient(145deg, #274316 0%, #6FA82E 48%, #0a3d1f 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   border: 2.5px solid rgba(255,255,255,0.22);
   box-shadow:
-    0 0 0 5px rgba(52,81,209,0.20),
-    0 0 30px rgba(52,81,209,0.55),
+    0 0 0 5px rgba(111,168,46,0.20),
+    0 0 30px rgba(111,168,46,0.55),
     0 0 60px rgba(39,174,96,0.22),
     0 6px 26px rgba(0,0,0,0.55),
     inset 0 1px 0 rgba(255,255,255,0.12);
@@ -6798,8 +6798,8 @@ svg { flex-shrink: 0; }
 @keyframes logo-glow {
   0%,100% {
     box-shadow:
-      0 0 0 5px rgba(52,81,209,0.15),
-      0 0 26px rgba(52,81,209,0.40),
+      0 0 0 5px rgba(111,168,46,0.15),
+      0 0 26px rgba(111,168,46,0.40),
       0 8px 28px rgba(0,0,0,0.45);
   }
   50% {
@@ -7132,7 +7132,7 @@ svg { flex-shrink: 0; }
 
 /* Hero banner */
 .lab-hero {
-  background: linear-gradient(135deg, #C0392B 0%, #1B8843 100%);
+  background: linear-gradient(135deg, #6FA82E 0%, #1B8843 100%);
   padding: 48px 0 40px;
   position: relative;
 }
@@ -9027,7 +9027,7 @@ svg { flex-shrink: 0; }
 
 /* ── Stats counter banner ── */
 .stats-banner {
-  background: linear-gradient(135deg, #C0392B 0%, #1B8843 100%);
+  background: linear-gradient(135deg, #6FA82E 0%, #1B8843 100%);
   padding: 36px 0;
 }
 .stats-banner__grid {
@@ -9107,7 +9107,7 @@ svg { flex-shrink: 0; }
   overflow: hidden;
   transition: box-shadow .2s, border-color .2s;
 }
-.brand-circle-card:hover .brand-circle-card__ring { border-color: #C0392B; box-shadow: 0 4px 18px rgba(192,57,43,.15); }
+.brand-circle-card:hover .brand-circle-card__ring { border-color: #C0392B; box-shadow: 0 4px 18px rgba(111,168,46,.15); }
 .brand-circle-card__img { width: 60px; height: 46px; object-fit: contain; }
 .brand-circle-card__fb { font-size: .9rem; font-weight: 700; color: #C0392B; }
 .brand-circle-card__name {
@@ -9623,7 +9623,7 @@ svg { flex-shrink: 0; }
   left: 0;
   width: 0;
   height: 3px;
-  background: linear-gradient(90deg, #C0392B, #1B8843);
+  background: linear-gradient(90deg, #6FA82E, #1B8843);
   border-radius: 2px;
   transition: width 0.5s cubic-bezier(0.22,1,0.36,1);
 }
@@ -9664,7 +9664,7 @@ svg { flex-shrink: 0; }
 }
 .hero-search__btn:hover {
   transform: scale(1.04) !important;
-  box-shadow: 0 4px 16px rgba(192,57,43,0.3) !important;
+  box-shadow: 0 4px 16px rgba(111,168,46,0.3) !important;
 }
 
 /* ── Page-level fade-in on route change ── */
@@ -9828,7 +9828,7 @@ input:focus, select:focus, textarea:focus {
 }
 .hero-search__clear:hover { color: #374151; }
 .hero-search__btn {
-  background: linear-gradient(135deg, #C0392B, #e74c3c);
+  background: linear-gradient(135deg, #6FA82E, #8BC34A);
   color: #fff;
   border: none;
   border-radius: 50px;
@@ -9839,7 +9839,7 @@ input:focus, select:focus, textarea:focus {
   flex-shrink: 0;
   transition: background 0.3s, transform 0.15s;
 }
-.hero-search__btn:hover { background: linear-gradient(135deg, #a93226, #c0392b); transform: scale(1.02); }
+.hero-search__btn:hover { background: linear-gradient(135deg, #5A8F25, #6FA82E); transform: scale(1.02); }
 .hero-search__btn:active { transform: scale(0.97); }
 
 /* Search dropdown — rendered via portal at body level */
@@ -10576,7 +10576,7 @@ input:focus, select:focus, textarea:focus {
 /* 3D discount badge */
 .product-card__badge--discount {
   transform: perspective(400px) rotateY(-5deg);
-  box-shadow: 0 4px 12px rgba(192,57,43,0.3);
+  box-shadow: 0 4px 12px rgba(111,168,46,0.3);
 }
 
 /* ── 3D Category tiles ── */

@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Batla Medicos – Android Frames Part 2 (Screens 6-10)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a1a2e;font-family:'Inter',sans-serif;padding:40px}
+h1{color:#fff;text-align:center;font-size:28px;margin-bottom:8px}
+.subtitle{color:#aaa;text-align:center;margin-bottom:40px;font-size:14px}
+.frames-row{display:flex;gap:40px;justify-content:center;flex-wrap:wrap;margin-bottom:60px}
+.frame-wrapper{text-align:center}
+.frame-label{color:#fff;font-size:13px;font-weight:600;margin-bottom:12px;letter-spacing:1px;text-transform:uppercase}
+.frame-sublabel{color:#888;font-size:11px;margin-bottom:8px}
+.phone{width:360px;height:800px;background:#fff;border-radius:32px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.5);border:2px solid #333}
+.status-bar{height:24px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:11px;font-weight:500;color:#333;position:relative;z-index:10;background:#fff}
+.status-bar.light{color:#fff;background:transparent}
+.status-icons{display:flex;gap:4px;align-items:center;font-size:12px}
+.bottom-nav{position:absolute;bottom:0;left:0;right:0;height:80px;background:#fff;display:flex;align-items:center;justify-content:space-around;border-top:1px solid #e5e7eb;padding-bottom:8px;z-index:10}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:#9ca3af}
+.nav-item.active{color:#C0392B}
+.nav-item .mi{font-size:24px}
+.btn-primary{background:#C0392B;color:#fff;border:none;border-radius:28px;padding:14px 24px;font-size:15px;font-weight:600;width:100%;text-align:center;display:block}
+.btn-sm{background:#C0392B;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600}
+.btn-outlined-sm{background:#fff;color:#C0392B;border:1.5px solid #C0392B;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:600}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;background:#f3f4f6;color:#374151}
+.chip.active{background:#C0392B;color:#fff}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}
+.card{background:#fff;border-radius:16px;border:1px solid #f0f0f0;overflow:hidden}
+.section-header{display:flex;justify-content:space-between;align-items:center;padding:0 16px;margin-bottom:12px}
+.section-title{font-size:18px;font-weight:700;color:#111}
+.section-link{font-size:13px;color:#2563EB;font-weight:500}
+</style>
+</head>
+<body>
+
+<h1>Batla Medicos – Android App Frames</h1>
+<p class="subtitle">Part 2: Screens 6–10 | Home, Search, Catalog, Product Detail, Cart</p>
+
+<!-- ============================================ -->
+<!-- SCREEN 6: HOME SCREEN                        -->
+<!-- ============================================ -->
+<div class="frames-row">
+<div class="frame-wrapper">
+  <div class="frame-label">06 — Home Screen</div>
+  <div class="frame-sublabel">Main hub • Top fold with categories + banners</div>
+  <div class="phone">
+    <div class="status-bar" style="background:#C0392B;color:#fff;">
+      <span>9:41</span>
+      <div class="status-icons">
+        <span class="material-icons-round" style="font-size:14px">signal_cellular_alt</span>
+        <span class="material-icons-round" style="font-size:14px">wifi</span>
+        <span class="material-icons-round" style="font-size:14px">battery_full</span>
+      </div>
+    </div>
+
+    <!-- App Bar -->
+    <div style="background:#C0392B;padding:8px 16px 12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="material-icons-round" style="color:#fff;font-size:28px;">local_pharmacy</span>
+          <div>
+            <div style="font-size:16px;font-weight:700;color:#fff;">Batla Medicos</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.7);">Chemist & Cosmetics</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:16px;align-items:center;">
+          <div style="position:relative;">
+            <span class="material-icons-round" style="color:#fff;font-size:24px;">notifications</span>
+            <div style="position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:#F39C12;border-radius:8px;font-size:9px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;">3</div>
+          </div>
+          <div style="position:relative;">
+            <span class="material-icons-round" style="color:#fff;font-size:24px;">shopping_cart</span>
+            <div style="position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:#F39C12;border-radius:8px;font-size:9px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;">2</div>
+          </div>
+        </div>
+      </div>
+      <!-- Search Bar -->
+      <div style="background:rgba(255,255,255,0.2);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:8px;">
+        <span class="material-icons-round" style="color:rgba(255,255,255,0.7);font-size:20px;">search</span>
+        <span style="color:rgba(255,255,255,0.6);font-size:13px;">Search medicines, health products...</span>
+      </div>
+    </div>
+
+    <!-- Announcement Strip -->
+    <div style="background:#FEF2F2;padding:8px 16px;display:flex;align-items:center;justify-content:center;gap:6px;">
+      <span style="font-size:14px;">🚛</span>
+      <span style="font-size:12px;color:#C0392B;font-weight:500;">Free Delivery above ₹499</span>
+      <span style="color:#ddd;margin:0 8px;">|</span>
+      <span style="font-size:14px;">🕐</span>
+      <span style="font-size:12px;color:#C0392B;font-weight:500;">Open till 11:45 PM</span>
+    </div>
+
+    <!-- Scrollable Content -->
+    <div style="overflow-y:auto;height:calc(100% - 24px - 110px - 36px - 80px);padding-bottom:8px;">
+
+      <!-- Banner Carousel -->
+      <div style="padding:12px 16px;">
+        <div style="background:linear-gradient(135deg,#C0392B,#E74C3C);border-radius:16px;padding:20px;height:140px;position:relative;">
+          <div style="font-size:22px;font-weight:700;color:#fff;">Flat 20% OFF</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.85);margin-top:4px;">On all skincare products</div>
+          <div style="background:#fff;color:#C0392B;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;display:inline-block;margin-top:12px;">Shop Now</div>
+          <div style="position:absolute;bottom:10px;right:16px;display:flex;gap:6px;">
+            <div style="width:20px;height:4px;background:#fff;border-radius:2px;"></div>
+            <div style="width:8px;height:4px;background:rgba(255,255,255,0.4);border-radius:2px;"></div>
+            <div style="width:8px;height:4px;background:rgba(255,255,255,0.4);border-radius:2px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Icons Row -->
+      <div style="padding:4px 16px 12px;">
+        <div style="display:flex;gap:12px;overflow-x:auto;">
+          <div style="text-align:center;min-width:60px;">
+            <div style="width:52px;height:52px;background:#FEF2F2;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;">
+              <span class="material-icons-round" style="font-size:24px;color:#C0392B;">medication</span>
+            </div>
+            <div style="font-size:10px;color:#374151;">Medicines</div>
+          </div>
+          <div style="text-align:center;min-width:60px;">
+            <div style="width:52px;height:52px;background:#F0FBF4;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;">
+              <span class="material-icons-round" style="font-size:24px;color:#1B8843;">spa</span>
+            </div>
+            <div style="font-size:10px;color:#374151;">Ayurveda</div>
+          </div>
+          <div style="text-align:center;min-width:60px;">
+            <div style="width:52px;height:52px;background:#FFF0F6;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;">
+              <span class="material-icons-round" style="font-size:24px;color:#DB2777;">face</span>
+            </div>
+            <div style="font-size:10px;color:#374151;">Skincare</div>
+          </div>
+          <div style="text-align:center;min-width:60px;">
+            <div style="width:52px;height:52px;background:#F0FFFE;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;">
+              <span class="material-icons-round" style="font-size:24px;color:#0D9488;">content_cut</span>
+            </div>
+            <div style="font-size:10px;color:#374151;">Haircare</div>
+          </div>
+          <div style="text-align:center;min-width:60px;">
+            <div style="width:52px;height:52px;background:#FDF4FF;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;">
+              <span class="material-icons-round" style="font-size:24px;color:#9333EA;">child_care</span>
+            </div>
+            <div style="font-size:10px;color:#374151;">Baby Care</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions 2x2 -->
+      <div style="padding:0 16px 16px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="background:#F0FBF4;border-radius:14px;padding:14px;display:flex;align-items:center;gap:10px;">
+            <span class="material-icons-round" style="font-size:28px;color:#1B8843;">photo_camera</span>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:#111;">Upload Rx</div>
+              <div style="font-size:10px;color:#6b7280;">Prescription</div>
+            </div>
+          </div>
+          <div style="background:#EFF6FF;border-radius:14px;padding:14px;display:flex;align-items:center;gap:10px;">
+            <span class="material-icons-round" style="font-size:28px;color:#2563EB;">biotech</span>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:#111;">Lab Tests</div>
+              <div style="font-size:10px;color:#6b7280;">Book at Home</div>
+            </div>
+          </div>
+          <div style="background:#FEF2F2;border-radius:14px;padding:14px;display:flex;align-items:center;gap:10px;">
+            <span class="material-icons-round" style="font-size:28px;color:#C0392B;">inventory_2</span>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:#111;">My Orders</div>
+              <div style="font-size:10px;color:#6b7280;">Track status</div>
+            </div>
+          </div>
+          <div style="background:#FFFBEB;border-radius:14px;padding:14px;display:flex;align-items:center;gap:10px;">
+            <span class="material-icons-round" style="font-size:28px;color:#D97706;">alarm</span>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:#111;">Reminders</div>
+              <div style="font-size:10px;color:#6b7280;">Medicine alerts</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Featured Products -->
+      <div class="section-header">
+        <div class="section-title">Featured Products</div>
+        <div class="section-link">View All →</div>
+      </div>
+      <div style="display:flex;gap:10px;padding:0 16px 16px;overflow-x:auto;">
+        <!-- Product Card 1 -->
+        <div style="min-width:150px;background:#fff;border:1px solid #f0f0f0;border-radius:14px;overflow:hidden;">
+          <div style="height:120px;background:#f9fafb;display:flex;align-items:center;justify-content:center;position:relative;">
+            <span class="material-icons-round" style="font-size:48px;color:#d1d5db;">medication</span>
+            <div style="position:absolute;top:8px;right:8px;"><span class="material-icons-round" style="font-size:20px;color:#d1d5db;">favorite_border</span></div>
+            <div style="position:absolute;top:8px;left:8px;background:#1B8843;color:#fff;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:600;">15% OFF</div>
+          </div>
+          <div style="padding:10px;">
+            <div style="font-size:10px;color:#9ca3af;">Himalaya</div>
+            <div style="font-size:12px;font-weight:600;color:#111;line-height:1.3;">Liv.52 Tablets</div>
+            <div style="font-size:9px;color:#F39C12;margin:4px 0;">★★★★☆ 4.3</div>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <span style="font-size:13px;font-weight:700;color:#C0392B;">₹142</span>
+              <span style="font-size:10px;color:#9ca3af;text-decoration:line-through;">₹167</span>
+            </div>
+            <button class="btn-sm" style="width:100%;margin-top:8px;border-radius:8px;padding:6px;">Add to Cart</button>
+          </div>
+        </div>
+        <!-- Product Card 2 -->
+        <div style="min-width:150px;background:#fff;border:1px solid #f0f0f0;border-radius:14px;overflow:hidden;">
+          <div style="height:120px;background:#f9fafb;display:flex;align-items:center;justify-content:center;position:relative;">
+            <span class="material-icons-round" style="font-size:48px;color:#d1d5db;">vaccines</span>
+            <div style="position:absolute;top:8px;right:8px;"><span class="material-icons-round" style="font-size:20px;color:#E74C3C;">favorite</span></div>
+            <div style="position:absolute;top:8px;left:8px;background:#C0392B;color:#fff;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:600;">Rx</div>
+          </div>
+          <div style="padding:10px;">
+            <div style="font-size:10px;color:#9ca3af;">Cipla</div>
+            <div style="font-size:12px;font-weight:600;color:#111;line-height:1.3;">Azithromycin 500</div>
+            <div style="font-size:9px;color:#F39C12;margin:4px 0;">★★★★★ 4.7</div>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <span style="font-size:13px;font-weight:700;color:#C0392B;">₹89</span>
+              <span style="font-size:10px;color:#9ca3af;text-decoration:line-through;">₹120</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;background:#FEF2F2;border-radius:8px;padding:4px;">
+              <span class="material-icons-round" style="font-size:18px;color:#C0392B;">remove</span>
+              <span style="font-size:13px;font-weight:700;color:#111;">1</span>
+              <span class="material-icons-round" style="font-size:18px;color:#C0392B;">add</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trust Section -->
+      <div style="padding:0 16px 16px;">
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;background:#F0FBF4;border-radius:10px;padding:10px;text-align:center;">
+            <span class="material-icons-round" style="font-size:20px;color:#1B8843;">verified</span>
+            <div style="font-size:10px;font-weight:600;color:#1B8843;margin-top:2px;">100% Genuine</div>
+          </div>
+          <div style="flex:1;background:#EFF6FF;border-radius:10px;padding:10px;text-align:center;">
+            <span class="material-icons-round" style="font-size:20px;color:#2563EB;">gpp_good</span>
+            <div style="font-size:10px;font-weight:600;color:#2563EB;margin-top:2px;">Licensed</div>
+          </div>
+          <div style="flex:1;background:#FEF2F2;border-radius:10px;padding:10px;text-align:center;">
+            <span class="material-icons-round" style="font-size:20px;color:#C0392B;">workspace_premium</span>
+            <div style="font-size:10px;font-weight:600;color:#C0392B;margin-top:2px;">Since 2005</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+      <div class="nav-item active">
+        <span class="material-icons-round mi">home</span>
+        <span>Home</span>
+      </div>
+      <div class="nav-item">
+        <span class="material-icons-round mi">search</span>
+        <span>Browse</span>
+      </div>
+      <div class="nav-item">
+        <span class="material-icons-round mi">photo_camera</span>
+        <span>Rx Upload</span>
+      </div>
+      <div class="nav-item">
+        <span class="material-icons-round mi">inventory_2</span>
+        <span>Orders</span>
+      </div>
+      <div class="nav-item">
+        <span class="material-icons-round mi">person</span>
+        <span>Account</span>
+      </div>
+    </div>
+
+    <!-- Chat FAB -->
+    <div style="position:absolute;bottom:92px;right:16px;width:52px;height:52px;background:#C0392B;border-radius:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(192,57,43,0.4);z-index:11;">
+      <span class="material-icons-round" style="color:#fff;font-size:24px;">chat</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SCREEN 7: SEARCH OVERLAY                     -->
+<!-- ============================================ -->
+<div class="frame-wrapper">
+  <div class="frame-label">07 — Search Overlay</div>
+  <div class="frame-sublabel">Full screen • Autocomplete + Recent</div>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="status-icons">
+        <span class="material-icons-round" style="font-size:14px">signal_cellular_alt</span>
+        <span class="material-icons-round" style="font-size:14px">wifi</span>
+        <span class="material-icons-round" style="font-size:14px">battery_full</span>
+      </div>
+    </div>
+
+    <!-- Search Input Active -->
+    <div style="padding:8px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #e5e7eb;">
+      <span class="material-icons-round" style="font-size:24px;color:#111;">arrow_back</span>
+      <div style="flex:1;background:#f3f4f6;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:8px;">
+        <span class="material-icons-round" style="font-size:20px;color:#9ca3af;">search</span>
+        <span style="font-size:14px;color:#111;">parace</span>
+        <span style="display:inline-block;width:2px;height:16px;background:#C0392B;animation:blink 1s infinite;"></span>
+      </div>
+      <span class="material-icons-round" style="font-size:20px;color:#9ca3af;">close</span>
+    </div>
+
+    <!-- Autocomplete Results -->
+    <div style="padding:8px 0;">
+      <div style="padding:12px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #f3f4f6;">
+        <div style="width:40px;height:40px;background:#f9fafb;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+          <span class="material-icons-round" style="font-size:24px;color:#d1d5db;">medication</span>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:500;color:#111;"><strong>Parace</strong>tamol 500mg</div>
+          <div style="font-size:12px;color:#9ca3af;">Tablets • Cipla</div>
+        </div>
+        <div style="font-size:13px;font-weight:600;color:#C0392B;">₹32</div>
+      </div>
+      <div style="padding:12px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #f3f4f6;">
+        <div style="width:40px;height:40px;background:#f9fafb;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+          <span class="material-icons-round" style="font-size:24px;color:#d1d5db;">medication</span>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:500;color:#111;"><strong>Parace</strong>tamol 650mg</div>
+          <div style="font-size:12px;color:#9ca3af;">Tablets • Dolo</div>
+        </div>
+        <div style="font-size:13px;font-weight:600;color:#C0392B;">₹38</div>
+      </div>
+      <div style="padding:12px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #f3f4f6;">
+        <div style="width:40px;height:40px;background:#f9fafb;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+          <span class="material-icons-round" style="font-size:24px;color:#d1d5db;">water_drop</span>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:500;color:#111;"><strong>Parace</strong>tamol Syrup</div>
+          <div style="font-size:12px;color:#9ca3af;">60ml • Calpol</div>
+        </div>
+        <div style="font-size:13px;font-weight:600;color:#C0392B;">₹75</div>
+      </div>
+      <div style="padding:12px 16px;text-align:center;">
+        <span style="font-size:13px;color:#2563EB;font-weight:500;">View all results for "parace" →</span>
+      </div>
+    </div>
+
+    <!-- Recent Searches -->
+    <div style="padding:16px;border-top:8px solid #f9fafb;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-size:14px;font-weight:600;color:#111;">Recent Searches</div>
+        <span style="font-size:12px;color:#C0392B;font-weight:500;">Clear All</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <span class="chip">
+          <span class="material-icons-round" style="font-size:14px;">history</span>
+          Dolo 650
+          <span class="material-icons-round" style="font-size:14px;color:#9ca3af;">close</span>
+        </span>
+        <span class="chip">
+          <span class="material-icons-round" style="font-size:14px;">history</span>
+          Vitamin D3
+          <span class="material-icons-round" style="font-size:14px;color:#9ca3af;">close</span>
+        </span>
+        <span class="chip">
+          <span class="material-icons-round" style="font-size:14px;">history</span>
+          Cetaphil
+          <span class="material-icons-round" style="font-size:14px;color:#9ca3af;">close</span>
+        </span>
+        <span class="chip">
+          <span class="material-icons-round" style="font-size:14px;">history</span>
+          BP Monitor
+        </span>
+      </div>
+    </div>
+
+    <!-- Trending -->
+    <div style="padding:0 16px;">
+      <div style="font-size:14px;font-weight:600;color:#111;margin-bottom:12px;">🔥 Trending</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <span class="chip" style="background:#FEF2F2;color:#C0392B;">Immunity Boosters</span>
+        <span class="chip" style="background:#F0FBF4;color:#1B8843;">Multivitamins</span>
+        <span class="chip" style="background:#EFF6FF;color:#2563EB;">Protein Powder</span>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============================================ -->
+<!-- SCREEN 8: PRODUCT CATALOG                    -->
+<!-- ============================================ -->
+<div class="frames-row">
+<div class="frame-wrapper">
+  <div class="frame-label">08 — Product Catalog</div>
+  <div class="frame-sublabel">2-column grid • Filters + Sort</div>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="status-icons">
+        <span class="material-icons-round" style="font-size:14px">signal_cellular_alt</span>
+        <span class="material-icons-round" style="font-size:14px">wifi</span>
+        <span class="material-icons-round" style="font-size:14px">battery_full</span>
+      </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div style="display:flex;align-items:center;padding:12px 16px;gap:12px;border-bottom:1px solid #e5e7eb;">
+      <span class="material-icons-round" style="font-size:24px;color:#111;">arrow_back</span>
+      <div style="flex:1;font-size:18px;font-weight:700;color:#111;">Products</div>
+      <span class="material-icons-round" style="font-size:22px;color:#6b7280;">filter_list</span>
+      <span class="material-icons-round" style="font-size:22px;color:#6b7280;">sort</span>
+    </div>
+
+    <!-- Active Filters -->
+    <div style="padding:8px 16px;display:flex;gap:8px;overflow-x:auto;">
+      <span class="chip active" style="font-size:11px;">Skincare <span class="material-icons-round" style="font-size:12px;">close</span></span>
+      <span class="chip active" style="font-size:11px;">Under ₹500 <span class="material-icons-round" style="font-size:12px;">close</span></span>
+      <span class="chip" style="font-size:11px;color:#C0392B;border:1px solid #C0392B;background:#fff;">Clear All</span>
+    </div>
+
+    <div style="padding:4px 16px 8px;">
+      <span style="font-size:12px;color:#6b7280;">Showing 42 products</span>
+    </div>
+
+    <!-- Product Grid -->
+    <div style="padding:0 12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;overflow-y:auto;height:calc(100% - 24px - 52px - 44px - 28px - 80px);padding-bottom:8px;">
+      <!-- Card 1 -->
+      <div style="background:#fff;border:1px solid #f0f0f0;border-radius:14px;overflow:hidden;">
+        <div style="height:110px;background:#f9fafb;display:flex;align-items:center;justify-content:center;position:relative;">
+          <span class="material-icons-round" style="font-size:40px;color:#d1d5db;">face</span>
+          <div style="position:absolute;top:6px;right:6px;"><span class="material-icons-round" style="font-size:18px;color:#d1d5db;">favorite_border</span></div>
+          <div style="position:absolute;top:6px;left:6px;background:#1B8843;color:#fff;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:600;">20% OFF</div>
+        </div>
+        <div style="padding:8px;">
+          <div style="font-size:9px;color:#9ca3af;">Cetaphil</div>
+          <div style="font-size:11px;font-weight:600;color:#111;line-height:1.3;height:28px;overflow:hidden;">Gentle Skin Cleanser 250ml</div>
+          <div style="font-size:8px;color:#F39C12;margin:3px 0;">★★★★☆ 4.5</div>
+          <div style="display:flex;align-items:center;gap:3px;">
+            <span style="font-size:12px;font-weight:700;color:#C0392B;">₹449</span>
+            <span style="font-size:9px;color:#9ca3af;text-decoration:line-through;">₹560</span>
+          </div>
+          <button class="btn-sm" style="width:100%;margin-top:6px;font-size:11px;padding:5px;">Add to Cart</button>
+        </div>
+      </div>
+      <!-- Card 2 -->
+      <div style="background:#fff;border:1px solid #f0f0f0;border-radius:14px;overflow:hidden;">
+        <div style="height:110px;background:#f9fafb;display:flex;align-items:center;justify-content:center;position:relative;">
+          <span class="material-icons-round" style="font-size:40px;color:#d1d5db;">spa</span>
+          <div style="position:absolute;top:6px;right:6px;"><span class="material-icons-round" style="font-size:18px;color:#E74C3C;">favorite</span></div>
+        </div>
+        <div style="padding:8px;">
+          <div style="font-size:9px;color:#9ca3af;">Biotique</div>
+          <div style="font-size:11px;font-weight:600;color:#111;line-height:1.3;height:28px;overflow:hidden;">Bio Morning Nectar Lotion</div>
+          <div style="font-size:8px;color:#F39C12;margin:3px 0;">★★★★★ 4.8</div>
+          <div style="display:flex;align-items:center;gap:3px;">
+            <span style="font-size:12px;font-weight:700;color:#C0392B;">₹225</span>
+            <span style="font-size:9px;color:#9ca3af;text-decoration:line-through;">₹299</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;background:#FEF2F2;border-radius:6px;padding:3px 6px;">
+            <span class="material-icons-round" style="font-size:16px;color:#C0392B;">remove</span>
+            <span style="font-size:12px;font-weight:700;">1</span>
+            <span class="material-icons-round" style="font-size:16px;color:#C0392B;">add</span>
+          </div>
+        </div>
+      </div>
+      <!-- Card 3 -->
+      <div style="background:#fff;border:1px solid #f0f0f0;border-radius:14px;overflow:hidden;">
+        <div style="height:110px;background:#f9fafb;display:flex;align-items:center;justify-content:center;position:relative;">
+          <span class="material-icons-round" style="font-size:40px;color:#d1d5db;">healing</span>
+          <div style="position:absolute;top:6px;left:6px;background:#C0392B;color:#fff;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:600;">Rx</div>
+        </div>
+        <div style="padding:8px;">
+          <div style="font-size:9px;color:#9ca3af;">Dr Reddy's</div>
+          <div style="font-size:11px;font-weight:600;color:#111;line-height:1.3;height:28px;overflow:hidden;">Niacinamide Serum 30ml</div>
+          <div style="font-size:8px;color:#F39C12;margin:3px 0;">★★★★☆ 4.2</div>
+          <div><span style="font-size:12px;font-weight:700;color:#C0392B;">₹349</span></div>
+          <button class="btn-sm" style="width:100%;margin-top:6px;font-size:11px;padding:5px;">Add to Cart</button>
+        </div>
+      </div>
+      <!-- Card 4 - Out of stock -->
+      <div style="background:#fff;border:1px solid #f0f0f0;border-radius:14px;overflow:hidden;opacity:0.7;">
+        <div style="height:110px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;position:relative;">
+          <span class="material-icons-round" style="font-size:40px;color:#d1d5db;">water_drop</span>
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;border-radius:0;">
+            <span style="background:#E74C3C;color:#fff;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:600;">Out of Stock</span>
+          </div>
+        </div>
+        <div style="padding:8px;">
+          <div style="font-size:9px;color:#9ca3af;">Mamaearth</div>
+          <div style="font-size:11px;font-weight:600;color:#111;line-height:1.3;height:28px;overflow:hidden;">Vitamin C Face Wash</div>
+          <div style="font-size:8px;color:#F39C12;margin:3px 0;">★★★★☆ 4.0</div>
+          <div><span style="font-size:12px;font-weight:700;color:#9ca3af;">₹199</span></div>
+          <button style="width:100%;margin-top:6px;font-size:10px;padding:5px;background:none;border:1px solid #d1d5db;border-radius:8px;color:#6b7280;">Request Availability</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="material-icons-round mi">home</span><span>Home</span></div>
+      <div class="nav-item active"><span class="material-icons-round mi">search</span><span>Browse</span></div>
+      <div class="nav-item"><span class="material-icons-round mi">photo_camera</span><span>Rx Upload</span></div>
+      <div class="nav-item"><span class="material-icons-round mi">inventory_2</span><span>Orders</span></div>
+      <div class="nav-item"><span class="material-icons-round mi">person</span><span>Account</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SCREEN 9: PRODUCT DETAIL                     -->
+<!-- ============================================ -->
+<div class="frame-wrapper">
+  <div class="frame-label">09 — Product Detail</div>
+  <div class="frame-sublabel">Full product view • Image, price, tabs, reviews</div>
+  <div class="phone">
+    <div class="status-bar" style="background:#f9fafb;">
+      <span>9:41</span>
+      <div class="status-icons">
+        <span class="material-icons-round" style="font-size:14px">signal_cellular_alt</span>
+        <span class="material-icons-round" style="font-size:14px">wifi</span>
+        <span class="material-icons-round" style="font-size:14px">battery_full</span>
+      </div>
+    </div>
+
+    <!-- Product Image Area -->
+    <div style="height:280px;background:#f9fafb;display:flex;align-items:center;justify-content:center;position:relative;">
+      <span class="material-icons-round" style="font-size:100px;color:#e5e7eb;">medication</span>
+      <!-- Nav overlay -->
+      <div style="position:absolute;top:12px;left:12px;width:36px;height:36px;background:rgba(255,255,255,0.9);border-radius:18px;display:flex;align-items:center;justify-content:center;">
+        <span class="material-icons-round" style="font-size:20px;color:#111;">arrow_back</span>
+      </div>
+      <div style="position:absolute;top:12px;right:12px;display:flex;gap:8px;">
+        <div style="width:36px;height:36px;background:rgba(255,255,255,0.9);border-radius:18px;display:flex;align-items:center;justify-content:center;">
+          <span class="material-icons-round" style="font-size:20px;color:#E74C3C;">favorite</span>
+        </div>
+        <div style="width:36px;height:36px;background:rgba(255,255,255,0.9);border-radius:18px;display:flex;align-items:center;justify-content:center;">
+          <span class="material-icons-round" style="font-size:20px;color:#111;">share</span>
+        </div>
+      </div>
+      <!-- Dots -->
+      <div style="position:absolute;bottom:12px;display:flex;gap:6px;">
+        <div style="width:20px;height:4px;background:#C0392B;border-radius:2px;"></div>
+        <div style="width:8px;height:4px;background:#d1d5db;border-radius:2px;"></div>
+        <div style="width:8px;height:4px;background:#d1d5db;border-radius:2px;"></div>
+      </div>
+    </div>
+
+    <!-- Product Info -->
+    <div style="padding:16px;overflow-y:auto;height:calc(100% - 24px - 280px - 72px);">
+      <div style="font-size:11px;color:#2563EB;font-weight:500;margin-bottom:2px;">Cipla</div>
+      <div style="font-size:20px;font-weight:700;color:#111;margin-bottom:6px;">Azithromycin 500mg Tablets</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <span style="font-size:12px;color:#F39C12;">★★★★☆</span>
+        <span style="font-size:12px;color:#6b7280;">4.2 (128 reviews)</span>
+      </div>
+
+      <!-- Price -->
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:12px;">
+        <span style="font-size:26px;font-weight:700;color:#C0392B;">₹89</span>
+        <span style="font-size:14px;color:#9ca3af;text-decoration:line-through;">₹120</span>
+        <span style="background:#F0FBF4;color:#1B8843;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">Save ₹31 (26% off)</span>
+      </div>
+
+      <!-- Badges -->
+      <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;">
+        <span class="badge" style="background:#FEF2F2;color:#C0392B;">Rx Required</span>
+        <span class="badge" style="background:#F0FBF4;color:#1B8843;">In Stock</span>
+        <span class="badge" style="background:#EFF6FF;color:#2563EB;">Free Delivery</span>
+      </div>
+
+      <!-- Quantity + CTA -->
+      <div style="display:flex;gap:10px;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:12px;background:#f3f4f6;border-radius:12px;padding:8px 14px;">
+          <span class="material-icons-round" style="font-size:20px;color:#C0392B;">remove</span>
+          <span style="font-size:16px;font-weight:700;">1</span>
+          <span class="material-icons-round" style="font-size:20px;color:#C0392B;">add</span>
+        </div>
+        <button class="btn-primary" style="flex:1;border-radius:12px;padding:12px;">Add to Cart</button>
+      </div>
+
+      <!-- Tabs -->
+      <div style="display:flex;border-bottom:2px solid #e5e7eb;margin-bottom:14px;">
+        <div style="flex:1;text-align:center;padding:10px;font-size:13px;font-weight:600;color:#C0392B;border-bottom:2px solid #C0392B;margin-bottom:-2px;">Description</div>
+        <div style="flex:1;text-align:center;padding:10px;font-size:13px;font-weight:500;color:#9ca3af;">Uses</div>
+        <div style="flex:1;text-align:center;padding:10px;font-size:13px;font-weight:500;color:#9ca3af;">Side Effects</div>
+        <div style="flex:1;text-align:center;padding:10px;font-size:13px;font-weight:500;color:#9ca3af;">Reviews</div>
+      </div>
+
+      <div style="font-size:13px;color:#374151;line-height:1.7;">
+        Azithromycin is an antibiotic used to treat various bacterial infections. Each strip contains 3 tablets of 500mg. Take as directed by your physician.
+      </div>
+    </div>
+
+    <!-- Sticky Bottom CTA -->
+    <div style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e5e7eb;padding:12px 16px;display:flex;gap:10px;">
+      <button style="flex:1;background:#fff;color:#C0392B;border:2px solid #C0392B;border-radius:12px;padding:12px;font-size:14px;font-weight:600;">Buy Now</button>
+      <button style="flex:1;background:#C0392B;color:#fff;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:600;">Go to Cart</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SCREEN 10: CART                              -->
+<!-- ============================================ -->
+<div class="frame-wrapper">
+  <div class="frame-label">10 — Cart</div>
+  <div class="frame-sublabel">Items list • Summary • Checkout CTA</div>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="status-icons">
+        <span class="material-icons-round" style="font-size:14px">signal_cellular_alt</span>
+        <span class="material-icons-round" style="font-size:14px">wifi</span>
+        <span class="material-icons-round" style="font-size:14px">battery_full</span>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e5e7eb;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="material-icons-round" style="font-size:24px;color:#111;">shopping_cart</span>
+        <div style="font-size:18px;font-weight:700;color:#111;">My Cart</div>
+        <span style="background:#f3f4f6;color:#6b7280;padding:2px 8px;border-radius:10px;font-size:12px;">3 items</span>
+      </div>
+      <span class="material-icons-round" style="font-size:24px;color:#6b7280;">close</span>
+    </div>
+
+    <!-- Cart Items -->
+    <div style="overflow-y:auto;height:calc(100% - 24px - 52px - 180px);padding:12px 16px;">
+      <!-- Item 1 -->
+      <div style="display:flex;gap:12px;padding-bottom:16px;border-bottom:1px solid #f3f4f6;margin-bottom:16px;">
+        <div style="width:64px;height:64px;background:#f9fafb;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <span class="material-icons-round" style="font-size:32px;color:#d1d5db;">medication</span>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:600;color:#111;">Azithromycin 500mg</div>
+          <div style="font-size:11px;color:#9ca3af;margin:2px 0;">Cipla • Strip of 3</div>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <span class="badge" style="background:#FEF2F2;color:#C0392B;font-size:9px;">Rx</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+            <div style="display:flex;align-items:center;gap:8px;background:#f3f4f6;border-radius:8px;padding:4px 10px;">
+              <span class="material-icons-round" style="font-size:16px;color:#C0392B;">remove</span>
+              <span style="font-size:13px;font-weight:700;">1</span>
+              <span class="material-icons-round" style="font-size:16px;color:#C0392B;">add</span>
+            </div>
+            <span style="font-size:14px;font-weight:700;color:#111;">₹89</span>
+          </div>
+        </div>
+        <span class="material-icons-round" style="font-size:18px;color:#d1d5db;cursor:pointer;">delete</span>
+      </div>
+
+      <!-- Item 2 -->
+      <div style="display:flex;gap:12px;padding-bottom:16px;border-bottom:1px solid #f3f4f6;margin-bottom:16px;">
+        <div style="width:64px;height:64px;background:#f9fafb;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <span class="material-icons-round" style="font-size:32px;color:#d1d5db;">face</span>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:600;color:#111;">Cetaphil Gentle Skin Cleanser</div>
+          <div style="font-size:11px;color:#9ca3af;margin:2px 0;">Cetaphil • 250ml</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+            <div style="display:flex;align-items:center;gap:8px;background:#f3f4f6;border-radius:8px;padding:4px 10px;">
+              <span class="material-icons-round" style="font-size:16px;color:#C0392B;">remove</span>
+              <span style="font-size:13px;font-weight:700;">2</span>
+              <span class="material-icons-round" style="font-size:16px;color:#C0392B;">add</span>
+            </div>
+            <span style="font-size:14px;font-weight:700;color:#111;">₹898</span>
+          </div>
+        </div>
+        <span class="material-icons-round" style="font-size:18px;color:#d1d5db;cursor:pointer;">delete</span>
+      </div>
+
+      <!-- Item 3 -->
+      <div style="display:flex;gap:12px;padding-bottom:16px;">
+        <div style="width:64px;height:64px;background:#f9fafb;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <span class="material-icons-round" style="font-size:32px;color:#d1d5db;">spa</span>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:600;color:#111;">Biotique Morning Nectar</div>
+          <div style="font-size:11px;color:#9ca3af;margin:2px 0;">Biotique • 120ml</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+            <div style="display:flex;align-items:center;gap:8px;background:#f3f4f6;border-radius:8px;padding:4px 10px;">
+              <span class="material-icons-round" style="font-size:16px;color:#C0392B;">remove</span>
+              <span style="font-size:13px;font-weight:700;">1</span>
+              <span class="material-icons-round" style="font-size:16px;color:#C0392B;">add</span>
+            </div>
+            <span style="font-size:14px;font-weight:700;color:#111;">₹225</span>
+          </div>
+        </div>
+        <span class="material-icons-round" style="font-size:18px;color:#d1d5db;cursor:pointer;">delete</span>
+      </div>
+    </div>
+
+    <!-- Cart Summary (Sticky Bottom) -->
+    <div style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e5e7eb;padding:16px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+        <span style="font-size:13px;color:#6b7280;">Subtotal</span>
+        <span style="font-size:13px;color:#111;">₹1,212</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+        <span style="font-size:13px;color:#6b7280;">Delivery</span>
+        <span style="font-size:13px;color:#1B8843;font-weight:600;">FREE</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:14px;padding-top:8px;border-top:1px solid #e5e7eb;">
+        <span style="font-size:16px;font-weight:700;color:#111;">Total</span>
+        <span style="font-size:16px;font-weight:700;color:#C0392B;">₹1,212</span>
+      </div>
+      <button class="btn-primary" style="display:flex;align-items:center;justify-content:center;gap:6px;">
+        Proceed to Checkout
+        <span class="material-icons-round" style="font-size:18px;">arrow_forward</span>
+      </button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div style="text-align:center;padding:40px;color:#666;font-size:14px;border-top:1px solid #333;margin-top:20px;">
+  <strong style="color:#fff;">Batla Medicos Android App</strong> — Figma Frame Export Part 2/6<br>
+  Screens 6-10: Home, Search, Product Catalog, Product Detail, Cart<br>
+  <span style="color:#888;">360×800dp • Material Design 3 • Inter Font</span>
+</div>
+
+</body>
+</html>

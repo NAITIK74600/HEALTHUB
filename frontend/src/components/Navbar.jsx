@@ -13,7 +13,7 @@ export default function Navbar() {
   const { items: wishItems } = useWishlist();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const WHATSAPP = import.meta.env.VITE_WHATSAPP_NUMBER || '919990165925';
+  const WHATSAPP = import.meta.env.VITE_WHATSAPP_NUMBER || '917303240289';
 
   return (
     <>
@@ -21,7 +21,7 @@ export default function Navbar() {
       <div className="topbar">
         <span className="topbar__item"><Truck size={13} /> Free Delivery above ₹499</span>
         <span className="topbar__divider" />
-        <span className="topbar__item"><Clock size={13} /> Open 9 AM – 11:45 PM daily</span>
+        <span className="topbar__item"><Clock size={13} /> Open 8 AM – 11:45 PM daily</span>
         <span className="topbar__divider" />
         <a
           href={`https://wa.me/${WHATSAPP}`}
@@ -29,7 +29,7 @@ export default function Navbar() {
           className="topbar__item"
           style={{ color: 'inherit', textDecoration: 'none' }}
         >
-          <Phone size={13} /> 9990165925
+          <Phone size={13} /> 7303240289
         </a>
       </div>
 
@@ -39,10 +39,10 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="navbar__brand">
             <div className="navbar__logo">
-              <img src="/logo.png?v=3" className="navbar__logo-img" alt="Batla Medicos" />
+              <img src="/logo.jpg?v=4" className="navbar__logo-img" alt="Health Hub" />
             </div>
             <div className="navbar__brand-text">
-              <span className="navbar__brand-red">Batla Medicos</span>
+              <span className="navbar__brand-red">Health Hub</span>
               <span className="navbar__brand-green">Chemist &amp; Cosmetics</span>
             </div>
           </Link>
