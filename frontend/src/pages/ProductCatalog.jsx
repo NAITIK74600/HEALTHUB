@@ -237,7 +237,7 @@ export default function ProductCatalog() {
 
   const seoTitle = selectedCatName ? `Buy ${selectedCatName} Online` : search ? `Search: ${search}` : 'Buy Medicines & Healthcare Products Online';
   const seoDesc = selectedCatName
-    ? `Buy ${selectedCatName} online at best prices from Health Hub. Free delivery above ₹499. Trusted pharmacy since 2005 in New Delhi.`
+    ? `Buy ${selectedCatName} online at best prices from Health Hub. Free delivery above ₹499. Genuine medicines from a licensed pharmacy in New Delhi.`
     : 'Browse medicines, Ayurvedic products, vitamins, cosmetics, baby care & more. Free delivery above ₹499. Buy online from Health Hub, New Delhi.';
 
   // JSON-LD ItemList schema for product listings (fixes Google "offers" warning)

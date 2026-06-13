@@ -9,7 +9,7 @@ const EMPTY = { name: '', category: 'featured', ord: 0, logoUrl: '', gradient: '
 const CAT_LABEL = { featured: 'Featured', ayurvedic: 'Ayurvedic', general: 'General', personal_care: 'Personal Care' };
 const CAT_COLOR = {
   featured:      { bg: '#FEF2F2', color: '#C0392B' },
-  ayurvedic:     { bg: '#F0FBF4', color: '#1B8843' },
+  ayurvedic:     { bg: '#F0FBF4', color: '#16A085' },
   general:       { bg: '#EFF6FF', color: '#2563EB' },
   personal_care: { bg: '#FDF4FF', color: '#7C3AED' },
 };
@@ -17,7 +17,7 @@ const CAT_COLOR = {
 // Default gradients for each personal care tile (fallback)
 // slug = the ?category= slug used on the products page (may differ from brand slug)
 const PC_PRESETS = [
-  { label: 'Skin Care',       slug: 'skin-care',       gradient: 'linear-gradient(135deg,#8BC34A,#5D9E3F)' },
+  { label: 'Skin Care',       slug: 'skin-care',       gradient: 'linear-gradient(135deg,#2ECABF,#5D9E3F)' },
   { label: 'Hair Care',       slug: 'hair-care',       gradient: 'linear-gradient(135deg,#4CAF50,#2E7D32)' },
   { label: 'Sexual Wellness', slug: 'sexual-wellness', gradient: 'linear-gradient(135deg,#FF9800,#E65100)' },
   { label: 'Oral Care',       slug: 'oral-care',       gradient: 'linear-gradient(135deg,#E57373,#C62828)' },
@@ -167,7 +167,7 @@ export default function AdminBrands() {
             <div className="brands-admin-grid">
               {grouped.personal_care.map(b => (
                 <div key={b._id} className={`brand-admin-card ${!b.isActive ? 'brand-admin-card--inactive' : ''}`}>
-                  <div className="brand-admin-card__logo" style={{ background: b.gradient || 'linear-gradient(135deg,#8BC34A,#5D9E3F)' }}>
+                  <div className="brand-admin-card__logo" style={{ background: b.gradient || 'linear-gradient(135deg,#2ECABF,#5D9E3F)' }}>
                     {b.logoUrl
                       ? <img src={b.logoUrl} alt={b.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'cover', borderRadius: 8 }} />
                       : <span style={{ fontSize: 22 }}>🌿</span>
@@ -312,10 +312,10 @@ export default function AdminBrands() {
                 <div>
                   <label className="form-label">Tile Gradient (CSS)</label>
                   <input className="form-input" type="text"
-                    placeholder="linear-gradient(135deg,#8BC34A,#5D9E3F)"
+                    placeholder="linear-gradient(135deg,#2ECABF,#5D9E3F)"
                     value={form.gradient}
                     onChange={e => setForm(f => ({ ...f, gradient: e.target.value }))} />
-                  <div style={{ marginTop: 6, height: 32, borderRadius: 8, background: form.gradient || 'linear-gradient(135deg,#8BC34A,#5D9E3F)', border: '1px solid var(--border)' }} />
+                  <div style={{ marginTop: 6, height: 32, borderRadius: 8, background: form.gradient || 'linear-gradient(135deg,#2ECABF,#5D9E3F)', border: '1px solid var(--border)' }} />
                   <p style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 4 }}>Background colour shown behind the image. Use a CSS gradient or solid hex colour.</p>
                 </div>
               )}
@@ -452,7 +452,7 @@ export default function AdminBrands() {
                     {/* Progress bar */}
                     {mediaUploading && (
                       <div style={{ height: 5, borderRadius: 3, background: '#e5e7eb', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${mediaProgress}%`, background: '#6FA82E', transition: 'width 0.2s' }} />
+                        <div style={{ height: '100%', width: `${mediaProgress}%`, background: '#1ABC9C', transition: 'width 0.2s' }} />
                       </div>
                     )}
                   </div>

@@ -7,7 +7,7 @@
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#FFFFFF",
-  "theme_color": "#6FA82E",
+  "theme_color": "#1ABC9C",
   "categories": ["health", "shopping", "medical"],
   "lang": "en-IN",
   "dir": "ltr",

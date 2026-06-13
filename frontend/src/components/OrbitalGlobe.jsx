@@ -9,9 +9,9 @@
  *   DNA helix bg       z-offset=-60, radius=65, height=260
  *   Wireframe globe    r = 55
  *   Inner glow sphere  r = 22
- *   Logo billboard     z = 26  (scale 40×40)
+ *   Logo medallion    z = 26  (circular badge, scale 46×46)
  *   Ring 1 green       r = 40  (equatorial)
- *   Ring 2 blue        r = 56  (tilted)
+ *   Ring 2 green       r = 56  (tilted)
  *   Ring 3 gold        r = 72  (counter-tilted)
  *   Icon sprites       r = 94  (Fibonacci sphere, no overlap)
  */
@@ -77,17 +77,61 @@ function makeIconTexture(label, ringColor, sz = 120) {
   return tex;
 }
 
-function makeLogoTexture(sz = 256) {
+function makeLogoTexture(sz = 512) {
   return new Promise(resolve => {
     const img = new Image();
-    img.src = '/logo.jpg?v=4';
+    img.src = '/logo.jpg?v=5';
     img.onload = () => {
       const c = document.createElement('canvas');
       c.width = sz; c.height = sz;
       const ctx = c.getContext('2d');
-      const pad = sz * 0.06;
-      ctx.drawImage(img, pad, pad, sz - pad * 2, sz - pad * 2);
+      const cx = sz / 2, cy = sz / 2;
+      const r = sz / 2 - sz * 0.05;
+
+      // Soft outer glow halo (green)
+      const halo = ctx.createRadialGradient(cx, cy, r * 0.85, cx, cy, r + sz * 0.05);
+      halo.addColorStop(0, 'rgba(111,168,46,0.55)');
+      halo.addColorStop(1, 'rgba(111,168,46,0)');
+      ctx.fillStyle = halo;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r + sz * 0.05, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Clip everything to a circle -> clean medallion, no white square
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.clip();
+
+      // White backing disc so the logo reads cleanly
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, sz, sz);
+
+      // Draw the logo centred & cover-fit inside the circle
+      const side = Math.min(img.width, img.height);
+      const sxOff = (img.width - side) / 2;
+      const syOff = (img.height - side) / 2;
+      const pad = sz * 0.10;
+      ctx.drawImage(img, sxOff, syOff, side, side, pad, pad, sz - pad * 2, sz - pad * 2);
+      ctx.restore();
+
+      // Crisp green ring border
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = '#6FA82E';
+      ctx.lineWidth = sz * 0.025;
+      ctx.stroke();
+
+      // Thin inner highlight ring
+      ctx.beginPath();
+      ctx.arc(cx, cy, r - sz * 0.025, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+      ctx.lineWidth = sz * 0.008;
+      ctx.stroke();
+
       const tex = new THREE.CanvasTexture(c);
+      tex.anisotropy = 4;
       tex.needsUpdate = true;
       resolve(tex);
     };
@@ -190,7 +234,7 @@ export default function OrbitalGlobe() {
 
     /* Lights */
     scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-    const sunLight = new THREE.DirectionalLight(0x93c5fd, 1.1);
+    const sunLight = new THREE.DirectionalLight(0xDFF5C8, 1.1);
     sunLight.position.set(6, 9, 8);
     scene.add(sunLight);
     const fillLight = new THREE.DirectionalLight(0x4ade80, 0.35);
@@ -209,10 +253,10 @@ export default function OrbitalGlobe() {
       return geo;
     };
 
-    // Strand 1 — brand blue
+    // Strand 1 — leaf green
     dnaGroup.add(new THREE.Points(
       mkDnaGeo(DNA_POS1),
-      new THREE.PointsMaterial({ color: 0x93C5FD, size: 2.2, transparent: true, opacity: 0.55, sizeAttenuation: true }),
+      new THREE.PointsMaterial({ color: 0xA6D17A, size: 2.2, transparent: true, opacity: 0.55, sizeAttenuation: true }),
     ));
     // Strand 2 — brand green
     dnaGroup.add(new THREE.Points(
@@ -245,12 +289,12 @@ export default function OrbitalGlobe() {
     scene.add(meshInner);
 
     /* Logo billboard Sprite at centre */
-    makeLogoTexture(256).then(tex => {
+    makeLogoTexture(512).then(tex => {
       if (!tex) return;
       const logo = new THREE.Sprite(
         new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: 1, depthWrite: false }),
       );
-      logo.scale.set(40, 40, 1);
+      logo.scale.set(46, 46, 1);
       logo.position.set(0, 0, 26);
       scene.add(logo);
     });

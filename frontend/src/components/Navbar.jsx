@@ -37,13 +37,9 @@ export default function Navbar() {
       <nav className="navbar">
         <div className="navbar__inner">
           {/* Logo */}
-          <Link to="/" className="navbar__brand">
+          <Link to="/" className="navbar__brand" aria-label="Health Hub home">
             <div className="navbar__logo">
-              <img src="/logo.jpg?v=4" className="navbar__logo-img" alt="Health Hub" />
-            </div>
-            <div className="navbar__brand-text">
-              <span className="navbar__brand-red">Health Hub</span>
-              <span className="navbar__brand-green">Chemist &amp; Cosmetics</span>
+              <img src="/logo.jpg?v=5" className="navbar__logo-img" alt="Health Hub" />
             </div>
           </Link>
 

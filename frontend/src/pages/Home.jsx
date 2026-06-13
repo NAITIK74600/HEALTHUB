@@ -21,7 +21,7 @@ import ProductCard from '../components/ProductCard';
 import OfferBanner from '../components/OfferBanner';
 import PromoVideo from '../components/PromoVideo';
 import AnimatedSection from '../components/AnimatedSection';
-import OrbitalGlobe from '../components/OrbitalGlobe';
+import HeroVisual from '../components/HeroVisual';
 import { useRipple, useParallaxMouse, useTilt3D } from '../hooks/useAnimations';
 import { getAnimationSetting } from '../pages/admin/AdminSiteSettings';
 
@@ -52,7 +52,7 @@ const CATEGORY_ICONS = {
   'generic':          { icon: <Package size={28} />,      bg: '#F0FBF4', color: '#16A34A' },
   'container':        { icon: <Box size={28} />,          bg: '#FEFCE8', color: '#CA8A04' },
   'pharma-misc':      { icon: <LayoutGrid size={28} />,   bg: '#F5F3FF', color: '#7C3AED' },
-  'fridge':           { icon: <Thermometer size={28} />,  bg: '#E8EEFF', color: '#3E6B1A' },
+  'fridge':           { icon: <Thermometer size={28} />,  bg: '#E8EEFF', color: '#117A65' },
   allopathic:         { icon: <Pill size={28} />,         bg: '#FEF2F2', color: '#C0392B' },
   ayurvedic:          { icon: <Leaf size={28} />,         bg: '#F0FBF4', color: '#1E8449' },
   homeopathy:         { icon: <Droplet size={28} />,      bg: '#EFF6FF', color: '#2563EB' },
@@ -83,7 +83,7 @@ const SHOP_CATS = [
 // Personal-care category tiles matching the screenshot style
 // Used as fallback when no DB brands are configured for personal_care category.
 const PERSONAL_CARE_CATS = [
-  { label: 'Skin Care',       slug: 'skin-care',       gradient: 'linear-gradient(135deg,#8BC34A,#5D9E3F)', emoji: '✨' },
+  { label: 'Skin Care',       slug: 'skin-care',       gradient: 'linear-gradient(135deg,#2ECABF,#5D9E3F)', emoji: '✨' },
   { label: 'Hair Care',       slug: 'hair-care',       gradient: 'linear-gradient(135deg,#4CAF50,#2E7D32)', emoji: '💆' },
   { label: 'Sexual Wellness', slug: 'sexual-wellness', gradient: 'linear-gradient(135deg,#FF9800,#E65100)', emoji: '❤️' },
   { label: 'Oral Care',       slug: 'oral-care',       gradient: 'linear-gradient(135deg,#E57373,#C62828)', emoji: '🦷' },
@@ -110,12 +110,12 @@ const PC_EMOJI_BY_LABEL = Object.fromEntries(PERSONAL_CARE_CATS.map(c => [c.labe
 const PC_GRADIENT_BY_LABEL = Object.fromEntries(PERSONAL_CARE_CATS.map(c => [c.label, c.gradient]));
 
 const TRUST_FEATURES = [
-  { icon: <Truck size={22} />,       bg: '#FEF2F2', color: '#C0392B', title: 'Free Delivery',           desc: 'On orders above ₹499' },
-  { icon: <ShieldCheck size={22} />, bg: '#F0FBF4', color: '#1B8843', title: '100% Genuine',            desc: 'Licensed & verified sources' },
-  { icon: <Clock size={22} />,       bg: '#FEF2F2', color: '#C0392B', title: 'Open 8 AM – 11:45 PM',     desc: 'Monday to Sunday' },
-  { icon: <Stethoscope size={22} />, bg: '#F0FBF4', color: '#1B8843', title: 'Expert Pharmacists',      desc: 'Free consultation' },
+  { icon: <Truck size={22} />,       bg: '#E8F8F5', color: '#16A085', title: 'Free Delivery',           desc: 'On orders above ₹499' },
+  { icon: <ShieldCheck size={22} />, bg: '#F0FBF4', color: '#16A085', title: '100% Genuine',            desc: 'Licensed & verified sources' },
+  { icon: <Clock size={22} />,       bg: '#E8F8F5', color: '#16A085', title: 'Open 8 AM – 11:45 PM',     desc: 'Monday to Sunday' },
+  { icon: <Stethoscope size={22} />, bg: '#F0FBF4', color: '#16A085', title: 'Expert Pharmacists',      desc: 'Free consultation' },
   { icon: <Activity size={22} />,    bg: '#EFF6FF', color: '#2563EB', title: 'Lab Tests at Home',       desc: 'Up to 70% off' },
-  { icon: <Users size={22} />,       bg: '#FFFBEB', color: '#D97706', title: '50,000+ Customers',       desc: 'Trusted since 2005' },
+  { icon: <Users size={22} />,       bg: '#FFFBEB', color: '#D97706', title: 'Now Open',                desc: 'New in Connaught Place' },
 ];
 
 const STORE_ADDRESS = 'Block G, Connaught Place, New Delhi - 110001';
@@ -135,8 +135,8 @@ const HEALTH_TIPS = [
 ];
 
 const WHY_CHOOSE = [
-  { icon: <Award size={26} />,       bg: '#FEF2F2', color: '#C0392B', title: '20+ Years of Trust',   desc: 'Serving New Delhi' },
-  { icon: <ShieldCheck size={26} />, bg: '#F0FBF4', color: '#1B8843', title: '100% Authentic',        desc: 'Direct from licensed distributors' },
+  { icon: <Award size={26} />,       bg: '#E8F8F5', color: '#16A085', title: 'Licensed Pharmacy',   desc: 'Registered & compliant' },
+  { icon: <ShieldCheck size={26} />, bg: '#F0FBF4', color: '#16A085', title: '100% Authentic',        desc: 'Direct from licensed distributors' },
   { icon: <Truck size={26} />,       bg: '#EFF6FF', color: '#2563EB', title: 'Fast Delivery',         desc: 'Same-day delivery in Connaught Place' },
   { icon: <Stethoscope size={26} />, bg: '#FDF4FF', color: '#9333EA', title: 'Free Consultation',     desc: 'Expert pharmacists, no charge' },
   { icon: <Clock size={26} />,       bg: '#FFFBEB', color: '#D97706', title: 'Open 7 Days a Week',   desc: 'Monday to Sunday, 8 AM – 11:45 PM' },
@@ -419,7 +419,7 @@ export default function Home() {
     <main>
       <SEO
         title="Online Pharmacy New Delhi – Buy Medicines, Lab Tests, Ayurvedic Products"
-        description="Health Hub – trusted pharmacy. Buy medicines, Ayurvedic products, vitamins, cosmetics & baby care online. Lab tests at home. Free delivery above ₹499. Open 8 AM – 11:45 PM daily."
+        description="Health Hub – your neighbourhood pharmacy in Connaught Place. Buy medicines, Ayurvedic products, vitamins, cosmetics & baby care online. Lab tests at home. Free delivery above ₹499. Open 8 AM – 11:45 PM daily."
         path="/"
       />
       {/* ══════════════════════════════ HERO ══════════════════════════════ */}
@@ -438,13 +438,13 @@ export default function Home() {
           <div className="hero__shape hero__shape--5" />
         </div>
         <div className="hero__layout">
-          <OrbitalGlobe />
+          <HeroVisual />
           <div className="hero__content" data-depth="0.5">
             <span className="hero__tag">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 2v20M2 12h20"/></svg>
-              Trusted Pharmacy Since 2005
+              Now Open in Connaught Place
             </span>
-            <h1>Your Trusted<br /><span className="red">Neighbourhood</span><br />Pharmacy</h1>
+            <h1>Your Neighbourhood<br /><span className="red">Health Hub</span><br />Now Open</h1>
             <p>Allopathic · Ayurvedic · Cosmetics · Baby Products · Surgical</p>
             <div className="hero__actions">
               <Link to="/products" className="btn btn--primary btn--lg ripple-btn" onClick={ripple}>Shop Now <ChevronRight size={18} /></Link>
@@ -554,7 +554,7 @@ export default function Home() {
                   .map(b => ({
                     label:    b.name,
                     slug:     PC_BRAND_TO_CAT[b.slug] || b.slug,
-                    gradient: b.gradient || PC_GRADIENT_BY_LABEL[b.name] || 'linear-gradient(135deg,#8BC34A,#5D9E3F)',
+                    gradient: b.gradient || PC_GRADIENT_BY_LABEL[b.name] || 'linear-gradient(135deg,#2ECABF,#5D9E3F)',
                     logoUrl:  b.logoUrl || null,
                     emoji:    PC_EMOJI_BY_LABEL[b.name] || '💊',
                   }))
@@ -600,12 +600,24 @@ export default function Home() {
             <Link to="/products" className="section__link">All Products <ChevronRight size={14} /></Link>
           </div>
           <div className="category-grid-v2">
-            {SHOP_CATS.map((cat, idx) => (
-              <Link key={cat.slug} to={`/products?category=${cat.slug}`} className="cat-tile ripple-btn" onClick={ripple} style={{ animationDelay: `${idx * 0.04}s` }}>
-                <span className="cat-tile__icon" style={{ background: cat.bg, color: cat.color }}>{cat.icon}</span>
-                <span className="cat-tile__name">{cat.label}</span>
-              </Link>
-            ))}
+            {SHOP_CATS.map((cat, idx) => {
+              const dbCat = categories.find(c => c.slug === cat.slug);
+              const photo = dbCat?.image;
+              const count = dbCat?.productCount;
+              return (
+                <Link key={cat.slug} to={`/products?category=${cat.slug}`} className="cat-tile ripple-btn" onClick={ripple} style={{ animationDelay: `${idx * 0.04}s` }}>
+                  {photo ? (
+                    <span className="cat-tile__icon cat-tile__icon--photo" style={{ background: cat.bg, color: cat.color }}>
+                      <img src={photo} alt={cat.label} loading="lazy" />
+                    </span>
+                  ) : (
+                    <span className="cat-tile__icon" style={{ color: cat.color }}>{cat.icon}</span>
+                  )}
+                  <span className="cat-tile__name">{cat.label}</span>
+                  {count > 0 && <span className="cat-tile__count">{count} Items</span>}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </AnimatedSection>
@@ -626,7 +638,7 @@ export default function Home() {
       {/* ════════════════════ AYURVEDA BRANDS ════════════════════════════ */}
       {ayurvedaBrands.length > 0 && (
         <AnimatedSection animation={getAnimationSetting('ayurvedaBrands')}>
-        <ScrollRow title="Ayurveda top brands" link="/products?category=ayurveda" accent="#1B8843">
+        <ScrollRow title="Ayurveda top brands" link="/products?category=ayurveda" accent="#16A085">
           {ayurvedaBrands.map(b => (
             <Link key={b._id} to={`/products?brand=${encodeURIComponent(b.name)}`} className="brand-ayur-card ripple-btn" onClick={ripple} title={b.name}>
               <div className="brand-ayur-card__box">
@@ -740,7 +752,7 @@ export default function Home() {
         <div className="container">
           <div className="section__header" style={{ flexDirection: 'column', gap: '4px', textAlign: 'center' }}>
             <h2 className="section__title" style={{ justifyContent: 'center' }}>Why Choose Health Hub?</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Trusted by 50,000+ families in New Delhi</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Your new neighbourhood pharmacy in Connaught Place, New Delhi</p>
           </div>
           <div className="why-grid">
             {WHY_CHOOSE.map((w, i) => (

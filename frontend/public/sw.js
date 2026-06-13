@@ -1,10 +1,10 @@
 // Health Hub – Service Worker (Cache-first for static, network-first for API)
-const CACHE_NAME = 'batla-medicos-v1';
+const CACHE_NAME = 'healthhub-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/logo.png',
+  '/logo.jpg',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
 ];

@@ -146,7 +146,7 @@ export default function AdminPromotions() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
         <div>
           <h1 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Film size={22} style={{ color: '#C0392B' }} /> Video Promotions
+            <Film size={22} style={{ color: '#1ABC9C' }} /> Video Promotions
           </h1>
           <p style={{ margin: '4px 0 0', fontSize: '0.82rem', color: '#9ca3af' }}>
             Manage promotional / ad videos displayed on home page, brand pages, etc.
@@ -207,7 +207,7 @@ export default function AdminPromotions() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                   {item.brand.logoUrl
                     ? <img src={item.brand.logoUrl} alt="" style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'contain', background: '#f3f4f6', padding: 2, flexShrink: 0 }} />
-                    : <span style={{ width: 28, height: 28, borderRadius: 6, background: 'linear-gradient(135deg,#6FA82E,#27AE60)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{item.brand.name?.slice(0, 2).toUpperCase()}</span>
+                    : <span style={{ width: 28, height: 28, borderRadius: 6, background: 'linear-gradient(135deg,#1ABC9C,#27AE60)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{item.brand.name?.slice(0, 2).toUpperCase()}</span>
                   }
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 600, fontSize: '0.88rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>

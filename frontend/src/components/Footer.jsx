@@ -39,13 +39,9 @@ export default function Footer() {
         {/* ── Column 1: Brand ── */}
         <div className="footer__brand">
           <div className="footer__logo">
-            <img src="/logo.jpg?v=4" alt="Health Hub" style={{ width: 48, height: 48, objectFit: 'contain', borderRadius: 10 }} />
-            <div className="footer__logo-text">
-              <span className="footer__logo-name">Health Hub</span>
-              <span className="footer__logo-tagline">Chemist &amp; Cosmetics</span>
-            </div>
+            <img src="/logo.jpg?v=5" alt="Health Hub" style={{ width: 64, height: 64, objectFit: 'contain', borderRadius: 12 }} />
           </div>
-          <p>Your trusted neighbourhood pharmacy serving Connaught Place, New Delhi. Genuine medicines, free delivery.</p>
+          <p>Your neighbourhood pharmacy in Connaught Place, New Delhi. Genuine medicines, free delivery.</p>
           <div className="footer__services">
             {['Allopathic', 'Ayurvedic', 'Cosmetics', 'Baby Care', 'Surgical', 'Free Delivery'].map(s => (
               <span key={s} className="footer__service-chip"><Shield size={10} /> {s}</span>
