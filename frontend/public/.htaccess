@@ -53,24 +53,14 @@
   </FilesMatch>
 </IfModule>
 
-# ── React Router SPA — all routes → index.html ───────────────────────────────
+# ── React Router SPA — Passenger handles all dynamic routes ─────────────────
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
 
-  # Force HTTPS — fix "Not Secure" warning
+  # Force HTTPS
   RewriteCond %{HTTPS} off
   RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
-
-  # /api/* — pass through to Node.js/Passenger (do NOT rewrite to index.html)
-  RewriteRule ^api/ - [L]
-
-  # Don't rewrite existing files or directories
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
-
-  # Send everything else to index.html (React Router SPA)
-  RewriteRule ^ index.html [QSA,L]
 </IfModule>
 
 # ── Force UTF-8 for all text/HTML/JS/CSS ─────────────────────────────────────
