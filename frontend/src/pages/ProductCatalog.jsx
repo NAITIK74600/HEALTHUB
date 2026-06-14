@@ -201,7 +201,7 @@ export default function ProductCatalog() {
 
   useEffect(() => { fetchProducts(); }, [fetchProducts]);
   useEffect(() => {
-    getCategories().then(r => setCategories(r.data.categories)).catch(() => {});
+    getCategories().then(r => setCategories(r.data.categories || [])).catch(() => {});
     getTopBrands().then(r => setBrands(r.data.brands || [])).catch(() => {});
     getActiveOffers('products').then(r => setOffers(r.data.offers || [])).catch(() => {});
   }, []);

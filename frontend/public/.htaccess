@@ -62,15 +62,14 @@
   RewriteCond %{HTTPS} off
   RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
-  # NOTE: /api/* is handled by Node.js app (Passenger) — no mod_proxy needed
-  # Static files are served directly by Apache from public_html
-  # All other routes → index.html for React Router (client-side routing)
+  # /api/* — pass through to Node.js/Passenger (do NOT rewrite to index.html)
+  RewriteRule ^api/ - [L]
 
   # Don't rewrite existing files or directories
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
 
-  # Send everything else to index.html
+  # Send everything else to index.html (React Router SPA)
   RewriteRule ^ index.html [QSA,L]
 </IfModule>
 
