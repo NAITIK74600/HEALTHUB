@@ -129,19 +129,6 @@ export default function Navbar() {
 
         {/* ── Mobile menu drawer ── */}
         <div className={`navbar__links ${mobileOpen ? 'navbar__links--open' : ''}`}>
-          {/* Mobile search */}
-          <form className="navbar__search navbar__search--mobile" onSubmit={handleSearch} style={{ marginBottom: 8 }}>
-            <Search size={16} className="navbar__search-icon" />
-            <input
-              type="text"
-              className="navbar__search-input"
-              placeholder="Search medicines..."
-              value={searchQ}
-              onChange={e => setSearchQ(e.target.value)}
-            />
-            <button type="submit" className="navbar__search-btn">Go</button>
-          </form>
-
           <NavLink to="/" end onClick={() => setMobileOpen(false)}>Home</NavLink>
           <NavLink to="/products" onClick={() => setMobileOpen(false)}>Products</NavLink>
           {user ? (
@@ -178,6 +165,22 @@ export default function Navbar() {
           )}
         </div>
       </nav>
+
+      {/* Dedicated mobile search strip */}
+      <div className="navbar__mobile-search-shell">
+        <form className="navbar__search navbar__search--mobile" onSubmit={handleSearch}>
+          <Search size={16} className="navbar__search-icon" />
+          <input
+            type="text"
+            className="navbar__search-input"
+            placeholder="Search medicines, brands, health products"
+            value={searchQ}
+            onChange={e => setSearchQ(e.target.value)}
+          />
+          <button type="submit" className="navbar__search-btn">Search</button>
+        </form>
+      </div>
+
       <CartDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </>
   );

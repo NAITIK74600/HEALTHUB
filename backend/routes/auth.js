@@ -181,9 +181,10 @@ router.post('/verify-email-otp', authLimiter, [
     user.emailOtpExpiry = null;
     const saved = await updateUser(user);
 
+    const rememberMe = req.body?.rememberMe === true || req.body?.rememberMe === 'true';
     const accessToken = signAccessToken(saved._id);
     const refreshToken = await signRefreshToken(saved._id);
-    setAuthCookies(req, res, accessToken, refreshToken);
+    setAuthCookies(req, res, accessToken, refreshToken, { persistent: rememberMe });
     res.json({ user: sanitizeUser(saved) });
   } catch (err) { next(err); }
 });

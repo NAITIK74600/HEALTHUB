@@ -383,6 +383,30 @@ svg { flex-shrink: 0; }
   .navbar__search--mobile { display: flex; width: 100%; max-width: 100%; }
 }
 
+.navbar__mobile-search-shell {
+  display: none;
+}
+@media (max-width: 992px) {
+  .navbar__mobile-search-shell {
+    display: block;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 14px 12px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  }
+  .navbar__mobile-search-shell .navbar__search--mobile {
+    display: flex;
+    border-radius: 12px;
+    border-width: 1px;
+    min-height: 44px;
+    background: #fff;
+  }
+  .navbar__mobile-search-shell .navbar__search-btn {
+    padding: 0 14px;
+    font-size: 13px;
+  }
+}
+
 /* My Account button */
 .navbar__account-btn {
   display: flex;

@@ -118,7 +118,7 @@ export default function AdminLayout() {
       {/* Brand header */}
       <div className="admin-sidebar__brand">
         <div className="admin-sidebar__brand-logo">
-          <img src="/logo.png" alt="Health Hub" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 6 }} />
+          <img src="/logo.jpg" alt="Health Hub" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 6 }} />
         </div>
         {!collapsed && <span className="admin-sidebar__brand-name">Health Hub</span>}
         <button

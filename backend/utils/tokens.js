@@ -26,24 +26,28 @@ const shouldUseSecureCookies = (req) => {
   return true;
 };
 
-const setAuthCookies = (req, res, accessToken, refreshToken) => {
+const setAuthCookies = (req, res, accessToken, refreshToken, options = {}) => {
   const isProd = shouldUseSecureCookies(req);
+  const { persistent = false } = options;
   const cookieOptions = {
     httpOnly: true,
     sameSite: isProd ? 'None' : 'Lax',
     secure: isProd,
   };
 
-  res.cookie('accessToken', accessToken, {
+  const accessCookie = {
     ...cookieOptions,
-    maxAge: 15 * 60 * 1000, // 15 min
-  });
+    ...(persistent ? { maxAge: 15 * 60 * 1000 } : {}),
+  };
 
-  res.cookie('refreshToken', refreshToken, {
+  const refreshCookie = {
     ...cookieOptions,
-    maxAge: 2 * 60 * 60 * 1000, // 2 hours — session expires after 2h
+    ...(persistent ? { maxAge: 2 * 60 * 60 * 1000 } : {}),
     path: '/api/auth/refresh',
-  });
+  };
+
+  res.cookie('accessToken', accessToken, accessCookie);
+  res.cookie('refreshToken', refreshToken, refreshCookie);
 };
 
 const clearAuthCookies = (req, res) => {
