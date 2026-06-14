@@ -118,7 +118,7 @@ export default function AdminLayout() {
       {/* Brand header */}
       <div className="admin-sidebar__brand">
         <div className="admin-sidebar__brand-logo">BM</div>
-        {!collapsed && <span className="admin-sidebar__brand-name">BatlaAdmin</span>}
+        {!collapsed && <span className="admin-sidebar__brand-name">Health Hub</span>}
         <button
           className="admin-sidebar__toggle"
           onClick={() => setSidebarOpen(o => !o)}

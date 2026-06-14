@@ -510,6 +510,17 @@ svg { flex-shrink: 0; }
 }
 .navbar__cart-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,188,156,0.45); }
 
+.navbar__admin-btn {
+  display: flex; align-items: center; gap: 5px;
+  background: #1ABC9C; color: #fff;
+  border: none; border-radius: 8px;
+  padding: 8px 14px; font-size: 13px; font-weight: 600;
+  cursor: pointer; text-decoration: none;
+  transition: background .2s, transform .15s;
+  white-space: nowrap;
+}
+.navbar__admin-btn:hover { background: #16a085; transform: translateY(-1px); }
+
 /* Fly-to-cart bounce */
 .navbar__cart-btn--bounce { animation: cartBounce 0.5s ease; }
 @keyframes cartBounce {

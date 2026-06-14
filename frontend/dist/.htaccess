@@ -53,15 +53,12 @@
   </FilesMatch>
 </IfModule>
 
-# ── React Router SPA — all routes → index.html ───────────────────────────────
-# ── Force all requests through Passenger (Node.js) ───────────────────────────
+# ── Force all requests through Passenger (Node.js) ────────────────────
 PassengerEnabled On
 
-# ── HTTPS redirect ────────────────────────────────────────────────────────────
+# ── HTTPS redirect ──────────────────────────────────────────
 <IfModule mod_rewrite.c>
   RewriteEngine On
-
-  # Force HTTPS
   RewriteCond %{HTTPS} off
   RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 </IfModule>

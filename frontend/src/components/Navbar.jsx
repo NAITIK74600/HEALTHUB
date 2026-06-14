@@ -110,6 +110,13 @@ export default function Navbar() {
               {totalItems > 0 && <span className="navbar__cart-count">{totalItems}</span>}
             </button>
 
+            {isAdmin && (
+              <Link to="/admin" className="navbar__admin-btn" aria-label="Admin Dashboard">
+                <LayoutDashboard size={16} />
+                <span>Admin</span>
+              </Link>
+            )}
+
             <button
               className="navbar__menu-btn"
               onClick={() => setMobileOpen(!mobileOpen)}
