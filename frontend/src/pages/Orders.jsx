@@ -63,7 +63,7 @@ export default function Orders() {
 
   return (
     <main className="orders-page container">
-      <SEO title="My Orders" description="Track and manage your Health Hub orders." path="/orders" noIndex />
+      <SEO title="My Orders" description="Track and manage your Batla Medicos orders." path="/orders" noIndex />
       <div className="orders-page__header">
         <h1>My Orders</h1>
         {orders.length > 0 && (

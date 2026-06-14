@@ -5,7 +5,7 @@ import SEO from '../components/SEO';
 export default function RefundPolicy() {
   return (
     <main className="policy-page container">
-      <SEO title="Cancellation & Refund Policy" description="Health Hub cancellation and refund policy. Learn about return eligibility, refund timelines, and how to request a refund for medicines and healthcare products." path="/refund-policy" />
+      <SEO title="Cancellation & Refund Policy" description="Batla Medicos cancellation and refund policy. Learn about return eligibility, refund timelines, and how to request a refund for medicines and healthcare products." path="/refund-policy" />
       <div className="policy-hero">
         <div className="policy-hero__icon"><RefreshCw size={32} /></div>
         <div>
@@ -19,7 +19,7 @@ export default function RefundPolicy() {
         <section>
           <h2>1. Overview</h2>
           <p>
-            At <strong>Health Hub Chemist &amp; Cosmetics</strong>, we want you to have complete confidence when
+            At <strong>Batla Medicos Chemist &amp; Cosmetics</strong>, we want you to have complete confidence when
             ordering from us. This policy outlines the conditions under which you can cancel an order and receive
             a refund.
           </p>
@@ -32,7 +32,7 @@ export default function RefundPolicy() {
             <CheckCircle size={18} />
             <div>
               <strong>Before Dispatch — FREE cancellation</strong>
-              <p>You may cancel any order at no charge before it has been dispatched from our store. Contact us immediately via WhatsApp (<a href="https://wa.me/917303240289">+91 73032 40289</a>) or phone.</p>
+              <p>You may cancel any order at no charge before it has been dispatched from our store. Contact us immediately via WhatsApp (<a href="https://wa.me/919990165925">+91 99901 65925</a>) or phone.</p>
             </div>
           </div>
 
@@ -105,7 +105,7 @@ export default function RefundPolicy() {
               <div className="policy-step__num">1</div>
               <div>
                 <strong>Raise a request</strong>
-                <p>WhatsApp or call us at <a href="tel:+917303240289">+91 73032 40289</a> or email <a href="mailto:support@healthub.site">support@healthub.site</a> with your Order ID and reason.</p>
+                <p>WhatsApp or call us at <a href="tel:+919990165925">+91 99901 65925</a> or email <a href="mailto:ordersupport@batlamedicos.shop">ordersupport@batlamedicos.shop</a> with your Order ID and reason.</p>
               </div>
             </div>
             <div className="policy-step">
@@ -143,7 +143,7 @@ export default function RefundPolicy() {
         </section>
 
         <section>
-          <h2>8. Cancellation by Health Hub</h2>
+          <h2>8. Cancellation by Batla Medicos</h2>
           <p>
             We may cancel your order if:
           </p>
@@ -160,9 +160,9 @@ export default function RefundPolicy() {
           <h2>9. Contact for Refund Queries</h2>
           <ul className="policy-contact-list">
             <li><Clock size={15} /> Response time: within 24 hours on business days</li>
-            <li><MapPin size={15} /> Block G, Connaught Place, New Delhi – 110001</li>
-            <li><Phone size={15} /> <a href="tel:+917303240289">+91 73032 40289</a></li>
-            <li><Mail size={15} /> <a href="mailto:support@healthub.site">support@healthub.site</a></li>
+            <li><MapPin size={15} /> F 41/2, Nafees Road, Batla House, Jamia Nagar, New Delhi – 110025</li>
+            <li><Phone size={15} /> <a href="tel:+919990165925">+91 99901 65925</a></li>
+            <li><Mail size={15} /> <a href="mailto:ordersupport@batlamedicos.shop">ordersupport@batlamedicos.shop</a></li>
           </ul>
         </section>
 

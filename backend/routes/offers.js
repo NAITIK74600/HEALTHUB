@@ -12,7 +12,6 @@ function mapOffer(row) {
     title: row.title,
     description: row.description || '',
     imageUrl: row.image_url || '',
-    videoUrl: row.video_url || '',
     link: row.link || '',
     badge: row.badge || '',
     isActive: Boolean(row.is_active),
@@ -21,10 +20,6 @@ function mapOffer(row) {
     startDate: row.start_date,
     endDate: row.end_date,
     clicks: Number(row.clicks || 0),
-    discountPct: row.discount_pct != null ? Number(row.discount_pct) : null,
-    promoCode: row.promo_code || '',
-    mediaType: row.media_type || 'card',
-    promoSubtext: row.promo_subtext || '',
     createdAt: row.created_at,
   };
 }
@@ -37,13 +32,9 @@ router.get('/', async (req, res, next) => {
        AND (start_date IS NULL OR start_date <= NOW())
        AND (end_date IS NULL OR end_date >= NOW())`;
     const vals = [];
-    if (display && ['home', 'products', 'hero'].includes(display)) {
-      if (display === 'hero') {
-        sql += ` AND display_on = 'hero'`;
-      } else {
-        sql += ` AND (display_on = ? OR display_on = 'both')`;
-        vals.push(display);
-      }
+    if (display && ['home', 'products'].includes(display)) {
+      sql += ` AND (display_on = ? OR display_on = 'both')`;
+      vals.push(display);
     }
     sql += ` ORDER BY ord ASC, created_at DESC`;
     const rows = await query(sql, vals);
@@ -80,17 +71,11 @@ router.post('/', requireAuth, requireAdmin, [
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
-    const { title, description, imageUrl, videoUrl, link, badge, isActive, startDate, endDate, ord, displayOn,
-            discountPct, promoCode, mediaType, promoSubtext } = req.body;
-    const validDisplay = ['home', 'products', 'both', 'hero'].includes(displayOn) ? displayOn : 'both';
+    const { title, description, imageUrl, link, badge, isActive, startDate, endDate, ord, displayOn } = req.body;
     const result = await execute(
-      `INSERT INTO offers (title, description, image_url, video_url, link, badge, is_active, start_date, end_date, ord, display_on,
-         discount_pct, promo_code, media_type, promo_subtext)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [title, description || '', imageUrl || '', videoUrl || '', link || '', badge || '',
-       isActive !== false ? 1 : 0, startDate || null, endDate || null, ord || 0, validDisplay,
-       discountPct != null ? Number(discountPct) : null, promoCode || null,
-       ['card','image','video'].includes(mediaType) ? mediaType : 'card', promoSubtext || null]
+      `INSERT INTO offers (title, description, image_url, link, badge, is_active, start_date, end_date, ord, display_on)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [title, description || '', imageUrl || '', link || '', badge || '', isActive !== false ? 1 : 0, startDate || null, endDate || null, ord || 0, ['home', 'products', 'both'].includes(displayOn) ? displayOn : 'both']
     );
     const rows = await query('SELECT * FROM offers WHERE id = ?', [result.insertId]);
     res.status(201).json(mapOffer(rows[0]));
@@ -102,17 +87,12 @@ router.put('/:id', requireAuth, requireAdmin, [param('id').isInt({ min: 1 })], a
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
-    const { title, description, imageUrl, videoUrl, link, badge, isActive, startDate, endDate, ord, displayOn,
-            discountPct, promoCode, mediaType, promoSubtext } = req.body;
-    const validDisplay = ['home', 'products', 'both', 'hero'].includes(displayOn) ? displayOn : 'both';
+    const { title, description, imageUrl, link, badge, isActive, startDate, endDate, ord, displayOn } = req.body;
     await execute(
-      `UPDATE offers SET title = ?, description = ?, image_url = ?, video_url = ?, link = ?, badge = ?,
-       is_active = ?, start_date = ?, end_date = ?, ord = ?, display_on = ?,
-       discount_pct = ?, promo_code = ?, media_type = ?, promo_subtext = ? WHERE id = ?`,
-      [title, description || '', imageUrl || '', videoUrl || '', link || '', badge || '',
-       isActive !== false ? 1 : 0, startDate || null, endDate || null, ord || 0, validDisplay,
-       discountPct != null ? Number(discountPct) : null, promoCode || null,
-       ['card','image','video'].includes(mediaType) ? mediaType : 'card', promoSubtext || null, req.params.id]
+      `UPDATE offers SET title = ?, description = ?, image_url = ?, link = ?, badge = ?,
+       is_active = ?, start_date = ?, end_date = ?, ord = ?, display_on = ? WHERE id = ?`,
+      [title, description || '', imageUrl || '', link || '', badge || '',
+       isActive !== false ? 1 : 0, startDate || null, endDate || null, ord || 0, ['home', 'products', 'both'].includes(displayOn) ? displayOn : 'both', req.params.id]
     );
     const rows = await query('SELECT * FROM offers WHERE id = ?', [req.params.id]);
     if (!rows.length) return res.status(404).json({ message: 'Offer not found.' });

@@ -151,7 +151,7 @@ export default function ProductCatalog() {
       setRequestName('');
       setRequestPhone('');
       setRequestEmail('');
-      toast.success('Request sent. Health Hub team will contact you.');
+      toast.success('Request sent. Batla Medicos team will contact you.');
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Could not send request. Please try again.');
     } finally {
@@ -201,7 +201,7 @@ export default function ProductCatalog() {
 
   useEffect(() => { fetchProducts(); }, [fetchProducts]);
   useEffect(() => {
-    getCategories().then(r => setCategories(r.data.categories)).catch(() => {});
+    getCategories().then(r => setCategories(r.data.categories || [])).catch(() => {});
     getTopBrands().then(r => setBrands(r.data.brands || [])).catch(() => {});
     getActiveOffers('products').then(r => setOffers(r.data.offers || [])).catch(() => {});
   }, []);
@@ -237,8 +237,8 @@ export default function ProductCatalog() {
 
   const seoTitle = selectedCatName ? `Buy ${selectedCatName} Online` : search ? `Search: ${search}` : 'Buy Medicines & Healthcare Products Online';
   const seoDesc = selectedCatName
-    ? `Buy ${selectedCatName} online at best prices from Health Hub. Free delivery above ₹499. Genuine medicines from a licensed pharmacy in New Delhi.`
-    : 'Browse medicines, Ayurvedic products, vitamins, cosmetics, baby care & more. Free delivery above ₹499. Buy online from Health Hub, New Delhi.';
+    ? `Buy ${selectedCatName} online at best prices from Batla Medicos. Free delivery above ₹499. Trusted pharmacy since 2005 in New Delhi.`
+    : 'Browse medicines, Ayurvedic products, vitamins, cosmetics, baby care & more. Free delivery above ₹499. Buy online from Batla Medicos, New Delhi.';
 
   // JSON-LD ItemList schema for product listings (fixes Google "offers" warning)
   const catalogSchema = products.length > 0 ? {
@@ -252,17 +252,17 @@ export default function ProductCatalog() {
       item: {
         '@type': 'Product',
         name: p.name,
-        url: `https://www.healthub.site/products/${p.slug}`,
+        url: `https://www.batlamedicos.shop/products/${p.slug}`,
         ...(p.image_url ? { image: p.image_url } : {}),
         ...(p.brand ? { brand: { '@type': 'Brand', name: p.brand } } : {}),
         sku: String(p._id),
         offers: {
           '@type': 'Offer',
-          url: `https://www.healthub.site/products/${p.slug}`,
+          url: `https://www.batlamedicos.shop/products/${p.slug}`,
           priceCurrency: 'INR',
           price: p.price,
           availability: p.inStock !== false ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-          seller: { '@type': 'Organization', name: 'Health Hub' },
+          seller: { '@type': 'Organization', name: 'Batla Medicos' },
         },
       },
     })),
@@ -485,7 +485,7 @@ export default function ProductCatalog() {
                 {(search || inputSearch) && (
                   <form className="catalog-empty__request" onSubmit={handleRequestAvailability}>
                     <p className="catalog-empty__request-title">
-                      Medicine not available? Request Health Hub to arrange it.
+                      Medicine not available? Request Batla Medicos to arrange it.
                     </p>
                     <input
                       type="text"
@@ -521,7 +521,7 @@ export default function ProductCatalog() {
                     </button>
                     {requestSent && (
                       <p className="catalog-empty__request-success">
-                        Request received. Team Health Hub will update you soon.
+                        Request received. Team Batla Medicos will update you soon.
                       </p>
                     )}
                   </form>

@@ -1013,7 +1013,7 @@ router.post('/request-availability', [
     );
 
     res.status(201).json({
-      message: 'Request received. Health Hub will contact you if medicine becomes available.',
+      message: 'Request received. Batla Medicos will contact you if medicine becomes available.',
     });
   } catch (err) { next(err); }
 });

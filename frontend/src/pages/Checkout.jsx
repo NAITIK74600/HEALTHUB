@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -137,7 +137,7 @@ export default function Checkout() {
     const { latitude: lat, longitude: lng } = position.coords;
     const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
     const waMsg   = encodeURIComponent(`📍 My current location for delivery:\n${mapsUrl}`);
-    const waUrl   = `https://wa.me/917303240289?text=${waMsg}`;
+    const waUrl   = `https://wa.me/919990165925?text=${waMsg}`;
     window.open(waUrl, '_blank', 'noopener,noreferrer');
     toast.success('Opening WhatsApp to share your location with us!');
   };
@@ -181,7 +181,7 @@ export default function Checkout() {
         deliveryType: formData.deliveryType,
         address: formData.deliveryType === 'delivery'
           ? { line1: formData.line1, line2: formData.line2 || '', city: formData.city, pincode: formData.pincode, phone: formData.phone }
-          : { phone: formData.phone, line1: 'Store Pickup - Health Hub', city: 'New Delhi', pincode: '110001' },
+          : { phone: formData.phone, line1: 'Store Pickup - Batla Medicos', city: 'New Delhi', pincode: '110025' },
         ...(formData.deliveryType === 'takeaway' ? { takeawaySlot: formData.takeawaySlot } : {}),
         paymentMethod: formData.method === 'razorpay' ? 'online' : formData.method,
         discount: couponDiscount,
@@ -197,7 +197,7 @@ export default function Checkout() {
           key: import.meta.env.VITE_RAZORPAY_KEY_ID,
           amount: Math.round(finalTotal * 100),
           currency: 'INR',
-          name: 'Health Hub',
+          name: 'Batla Medicos',
           description: 'Medicine Order',
           order_id: data.razorpayOrderId,
           prefill: { name: user?.name, email: user?.email, contact: formData.phone },
@@ -324,7 +324,7 @@ export default function Checkout() {
               <input {...register('deliveryType')} type="radio" value="takeaway" style={{ display: 'none' }} />
               <span className="delivery-type-card__icon"><Store size={28} /></span>
               <span className="delivery-type-card__label">Store Pickup</span>
-              <span className="delivery-type-card__sub">Pick up from Connaught Place</span>
+              <span className="delivery-type-card__sub">Pick up from Batla House</span>
             </label>
           </div>
 
@@ -342,7 +342,7 @@ export default function Checkout() {
               </div>
               {errors.takeawaySlot && <span className="form-error">{errors.takeawaySlot.message}</span>}
               <div className="slot-store-info">
-                <MapPin size={14} /> <strong>Health Hub</strong> - Block G, Connaught Place, New Delhi-110001
+                <MapPin size={14} /> <strong>Batla Medicos</strong> - F 41/2 Nafees Road, Batla House, Jamia Nagar, New Delhi-110025
               </div>
             </div>
           )}

@@ -5,10 +5,10 @@
  * Downloads every external image URL stored in products.images_json
  * and replaces it with a local /uploads/products/<hash>.<ext> path.
  *
- * NOTE: MySQL2 automatically parses JSON columns ï¿½ images_json arrives
+ * NOTE: MySQL2 automatically parses JSON columns — images_json arrives
  *       as a JS array (or null), NOT as a raw string.
  *
- * Safe to re-run ï¿½ already-local paths are left untouched.
+ * Safe to re-run — already-local paths are left untouched.
  *
  * Usage (inside batla-medicos/backend/ with Node env activated):
  *   node scripts/migrate-images-to-local.js
@@ -51,7 +51,7 @@ function downloadUrl(url, hops) {
     try { parsed = new URL(url); } catch (e) { return reject(e); }
     var lib = parsed.protocol === 'https:' ? https : http;
     var req = lib.get(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; HealthHub/1.0)', 'Accept': 'image/*,*/*' },
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; BatlaMedicos/1.0)', 'Accept': 'image/*,*/*' },
       timeout: 20000,
     }, function(res) {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {

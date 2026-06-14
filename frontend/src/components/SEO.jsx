@@ -1,13 +1,13 @@
 import { Helmet } from 'react-helmet-async';
 
-const SITE = 'Health Hub';
-const DOMAIN = 'https://www.healthub.site';
+const SITE = 'Batla Medicos';
+const DOMAIN = 'https://www.batlamedicos.shop';
 const DEFAULT_IMG = `${DOMAIN}/og-image.jpg`;
 
 /**
  * Reusable SEO component — sets title, meta description, OG tags, canonical, and optional JSON-LD schema.
  *
- * @param {string}  title       Page title (appended with " | Health Hub")
+ * @param {string}  title       Page title (appended with " | Batla Medicos")
  * @param {string}  description Meta description (max ~155 chars recommended)
  * @param {string}  [path]      URL path e.g. "/products" — used for canonical
  * @param {string}  [image]     OG image URL (defaults to site OG image)

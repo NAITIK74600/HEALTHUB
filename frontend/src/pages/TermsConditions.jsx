@@ -5,7 +5,7 @@ import SEO from '../components/SEO';
 export default function TermsConditions() {
   return (
     <main className="policy-page container">
-      <SEO title="Terms & Conditions" description="Terms and conditions for using Health Hub online pharmacy. Read our usage policies, ordering terms, and delivery guidelines." path="/terms" />
+      <SEO title="Terms & Conditions" description="Terms and conditions for using Batla Medicos online pharmacy. Read our usage policies, ordering terms, and delivery guidelines." path="/terms" />
       <div className="policy-hero">
         <div className="policy-hero__icon"><FileText size={32} /></div>
         <div>
@@ -19,8 +19,8 @@ export default function TermsConditions() {
         <section>
           <h2>1. Acceptance of Terms</h2>
           <p>
-            By accessing or using <a href="https://healthub.site">healthub.site</a> ("Platform") operated by
-            <strong> Health Hub Chemist &amp; Cosmetics</strong> ("<strong>we</strong>", "<strong>us</strong>"),
+            By accessing or using <a href="https://batlamedicos.shop">batlamedicos.shop</a> ("Platform") operated by
+            <strong> Batla Medicos Chemist &amp; Cosmetics</strong> ("<strong>we</strong>", "<strong>us</strong>"),
             you agree to be bound by these Terms &amp; Conditions and our <Link to="/privacy-policy">Privacy Policy</Link>.
             If you do not agree, please do not use the Platform.
           </p>
@@ -66,7 +66,7 @@ export default function TermsConditions() {
         <section>
           <h2>6. Delivery</h2>
           <ul>
-            <li>We deliver within <strong>Connaught Place, Okhla, and surrounding areas of New Delhi</strong>. Delivery to other areas may be arranged based on availability — please call/WhatsApp us to confirm.</li>
+            <li>We deliver within <strong>Jamia Nagar, Batla House, Okhla, and surrounding areas of New Delhi</strong>. Delivery to other areas may be arranged based on availability — please call/WhatsApp us to confirm.</li>
             <li>Delivery charges are ₹29 per order. Orders above ₹499 qualify for free delivery.</li>
             <li>Estimated delivery time is same-day or next-day. Actual delivery times may vary due to traffic, weather, or stock availability.</li>
             <li>You must provide a valid delivery address and mobile number. We are not responsible for non-delivery due to incorrect address information.</li>
@@ -143,9 +143,9 @@ export default function TermsConditions() {
         <section>
           <h2>14. Contact Us</h2>
           <ul className="policy-contact-list">
-            <li><MapPin size={15} /> Block G, Connaught Place, New Delhi – 110001</li>
-            <li><Phone size={15} /> +91 73032 40289</li>
-            <li><Mail size={15} /> <a href="mailto:support@healthub.site">support@healthub.site</a></li>
+            <li><MapPin size={15} /> F 41/2, Nafees Road, Batla House, Jamia Nagar, New Delhi – 110025</li>
+            <li><Phone size={15} /> +91 99901 65925</li>
+            <li><Mail size={15} /> <a href="mailto:ordersupport@batlamedicos.shop">ordersupport@batlamedicos.shop</a></li>
           </ul>
         </section>
 

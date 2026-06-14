@@ -16,7 +16,7 @@
  *   TWILIO_AUTH_TOKEN    — from Twilio Console
  *   TWILIO_WHATSAPP_FROM — e.g. "whatsapp:+14155238886" (sandbox)
  *                          or   "whatsapp:+91XXXXXXXXXX" (production)
- *   SHOP_URL             — base URL for tracking links (default: https://healthub.site)
+ *   SHOP_URL             — base URL for tracking links (default: https://batlamedicos.shop)
  */
 
 let twilioClient = null;
@@ -36,13 +36,13 @@ function getClient() {
 }
 
 const FROM      = () => process.env.TWILIO_WHATSAPP_FROM || 'whatsapp:+14155238886';
-const SHOP_URL  = () => (process.env.SHOP_URL || 'https://healthub.site').replace(/\/$/, '');
-const SHOP_NAME = 'Health Hub';
-const SHOP_PHONE = '+91 73032 40289';
+const SHOP_URL  = () => (process.env.SHOP_URL || 'https://batlamedicos.shop').replace(/\/$/, '');
+const SHOP_NAME = 'Batla Medicos';
+const SHOP_PHONE = '+91 99901 65925';
 
 /**
  * Normalise a 10-digit Indian phone number to WhatsApp E.164 format.
- * Accepts: "7303240289", "07303240289", "+917303240289"
+ * Accepts: "9990165925", "09990165925", "+919990165925"
  */
 function toWaNumber(phone) {
   const digits = String(phone).replace(/\D/g, '');
@@ -118,7 +118,7 @@ async function notifyOrderStatus(order, status, userName) {
     confirmed: `Hello ${name}! 📦\n\n*Order Confirmed!*\nOrder *${invoiceNo}* is confirmed and being ${isTakeaway ? 'prepared for pickup' : 'prepared for dispatch'}.\n\n🔗 Track: ${trackUrl}\n—${SHOP_NAME} 💊`,
 
     dispatched: isTakeaway
-      ? `Hello ${name}! 🏪\n\n*Ready for Pickup!*\nOrder *${invoiceNo}* is ready. Please collect it at:\n📍 Block G, Connaught Place, New Delhi-110001\n📞 ${SHOP_PHONE}\n\n🔗 View order: ${trackUrl}\n—${SHOP_NAME} 💊`
+      ? `Hello ${name}! 🏪\n\n*Ready for Pickup!*\nOrder *${invoiceNo}* is ready. Please collect it at:\n📍 F 41/2 Nafees Road, Batla House, Jamia Nagar, New Delhi-110025\n📞 ${SHOP_PHONE}\n\n🔗 View order: ${trackUrl}\n—${SHOP_NAME} 💊`
       : `Hello ${name}! 🚚\n\n*Order Dispatched!*\nOrder *${invoiceNo}* is on its way to you!\n\n🔗 Track: ${trackUrl}\n—${SHOP_NAME} 💊`,
 
     delivered: isTakeaway

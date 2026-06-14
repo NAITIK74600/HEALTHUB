@@ -13,7 +13,6 @@ function mapCategory(row) {
     name: row.name,
     slug: row.slug,
     icon: row.icon || '',
-    image: row.image_url || '',
     order: row.ord || 0,
     isDeleted: Boolean(row.is_deleted),
     createdAt: row.created_at,
@@ -40,7 +39,6 @@ router.get('/', async (req, res, next) => {
 router.post('/', requireAuth, requireAdmin, [
   body('name').trim().notEmpty().isLength({ max: 100 }),
   body('icon').optional().trim(),
-  body('image').optional().trim().isLength({ max: 500 }),
   body('order').optional().isInt({ min: 0 }).toInt(),
 ], async (req, res, next) => {
   try {
@@ -52,8 +50,8 @@ router.post('/', requireAuth, requireAdmin, [
     if (existing.length) return res.status(409).json({ message: 'Category already exists.' });
 
     const result = await execute(
-      'INSERT INTO categories (name, slug, icon, image_url, ord, is_deleted) VALUES (?, ?, ?, ?, ?, 0)',
-      [req.body.name.trim(), slug, req.body.icon || '', req.body.image || null, Number(req.body.order || 0)]
+      'INSERT INTO categories (name, slug, icon, ord, is_deleted) VALUES (?, ?, ?, ?, 0)',
+      [req.body.name.trim(), slug, req.body.icon || '', Number(req.body.order || 0)]
     );
     const rows = await query('SELECT * FROM categories WHERE id = ? LIMIT 1', [result.insertId]);
     res.status(201).json(mapCategory(rows[0]));
@@ -64,7 +62,6 @@ router.put('/:id', requireAuth, requireAdmin, [
   param('id').isInt({ min: 1 }),
   body('name').optional().trim().isLength({ min: 1, max: 150 }),
   body('icon').optional().trim().isLength({ max: 255 }),
-  body('image').optional().trim().isLength({ max: 500 }),
   body('order').optional().isInt({ min: 0 }).toInt(),
 ], async (req, res, next) => {
   try {
@@ -88,12 +85,11 @@ router.put('/:id', requireAuth, requireAdmin, [
     }
 
     await execute(
-      'UPDATE categories SET name = ?, slug = ?, icon = ?, image_url = ?, ord = ? WHERE id = ?',
+      'UPDATE categories SET name = ?, slug = ?, icon = ?, ord = ? WHERE id = ?',
       [
         nextName,
         nextSlug,
         req.body.icon !== undefined ? req.body.icon : current.icon,
-        req.body.image !== undefined ? (req.body.image || null) : current.image_url,
         req.body.order !== undefined ? Number(req.body.order || 0) : current.ord,
         req.params.id,
       ]

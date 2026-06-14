@@ -37,7 +37,7 @@ function RegisterForm({ onRegistered }) {
       <div className="delivery-register__hero">
         <Truck size={48} strokeWidth={1.5} />
         <h2>Become a Delivery Partner</h2>
-        <p>Join Health Hub and deliver medicines to customers in your area</p>
+        <p>Join Batla Medicos and deliver medicines to customers in your area</p>
       </div>
 
       <form className="delivery-register__form" onSubmit={handleSubmit}>
@@ -248,7 +248,7 @@ export default function DeliveryPanel() {
   // ── Approved — Show full dashboard ──────────────────────────────────────────
   return (
     <main className="delivery-panel container">
-      <SEO title="Delivery Dashboard" description="Health Hub delivery partner dashboard." path="/delivery" noIndex />
+      <SEO title="Delivery Dashboard" description="Batla Medicos delivery partner dashboard." path="/delivery" noIndex />
       {otpOrder && (
         <DeliveryOtpModal order={otpOrder} onClose={() => setOtpOrder(null)}
           onVerified={() => { setOtpOrder(null); fetchOrders(); }} />

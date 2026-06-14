@@ -176,7 +176,7 @@ export default function AdminLayout() {
 
   return (
     <div className="admin-layout">
-      <SEO title="Admin Panel" description="Health Hub admin dashboard." path="/admin" noIndex />
+      <SEO title="Admin Panel" description="Batla Medicos admin dashboard." path="/admin" noIndex />
       {/* Desktop sidebar */}
       <aside className={`admin-sidebar admin-sidebar--desktop ${sidebarOpen ? '' : 'admin-sidebar--collapsed'}`}>
         <SidebarContent collapsed={!sidebarOpen} />

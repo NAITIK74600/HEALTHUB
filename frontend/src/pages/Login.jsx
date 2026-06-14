@@ -90,7 +90,7 @@ export default function Login() {
       <div className="auth-card">
         {/* Logo */}
         <div className="auth-card__logo">
-          <img src="/logo.jpg" alt="Health Hub" className="auth-card__logo-img" />
+          <img src="/logo.png" alt="Batla Medicos" className="auth-card__logo-img" />
           <div className="auth-card__subtitle">Chemist &amp; Cosmetics</div>
         </div>
 

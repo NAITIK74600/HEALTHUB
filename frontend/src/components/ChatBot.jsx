@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { X, MessageCircle, Send, Bot, ChevronDown, Sparkles } from 'lucide-react';
 import api from '../api/axios';
 
-const WELCOME = "Namaste! 👋 I'm MedBot, your Health Hub assistant.\n\nAsk me about medicines, health tips, lab tests, or anything about our store!";
+const WELCOME = "Namaste! 👋 I'm MedBot, your Batla Medicos assistant.\n\nAsk me about medicines, health tips, lab tests, or anything about our store!";
 
 const QUICK_REPLIES = [
   'Store timings & location',
@@ -100,7 +100,7 @@ export default function ChatBot() {
               MedBot <Sparkles size={12} className="chatbot-header__spark" />
             </span>
             <span className="chatbot-header__status">
-              <span className="chatbot-header__dot" /> Health Hub Assistant
+              <span className="chatbot-header__dot" /> Batla Medicos Assistant
             </span>
           </div>
           <button className="chatbot-header__close" onClick={() => setOpen(false)} aria-label="Minimize">

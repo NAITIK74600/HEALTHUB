@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { getOrderById, downloadReceipt, resendReceipt, shareLocation } from '../api/orders';
 import { getGeoPosition, GEO_ERROR_MESSAGES } from '../utils/geo';
@@ -242,9 +242,9 @@ export default function OrderDetail() {
               </svg>
             </div>
             <div className="receipt-card__company">
-              <h2>Health Hub</h2>
-              <p>Block G, Connaught Place, New Delhi-110001</p>
-              <p>Ph: +91 73032 40289</p>
+              <h2>Batla Medicos</h2>
+              <p>F 41/2 Nafees Road, Batla House, Jamia Nagar, New Delhi-110025</p>
+              <p>Ph: +91 99901 65925</p>
             </div>
           </div>
           <div className="receipt-card__invoice-meta">
@@ -364,11 +364,11 @@ export default function OrderDetail() {
 
         {/* Thank you footer */}
         <div className="receipt-thankyou">
-          Thank you for shopping with Health Hub 💊
+          Thank you for shopping with Batla Medicos 💊
         </div>
         <div className="receipt-card__footer">
           <p>
-            <strong>Health Hub</strong> · Block G, Connaught Place, New Delhi-110001
+            <strong>Batla Medicos</strong> · F 41/2 Nafees Road, Batla House, Jamia Nagar, New Delhi-110025
           </p>
           <p>This is a computer-generated invoice and does not require a physical signature.</p>
         </div>

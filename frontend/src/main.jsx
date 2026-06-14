@@ -24,23 +24,11 @@ class ErrorBoundary extends Component {
   }
 }
 
-// Service worker:
-//  • Production → register for offline/PWA support.
-//  • Development → unregister any existing SW and clear its caches so stale
-//    cached bundles (old hero/logo/theme) can never shadow fresh Vite modules.
+// Register service worker
 if ('serviceWorker' in navigator) {
-  if (import.meta.env.PROD) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
-    });
-  } else {
-    navigator.serviceWorker.getRegistrations()
-      .then((regs) => regs.forEach((r) => r.unregister()))
-      .catch(() => {});
-    if (window.caches) {
-      caches.keys().then((keys) => keys.forEach((k) => caches.delete(k))).catch(() => {});
-    }
-  }
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
 }
 
 createRoot(document.getElementById('root')).render(

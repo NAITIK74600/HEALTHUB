@@ -1,13 +1,12 @@
-import { useEffect, useState, useRef } from 'react';
+﻿import { useEffect, useState, useRef } from 'react';
 import { getCategories, createCategory, updateCategory, deleteCategory } from '../../api/categories';
-import { uploadImage } from '../../api/upload';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import {
   Plus, Pencil, Trash2, X, FolderOpen, Package,
   ChevronUp, ChevronDown, Search, AlertTriangle, ExternalLink,
-  Save, RefreshCw, ArrowLeftRight, Image as ImageIcon, Camera,
+  Save, RefreshCw, ArrowLeftRight,
 } from 'lucide-react';
 
 /* ─── Quick-pick icons for medical/pharma categories ─── */
@@ -34,7 +33,7 @@ const LIFESTYLE_CATS = [
   { slug: 'elderly-care',       label: 'Elderly Care',         icon: '🛌' },
 ];
 
-const EMPTY = { name: '', icon: '', image: '', order: 0 };
+const EMPTY = { name: '', icon: '', order: 0 };
 
 export default function AdminCategories() {
   const navigate = useNavigate();
@@ -47,8 +46,6 @@ export default function AdminCategories() {
   const [form, setForm]     = useState(EMPTY);
   const [editId, setEditId] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [imgUploading, setImgUploading] = useState(false);
-  const imgInputRef = useRef(null);
 
   /* delete confirmation */
   const [deleteTarget, setDeleteTarget]     = useState(null);
@@ -98,31 +95,12 @@ export default function AdminCategories() {
   };
 
   const openEdit = (c) => {
-    setForm({ name: c.name, icon: c.icon || '', image: c.image || '', order: c.order || 0 });
+    setForm({ name: c.name, icon: c.icon || '', order: c.order || 0 });
     setEditId(c._id);
     setPanel('edit');
   };
 
   const closePanel = () => { setPanel(null); setEditId(null); setForm(EMPTY); };
-
-  /* ── category image upload ── */
-  const handleImagePick = async (e) => {
-    const file = e.target.files?.[0];
-    e.target.value = '';
-    if (!file) return;
-    if (!file.type.startsWith('image/')) return toast.error('Please choose an image file.');
-    if (file.size > 5 * 1024 * 1024) return toast.error('Image must be under 5 MB.');
-    setImgUploading(true);
-    try {
-      const r = await uploadImage(file);
-      if (r?.data?.url) {
-        setForm(f => ({ ...f, image: r.data.url }));
-        toast.success('Image uploaded.');
-      } else { toast.error('Upload failed.'); }
-    } catch (err) {
-      toast.error(err?.response?.data?.message || 'Upload failed.');
-    } finally { setImgUploading(false); }
-  };
 
   /* ── product management panel ── */
   const loadCatProducts = async (catId) => {
@@ -194,10 +172,10 @@ export default function AdminCategories() {
     setSaving(true);
     try {
       if (panel === 'add') {
-        await createCategory({ name: form.name.trim(), icon: form.icon, image: form.image, order: Number(form.order || 0) });
+        await createCategory({ name: form.name.trim(), icon: form.icon, order: Number(form.order || 0) });
         toast.success('Category created!');
       } else {
-        await updateCategory(editId, { name: form.name.trim(), icon: form.icon, image: form.image, order: Number(form.order || 0) });
+        await updateCategory(editId, { name: form.name.trim(), icon: form.icon, order: Number(form.order || 0) });
         toast.success('Category updated!');
       }
       closePanel();
@@ -241,11 +219,7 @@ export default function AdminCategories() {
       display: 'flex', alignItems: 'center', gap: 12,
       marginBottom: 4,
     }}>
-      {form.image ? (
-        <img src={form.image} alt="" style={{ width: 48, height: 48, borderRadius: 10, objectFit: 'cover', flexShrink: 0, border: '1px solid #e5e7eb' }} />
-      ) : (
-        <span style={{ fontSize: 28, lineHeight: 1 }}>{form.icon || '📂'}</span>
-      )}
+      <span style={{ fontSize: 28, lineHeight: 1 }}>{form.icon || '📂'}</span>
       <div>
         <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#111' }}>{form.name || 'Category Name'}</div>
         <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
@@ -316,11 +290,7 @@ export default function AdminCategories() {
                   <td style={{ color: '#9ca3af', fontSize: '0.82rem' }}>{i + 1}</td>
                   <td>
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontWeight: 600 }}>
-                      {c.image ? (
-                        <img src={c.image} alt="" style={{ width: 30, height: 30, borderRadius: 7, objectFit: 'cover', border: '1px solid #e5e7eb' }} />
-                      ) : c.icon ? (
-                        <span style={{ fontSize: 20 }}>{c.icon}</span>
-                      ) : null}
+                      {c.icon && <span style={{ fontSize: 20 }}>{c.icon}</span>}
                       {c.name}
                     </span>
                   </td>
@@ -377,7 +347,7 @@ export default function AdminCategories() {
                         className="btn btn--sm btn--outline"
                         title="Manage products in this category"
                         onClick={() => openProdPanel(c)}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: '#1ABC9C', borderColor: '#A0E7D8' }}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: '#3451D1', borderColor: '#93C5FD' }}
                       >
                         <Package size={13} /> Products
                       </button>
@@ -422,7 +392,7 @@ export default function AdminCategories() {
             <div style={{
               padding: '18px 22px', borderBottom: '1px solid #e5e7eb',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              background: panel === 'add' ? 'linear-gradient(135deg,#1ABC9C,#16A085)' : 'linear-gradient(135deg,#1E8449,#27ae60)',
+              background: panel === 'add' ? 'linear-gradient(135deg,#C0392B,#e74c3c)' : 'linear-gradient(135deg,#1E8449,#27ae60)',
             }}>
               <div>
                 <h2 style={{ margin: 0, color: '#fff', fontSize: '1.05rem', fontWeight: 700 }}>
@@ -471,7 +441,7 @@ export default function AdminCategories() {
                         onClick={() => setForm(f => ({ ...f, icon: ic }))}
                         style={{
                           width: 38, height: 38, borderRadius: 8, fontSize: 20,
-                          border: form.icon === ic ? '2px solid #1ABC9C' : '1.5px solid #e5e7eb',
+                          border: form.icon === ic ? '2px solid #C0392B' : '1.5px solid #e5e7eb',
                           background: form.icon === ic ? '#fff5f5' : '#fff',
                           cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                           transition: 'all 0.12s',
@@ -486,75 +456,6 @@ export default function AdminCategories() {
                     onChange={e => setForm(f => ({ ...f, icon: e.target.value }))}
                     placeholder="Or type custom emoji / text"
                     style={{ marginBottom: 0 }}
-                  />
-                </div>
-
-                {/* Category image (real photo) */}
-                <div style={{ marginBottom: 14 }}>
-                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <ImageIcon size={14} /> Category Image
-                    <span style={{ fontWeight: 400, color: '#9ca3af', fontSize: '0.72rem' }}>(real photo — shown on storefront tile)</span>
-                  </label>
-
-                  <input
-                    ref={imgInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImagePick}
-                    style={{ display: 'none' }}
-                  />
-
-                  {form.image ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <img
-                        src={form.image}
-                        alt="Category"
-                        style={{ width: 72, height: 72, borderRadius: 12, objectFit: 'cover', border: '1px solid #e5e7eb', flexShrink: 0 }}
-                      />
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                        <button
-                          type="button"
-                          className="btn btn--outline btn--sm"
-                          onClick={() => imgInputRef.current?.click()}
-                          disabled={imgUploading}
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}
-                        >
-                          <Camera size={13} /> {imgUploading ? 'Uploading…' : 'Replace'}
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn--outline btn--sm"
-                          onClick={() => setForm(f => ({ ...f, image: '' }))}
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: '#dc2626', borderColor: '#fca5a5' }}
-                        >
-                          <Trash2 size={13} /> Remove
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => imgInputRef.current?.click()}
-                      disabled={imgUploading}
-                      style={{
-                        width: '100%', padding: '18px', borderRadius: 12,
-                        border: '1.5px dashed #cbd5e1', background: '#f9fafb',
-                        cursor: 'pointer', display: 'flex', flexDirection: 'column',
-                        alignItems: 'center', gap: 6, color: '#6b7280', fontSize: '0.82rem',
-                      }}
-                    >
-                      <Camera size={22} style={{ opacity: 0.6 }} />
-                      {imgUploading ? 'Uploading…' : 'Click to upload a photo'}
-                      <span style={{ fontSize: '0.7rem', color: '#9ca3af' }}>JPG / PNG / WebP · up to 5 MB</span>
-                    </button>
-                  )}
-
-                  <input
-                    className="form-input"
-                    value={form.image}
-                    onChange={e => setForm(f => ({ ...f, image: e.target.value }))}
-                    placeholder="Or paste an image URL"
-                    style={{ marginBottom: 0, marginTop: 8 }}
                   />
                 </div>
 
@@ -688,7 +589,7 @@ export default function AdminCategories() {
             {/* header */}
             <div style={{
               padding: '18px 22px', borderBottom: '1px solid #e5e7eb',
-              background: 'linear-gradient(135deg,#117A65,#1ABC9C)',
+              background: 'linear-gradient(135deg,#1E40AF,#3451D1)',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
               <div>
@@ -711,9 +612,9 @@ export default function AdminCategories() {
                   onClick={() => { setProdTab(key); if (key === 'add') { setAddSearch(''); setAddResults([]); } }}
                   style={{
                     flex: 1, padding: '11px 0', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
-                    color: prodTab === key ? '#1ABC9C' : '#6b7280',
+                    color: prodTab === key ? '#3451D1' : '#6b7280',
                     background: prodTab === key ? '#fff' : 'transparent',
-                    borderBottom: prodTab === key ? '2px solid #1ABC9C' : '2px solid transparent',
+                    borderBottom: prodTab === key ? '2px solid #3451D1' : '2px solid transparent',
                   }}
                 >
                   {label}
@@ -828,7 +729,7 @@ export default function AdminCategories() {
                         </div>
                         <button
                           onClick={() => doAddProduct(p)}
-                          style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 4, background: '#1ABC9C', color: '#fff', border: 'none', borderRadius: 7, cursor: 'pointer', padding: '5px 11px', fontSize: '0.78rem', fontWeight: 600 }}
+                          style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 4, background: '#3451D1', color: '#fff', border: 'none', borderRadius: 7, cursor: 'pointer', padding: '5px 11px', fontSize: '0.78rem', fontWeight: 600 }}
                         >
                           <Plus size={12} /> Add
                         </button>

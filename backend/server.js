@@ -56,7 +56,7 @@ app.use(helmet({
                    'https://accounts.google.com', 'https://apis.google.com', 'https://www.gstatic.com',
                    'https://www.googletagmanager.com', 'https://www.google-analytics.com'],
       styleSrc:   ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://accounts.google.com'],
-      connectSrc: ["'self'", 'https://healthub.site', 'https://www.healthub.site',
+      connectSrc: ["'self'", 'https://batlamedicos.shop', 'https://www.batlamedicos.shop',
                    'https://en.wikipedia.org', 'https://world.openfoodfacts.org',
                    'https://api.razorpay.com', 'https://lumberjack.razorpay.com',
                    'https://cdn.razorpay.com',
@@ -89,8 +89,8 @@ const allowedOrigins = [
   'http://127.0.0.1:4173',
   'http://localhost:5000',
   'http://127.0.0.1:5000',
-  'https://healthub.site',
-  'https://www.healthub.site',
+  'https://batlamedicos.shop',
+  'https://www.batlamedicos.shop',
   process.env.FRONTEND_URL,
   process.env.TUNNEL_URL,
 ].filter(Boolean);
@@ -210,7 +210,7 @@ app.get('/sitemap.xml', (req, res) => {
 });
 app.get('/robots.txt', (req, res) => {
   res.type('text/plain');
-  res.send('User-agent: *\nAllow: /\nSitemap: https://healthub.site/sitemap.xml\n');
+  res.send('User-agent: *\nAllow: /\nSitemap: https://batlamedicos.shop/sitemap.xml\n');
 });
 
 // ── Serve uploaded files ───────────────────────────────────────────────────

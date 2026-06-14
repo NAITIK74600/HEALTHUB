@@ -3,7 +3,7 @@ import { getAllOffers, createOffer, updateOffer, deleteOffer, duplicateOffer, ge
 import { getCategories } from '../../api/categories';
 import { uploadImage } from '../../api/upload';
 import toast from 'react-hot-toast';
-import { Plus, Pencil, Trash2, ExternalLink, Copy, Eye, MousePointerClick, Tag, Truck, BarChart3, Clock, ArrowUp, ArrowDown, CheckSquare, Square, ToggleLeft, ToggleRight, Monitor, Store, Layers, Percent, Hash, Image, Video, LayoutTemplate } from 'lucide-react';
+import { Plus, Pencil, Trash2, ExternalLink, Copy, Eye, MousePointerClick, Tag, Truck, BarChart3, Clock, ArrowUp, ArrowDown, CheckSquare, Square, ToggleLeft, ToggleRight, Monitor, Store, Layers } from 'lucide-react';
 
 const LINK_TYPES = [
   { value: 'products',      label: '🛒 All Products',         path: () => '/products' },
@@ -34,11 +34,10 @@ function isMongoId(v) {
 }
 
 const EMPTY = {
-  title: '', description: '', imageUrl: '', videoUrl: '', startDate: '', endDate: '',
+  title: '', description: '', imageUrl: '', startDate: '', endDate: '',
   isActive: true, freeDelivery: false, freeDeliveryMin: '',
   discountText: '', badgeColor: '#C0392B', priority: 0,
   isDealOfDay: false, displayOn: 'both',
-  discountPct: '', promoCode: '', mediaType: 'card', promoSubtext: '',
 };
 
 const BADGE_COLORS = [
@@ -104,11 +103,6 @@ export default function AdminOffers() {
         ord: Number(form.priority) || 0,
         badge: form.isDealOfDay ? 'deal_of_day' : '',
         displayOn: form.displayOn || 'both',
-        discountPct: form.discountPct !== '' ? Number(form.discountPct) : null,
-        promoCode: form.promoCode || '',
-        mediaType: form.mediaType || 'card',
-        promoSubtext: form.promoSubtext || '',
-        videoUrl: form.videoUrl || '',
       };
       if (editing) {
         await updateOffer(editing, payload);
@@ -176,7 +170,6 @@ export default function AdminOffers() {
       title: offer.title,
       description: offer.description || '',
       imageUrl: offer.imageUrl,
-      videoUrl: offer.videoUrl || '',
       startDate: offer.startDate?.slice(0, 10),
       endDate: offer.endDate?.slice(0, 10),
       isActive: offer.isActive,
@@ -187,10 +180,6 @@ export default function AdminOffers() {
       priority: offer.priority || 0,
       isDealOfDay: offer.badge === 'deal_of_day',
       displayOn: offer.displayOn || 'both',
-      discountPct: offer.discountPct != null ? String(offer.discountPct) : '',
-      promoCode: offer.promoCode || '',
-      mediaType: offer.mediaType || 'card',
-      promoSubtext: offer.promoSubtext || '',
     });
     setLinkType(parsed.type);
     setLinkCat(parsed.cat);
@@ -435,10 +424,9 @@ export default function AdminOffers() {
           <label>Display On</label>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {[
-              { value: 'both',     label: 'Both Pages',          icon: <Layers size={14} /> },
-              { value: 'home',     label: 'Home Only',           icon: <Monitor size={14} /> },
-              { value: 'products', label: 'Products Only',       icon: <Store size={14} /> },
-              { value: 'hero',     label: '🌟 Hero Slideshow',   icon: <LayoutTemplate size={14} /> },
+              { value: 'both', label: 'Both Pages', icon: <Layers size={14} /> },
+              { value: 'home', label: 'Home Page Only', icon: <Monitor size={14} /> },
+              { value: 'products', label: 'Products Page Only', icon: <Store size={14} /> },
             ].map(opt => (
               <button
                 key={opt.value}
@@ -452,88 +440,6 @@ export default function AdminOffers() {
             ))}
           </div>
         </div>
-
-        {/* ── Hero Slide extra fields (only when displayOn = 'hero') ── */}
-        {form.displayOn === 'hero' && (
-          <div style={{ background: '#f0fdf8', border: '1.5px solid #99f6e4', borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <p style={{ margin: 0, fontWeight: 700, color: 'var(--primary)', fontSize: '0.9rem' }}>🌟 Hero Slide Settings</p>
-
-            {/* Media type */}
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label>Slide Type</label>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {[
-                  { value: 'card',  label: '🎴 Promo Card',  icon: <LayoutTemplate size={14} /> },
-                  { value: 'image', label: '🖼️ Image Banner', icon: <Image size={14} /> },
-                  { value: 'video', label: '🎬 Video',        icon: <Video size={14} /> },
-                ].map(t => (
-                  <button key={t.value} type="button"
-                    className={`btn btn--sm ${form.mediaType === t.value ? 'btn--primary' : 'btn--outline'}`}
-                    onClick={() => setForm(f => ({ ...f, mediaType: t.value }))}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}
-                  >{t.icon} {t.label}</button>
-                ))}
-              </div>
-            </div>
-
-            {/* Card type: discount % + promo code + subtext */}
-            {form.mediaType === 'card' && (
-              <div className="form-row" style={{ gap: 12 }}>
-                <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
-                  <label><Percent size={13} /> Discount %</label>
-                  <input type="number" min="1" max="99" value={form.discountPct}
-                    onChange={e => setForm(f => ({ ...f, discountPct: e.target.value }))}
-                    placeholder="e.g. 20" />
-                </div>
-                <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
-                  <label><Hash size={13} /> Promo Code</label>
-                  <input type="text" value={form.promoCode}
-                    onChange={e => setForm(f => ({ ...f, promoCode: e.target.value.toUpperCase() }))}
-                    placeholder="e.g. HEALTH20" maxLength={30} />
-                </div>
-                <div className="form-group" style={{ flex: 2, marginBottom: 0 }}>
-                  <label>Subtext</label>
-                  <input type="text" value={form.promoSubtext}
-                    onChange={e => setForm(f => ({ ...f, promoSubtext: e.target.value }))}
-                    placeholder="e.g. On First Order" maxLength={100} />
-                </div>
-              </div>
-            )}
-
-            {/* Image type: uses existing imageUrl field */}
-            {form.mediaType === 'image' && (
-              <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--gray-500)' }}>📷 Use the <strong>Banner Image</strong> field above — it will fill the hero slide.</p>
-            )}
-
-            {/* Video type: video URL */}
-            {form.mediaType === 'video' && (
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label><Video size={13} /> Video URL (MP4 / YouTube embed)</label>
-                <input type="url" value={form.videoUrl}
-                  onChange={e => setForm(f => ({ ...f, videoUrl: e.target.value }))}
-                  placeholder="https://... or youtube embed URL" />
-              </div>
-            )}
-
-            {/* Live preview for card type */}
-            {form.mediaType === 'card' && (form.discountPct || form.title) && (
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <div style={{
-                  width: 200, background: 'linear-gradient(135deg,#0E6655,#1ABC9C)',
-                  borderRadius: 16, padding: '20px 16px', textAlign: 'center', color: '#fff',
-                  boxShadow: '0 8px 24px rgba(26,188,156,.3)',
-                }}>
-                  {form.discountPct && <><div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 3, opacity: .8 }}>FLAT</div>
-                  <div style={{ fontSize: 44, fontWeight: 900, lineHeight: 1 }}>{form.discountPct}<span style={{ fontSize: 22 }}>%</span></div>
-                  <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: 2, opacity: .85 }}>OFF</div></>}
-                  {form.promoSubtext && <div style={{ fontSize: 12, marginTop: 8, opacity: .8 }}>{form.promoSubtext}</div>}
-                  {form.promoCode && <div style={{ marginTop: 8, padding: '4px 12px', border: '1.5px dashed rgba(255,255,255,.5)', borderRadius: 999, fontSize: 11, fontWeight: 700 }}>Use Code: {form.promoCode}</div>}
-                  {form.title && <div style={{ marginTop: 8, fontSize: 11, opacity: .6 }}>{form.title}</div>}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
 
         <label className="checkbox-label" style={{ background: '#fef9c3', border: '1.5px solid #fde047', borderRadius: 8, padding: '8px 12px', gap: 8 }}>
           <input

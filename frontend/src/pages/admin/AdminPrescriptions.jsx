@@ -428,7 +428,7 @@ export default function AdminPrescriptions() {
               </div>
               <div className="form-group">
                 <label>Pincode *</label>
-                <input value={addr.pincode} onChange={(e) => setAddr((a) => ({ ...a, pincode: e.target.value }))} placeholder="110001" maxLength={6} />
+                <input value={addr.pincode} onChange={(e) => setAddr((a) => ({ ...a, pincode: e.target.value }))} placeholder="110025" maxLength={6} />
               </div>
               <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                 <label>Address line 1 *</label>

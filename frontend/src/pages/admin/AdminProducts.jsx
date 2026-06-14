@@ -1014,7 +1014,7 @@ export default function AdminProducts() {
             </div>
             {videoUploading && (
               <div style={{ marginTop: 6, height: 6, borderRadius: 3, background: '#e5e7eb', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${videoProgress}%`, background: '#1ABC9C', transition: 'width 0.2s' }} />
+                <div style={{ height: '100%', width: `${videoProgress}%`, background: '#3451D1', transition: 'width 0.2s' }} />
               </div>
             )}
             {form.videoUrl && !videoUploading && (

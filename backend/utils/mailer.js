@@ -5,11 +5,11 @@ const path = require('path');
  * Mailer utility — sends transactional emails via cPanel SMTP
  *
  * Set these in .env:
- *   MAIL_HOST     = mail.healthub.site
+ *   MAIL_HOST     = mail.batlamedicos.shop
  *   MAIL_PORT     = 465
- *   MAIL_USER     = support@healthub.site
+ *   MAIL_USER     = ordersupport@batlamedicos.shop
  *   MAIL_PASS     = <cPanel email password>
- *   MAIL_FROM     = "Health Hub" <support@healthub.site>
+ *   MAIL_FROM     = "Batla Medicos" <ordersupport@batlamedicos.shop>
  *
  * cPanel NOTES:
  *   - Port 465 uses SSL  → secure: true  (recommended)
@@ -90,7 +90,7 @@ async function sendMail(to, subject, html) {
     throw new Error('SMTP is not configured on the server. Please contact the administrator.');
   }
 
-  const from = process.env.MAIL_FROM || '"Health Hub" <support@healthub.site>';
+  const from = process.env.MAIL_FROM || '"Batla Medicos" <ordersupport@batlamedicos.shop>';
 
   // Embed logo as inline CID attachment so email clients show it without blocking
   const logoPath = path.resolve(__dirname, '../../frontend/public/email-logo.png');
@@ -142,7 +142,7 @@ async function sendOrderConfirmation(userEmail, userName, order) {
 
     <!-- Header -->
     <div style="background:#2e7d32;padding:28px 32px;text-align:center">
-      <img src="cid:${LOGO_CID}" alt="Health Hub" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
+      <img src="cid:${LOGO_CID}" alt="Batla Medicos" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
       <h1 style="color:#fff;margin:0;font-size:22px">✅ Order Confirmed!</h1>
       <p style="color:#c8e6c9;margin:8px 0 0;font-size:14px">Order #${orderId}</p>
     </div>
@@ -151,7 +151,7 @@ async function sendOrderConfirmation(userEmail, userName, order) {
     <div style="padding:28px 32px">
       <p style="margin:0 0 16px;color:#333;font-size:15px">Hello <strong>${userName || 'Customer'}</strong>,</p>
       <p style="margin:0 0 24px;color:#555;font-size:14px;line-height:1.6">
-        Thank you for shopping with <strong>Health Hub</strong>! Your order has been placed successfully.
+        Thank you for shopping with <strong>Batla Medicos</strong>! Your order has been placed successfully.
       </p>
 
       <!-- Order Items -->
@@ -184,20 +184,20 @@ async function sendOrderConfirmation(userEmail, userName, order) {
 
       <!-- CTA -->
       <div style="text-align:center;margin:24px 0">
-        <a href="https://healthub.site/orders" style="background:#2e7d32;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;display:inline-block">View My Orders</a>
+        <a href="https://batlamedicos.shop/orders" style="background:#2e7d32;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;display:inline-block">View My Orders</a>
       </div>
     </div>
 
     <!-- Footer -->
     <div style="background:#f9f9f9;padding:18px 32px;text-align:center;border-top:1px solid #eee">
-      <p style="margin:0;font-size:13px;color:#888">Health Hub — Block G, Connaught Place, New Delhi – 110001</p>
-      <p style="margin:6px 0 0;font-size:13px;color:#888">📞 7303240289 &nbsp;|&nbsp; 📧 support@healthub.site</p>
+      <p style="margin:0;font-size:13px;color:#888">Batla Medicos — F 41/2, Nafees Road, Batla House, New Delhi – 110025</p>
+      <p style="margin:6px 0 0;font-size:13px;color:#888">📞 9990165925 &nbsp;|&nbsp; 📧 ordersupport@batlamedicos.shop</p>
     </div>
   </div>
 </body>
 </html>`;
 
-  await sendMail(userEmail, `Order Confirmed #${orderId} — Health Hub`, html);
+  await sendMail(userEmail, `Order Confirmed #${orderId} — Batla Medicos`, html);
 }
 
 /**
@@ -224,7 +224,7 @@ async function sendOrderStatusUpdate(userEmail, userName, order, status) {
 <body style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,sans-serif">
   <div style="max-width:600px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
     <div style="background:${info.color};padding:28px 32px;text-align:center">
-      <img src="cid:${LOGO_CID}" alt="Health Hub" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
+      <img src="cid:${LOGO_CID}" alt="Batla Medicos" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
       <h1 style="color:#fff;margin:0;font-size:22px">${info.emoji} ${info.label}</h1>
       <p style="color:rgba(255,255,255,.8);margin:8px 0 0;font-size:14px">Order #${orderId}</p>
     </div>
@@ -232,17 +232,17 @@ async function sendOrderStatusUpdate(userEmail, userName, order, status) {
       <p style="margin:0 0 16px;color:#333;font-size:15px">Hello <strong>${userName || 'Customer'}</strong>,</p>
       <p style="margin:0 0 24px;color:#555;font-size:14px;line-height:1.6">${info.msg}</p>
       <div style="text-align:center;margin:24px 0">
-        <a href="https://healthub.site/orders" style="background:${info.color};color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;display:inline-block">View Order</a>
+        <a href="https://batlamedicos.shop/orders" style="background:${info.color};color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;display:inline-block">View Order</a>
       </div>
     </div>
     <div style="background:#f9f9f9;padding:18px 32px;text-align:center;border-top:1px solid #eee">
-      <p style="margin:0;font-size:13px;color:#888">Health Hub — 📞 7303240289 &nbsp;|&nbsp; 📧 support@healthub.site</p>
+      <p style="margin:0;font-size:13px;color:#888">Batla Medicos — 📞 9990165925 &nbsp;|&nbsp; 📧 ordersupport@batlamedicos.shop</p>
     </div>
   </div>
 </body>
 </html>`;
 
-  await sendMail(userEmail, `${info.emoji} ${info.label} #${orderId} — Health Hub`, html);
+  await sendMail(userEmail, `${info.emoji} ${info.label} #${orderId} — Batla Medicos`, html);
 }
 
 /**
@@ -257,14 +257,14 @@ async function sendEmailVerification(userEmail, userName, verifyUrl) {
 <body style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,sans-serif">
   <div style="max-width:560px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
     <div style="background:#3451D1;padding:28px 32px;text-align:center">
-      <img src="cid:${LOGO_CID}" alt="Health Hub" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
+      <img src="cid:${LOGO_CID}" alt="Batla Medicos" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
       <h1 style="color:#fff;margin:0;font-size:22px">✉️ Verify Your Email</h1>
       <p style="color:rgba(255,255,255,.8);margin:8px 0 0;font-size:14px">One last step to activate your account</p>
     </div>
     <div style="padding:28px 32px">
       <p style="margin:0 0 16px;color:#333;font-size:15px">Hello <strong>${userName || 'there'}</strong>,</p>
       <p style="margin:0 0 24px;color:#555;font-size:14px;line-height:1.6">
-        Thanks for registering at <strong>Health Hub</strong>! Please click the button below to verify
+        Thanks for registering at <strong>Batla Medicos</strong>! Please click the button below to verify
         your email address. This link expires in <strong>24 hours</strong>.
       </p>
       <div style="text-align:center;margin:28px 0">
@@ -279,12 +279,12 @@ async function sendEmailVerification(userEmail, userName, verifyUrl) {
       </p>
     </div>
     <div style="background:#f9f9f9;padding:18px 32px;text-align:center;border-top:1px solid #eee">
-      <p style="margin:0;font-size:13px;color:#888">Health Hub — 📞 7303240289 &nbsp;|&nbsp; 📧 support@healthub.site</p>
+      <p style="margin:0;font-size:13px;color:#888">Batla Medicos — 📞 9990165925 &nbsp;|&nbsp; 📧 ordersupport@batlamedicos.shop</p>
     </div>
   </div>
 </body>
 </html>`;
-  await sendMail(userEmail, 'Verify your email — Health Hub', html);
+  await sendMail(userEmail, 'Verify your email — Batla Medicos', html);
 }
 
 /**
@@ -307,7 +307,7 @@ async function sendLabBookingConfirmation(userEmail, userName, booking) {
 <body style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,sans-serif">
   <div style="max-width:600px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
     <div style="background:#1565c0;padding:28px 32px;text-align:center">
-      <img src="cid:${LOGO_CID}" alt="Health Hub" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
+      <img src="cid:${LOGO_CID}" alt="Batla Medicos" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
       <h1 style="color:#fff;margin:0;font-size:22px">🧪 Lab Test Booked!</h1>
       <p style="color:rgba(255,255,255,.8);margin:8px 0 0;font-size:14px">Booking #${bookingId}</p>
     </div>
@@ -333,16 +333,16 @@ async function sendLabBookingConfirmation(userEmail, userName, booking) {
         </tr></tfoot>
       </table>` : ''}
       <div style="text-align:center;margin:24px 0">
-        <a href="https://healthub.site/lab" style="background:#1565c0;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;display:inline-block">View My Bookings</a>
+        <a href="https://batlamedicos.shop/lab" style="background:#1565c0;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;display:inline-block">View My Bookings</a>
       </div>
     </div>
     <div style="background:#f9f9f9;padding:18px 32px;text-align:center;border-top:1px solid #eee">
-      <p style="margin:0;font-size:13px;color:#888">Health Hub — 📞 7303240289 &nbsp;|&nbsp; 📧 support@healthub.site</p>
+      <p style="margin:0;font-size:13px;color:#888">Batla Medicos — 📞 9990165925 &nbsp;|&nbsp; 📧 ordersupport@batlamedicos.shop</p>
     </div>
   </div>
 </body>
 </html>`;
-  await sendMail(userEmail, `🧪 Lab Test Booked #${bookingId} — Health Hub`, html);
+  await sendMail(userEmail, `🧪 Lab Test Booked #${bookingId} — Batla Medicos`, html);
 }
 
 /**
@@ -357,7 +357,7 @@ async function sendLabStatusUpdate(userEmail, userName, booking, status) {
     sample_collected: { emoji: '🩸', label: 'Sample Collected',     color: '#e65100', msg: 'Your sample has been collected and is being sent to the lab for processing.' },
     processing:       { emoji: '🔬', label: 'Processing',           color: '#7b1fa2', msg: 'Your sample is currently being processed in the lab.' },
     report_ready:     { emoji: '📋', label: 'Report Ready',         color: '#1565c0', msg: 'Your lab test report is ready! You can download it from your bookings page.' },
-    completed:        { emoji: '🎉', label: 'Booking Completed',    color: '#2e7d32', msg: 'Your lab test booking has been completed. Thank you for choosing Health Hub!' },
+    completed:        { emoji: '🎉', label: 'Booking Completed',    color: '#2e7d32', msg: 'Your lab test booking has been completed. Thank you for choosing Batla Medicos!' },
     cancelled:        { emoji: '❌', label: 'Booking Cancelled',    color: '#c62828', msg: 'Your lab test booking has been cancelled. If you have any questions, please contact us.' },
   };
 
@@ -371,7 +371,7 @@ async function sendLabStatusUpdate(userEmail, userName, booking, status) {
 <body style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,sans-serif">
   <div style="max-width:600px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
     <div style="background:${info.color};padding:28px 32px;text-align:center">
-      <img src="cid:${LOGO_CID}" alt="Health Hub" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
+      <img src="cid:${LOGO_CID}" alt="Batla Medicos" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
       <h1 style="color:#fff;margin:0;font-size:22px">${info.emoji} ${info.label}</h1>
       <p style="color:rgba(255,255,255,.8);margin:8px 0 0;font-size:14px">Booking #${bookingId}</p>
     </div>
@@ -383,16 +383,16 @@ async function sendLabStatusUpdate(userEmail, userName, booking, status) {
         📅 Date: <strong>${booking.bookingDate || ''}</strong>
       </div>
       <div style="text-align:center;margin:24px 0">
-        <a href="https://healthub.site/lab" style="background:${info.color};color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;display:inline-block">View Booking</a>
+        <a href="https://batlamedicos.shop/lab" style="background:${info.color};color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;display:inline-block">View Booking</a>
       </div>
     </div>
     <div style="background:#f9f9f9;padding:18px 32px;text-align:center;border-top:1px solid #eee">
-      <p style="margin:0;font-size:13px;color:#888">Health Hub — 📞 7303240289 &nbsp;|&nbsp; 📧 support@healthub.site</p>
+      <p style="margin:0;font-size:13px;color:#888">Batla Medicos — 📞 9990165925 &nbsp;|&nbsp; 📧 ordersupport@batlamedicos.shop</p>
     </div>
   </div>
 </body>
 </html>`;
-  await sendMail(userEmail, `${info.emoji} ${info.label} #${bookingId} — Health Hub`, html);
+  await sendMail(userEmail, `${info.emoji} ${info.label} #${bookingId} — Batla Medicos`, html);
 }
 
 /**
@@ -416,7 +416,7 @@ async function sendPrescriptionUpdate(userEmail, userName, prescriptionId, statu
 <body style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,sans-serif">
   <div style="max-width:600px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
     <div style="background:${info.color};padding:28px 32px;text-align:center">
-      <img src="cid:${LOGO_CID}" alt="Health Hub" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
+      <img src="cid:${LOGO_CID}" alt="Batla Medicos" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
       <h1 style="color:#fff;margin:0;font-size:22px">${info.emoji} ${info.label}</h1>
       <p style="color:rgba(255,255,255,.8);margin:8px 0 0;font-size:14px">Prescription #${prescriptionId}</p>
     </div>
@@ -427,16 +427,16 @@ async function sendPrescriptionUpdate(userEmail, userName, prescriptionId, statu
         📝 <strong>Note from pharmacist:</strong> ${adminNote}
       </div>` : ''}
       <div style="text-align:center;margin:24px 0">
-        <a href="https://healthub.site/prescriptions" style="background:${info.color};color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;display:inline-block">View Prescriptions</a>
+        <a href="https://batlamedicos.shop/prescriptions" style="background:${info.color};color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;display:inline-block">View Prescriptions</a>
       </div>
     </div>
     <div style="background:#f9f9f9;padding:18px 32px;text-align:center;border-top:1px solid #eee">
-      <p style="margin:0;font-size:13px;color:#888">Health Hub — 📞 7303240289 &nbsp;|&nbsp; 📧 support@healthub.site</p>
+      <p style="margin:0;font-size:13px;color:#888">Batla Medicos — 📞 9990165925 &nbsp;|&nbsp; 📧 ordersupport@batlamedicos.shop</p>
     </div>
   </div>
 </body>
 </html>`;
-  await sendMail(userEmail, `${info.emoji} ${info.label} — Health Hub`, html);
+  await sendMail(userEmail, `${info.emoji} ${info.label} — Batla Medicos`, html);
 }
 
 /**
@@ -453,7 +453,7 @@ async function sendDeliveryAssignmentEmail(userEmail, userName, orderId, deliver
 <body style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,sans-serif">
   <div style="max-width:600px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
     <div style="background:#e65100;padding:28px 32px;text-align:center">
-      <img src="cid:${LOGO_CID}" alt="Health Hub" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
+      <img src="cid:${LOGO_CID}" alt="Batla Medicos" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
       <h1 style="color:#fff;margin:0;font-size:22px">🚚 Out for Delivery!</h1>
       <p style="color:rgba(255,255,255,.8);margin:8px 0 0;font-size:14px">Order #${shortId}</p>
     </div>
@@ -463,16 +463,16 @@ async function sendDeliveryAssignmentEmail(userEmail, userName, orderId, deliver
         Great news! Your order has been assigned to a delivery partner${deliveryBoyName ? ` (<strong>${deliveryBoyName}</strong>)` : ''} and is on its way to you.
       </p>
       <div style="text-align:center;margin:24px 0">
-        <a href="https://healthub.site/orders" style="background:#e65100;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;display:inline-block">Track Order</a>
+        <a href="https://batlamedicos.shop/orders" style="background:#e65100;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;display:inline-block">Track Order</a>
       </div>
     </div>
     <div style="background:#f9f9f9;padding:18px 32px;text-align:center;border-top:1px solid #eee">
-      <p style="margin:0;font-size:13px;color:#888">Health Hub — 📞 7303240289 &nbsp;|&nbsp; 📧 support@healthub.site</p>
+      <p style="margin:0;font-size:13px;color:#888">Batla Medicos — 📞 9990165925 &nbsp;|&nbsp; 📧 ordersupport@batlamedicos.shop</p>
     </div>
   </div>
 </body>
 </html>`;
-  await sendMail(userEmail, `🚚 Order Out for Delivery #${shortId} — Health Hub`, html);
+  await sendMail(userEmail, `🚚 Order Out for Delivery #${shortId} — Batla Medicos`, html);
 }
 
 /**
@@ -496,7 +496,7 @@ async function sendDeliveryBoyStatusEmail(email, name, status) {
 <body style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,sans-serif">
   <div style="max-width:600px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
     <div style="background:${info.color};padding:28px 32px;text-align:center">
-      <img src="cid:${LOGO_CID}" alt="Health Hub" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
+      <img src="cid:${LOGO_CID}" alt="Batla Medicos" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
       <h1 style="color:#fff;margin:0;font-size:22px">${info.emoji} ${info.label}</h1>
       <p style="color:rgba(255,255,255,.8);margin:8px 0 0;font-size:14px">Delivery Partner Update</p>
     </div>
@@ -504,16 +504,16 @@ async function sendDeliveryBoyStatusEmail(email, name, status) {
       <p style="margin:0 0 16px;color:#333;font-size:15px">Hello <strong>${name || 'there'}</strong>,</p>
       <p style="margin:0 0 24px;color:#555;font-size:14px;line-height:1.6">${info.msg}</p>
       <div style="text-align:center;margin:24px 0">
-        <a href="https://healthub.site/delivery" style="background:${info.color};color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;display:inline-block">Go to Dashboard</a>
+        <a href="https://batlamedicos.shop/delivery" style="background:${info.color};color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;display:inline-block">Go to Dashboard</a>
       </div>
     </div>
     <div style="background:#f9f9f9;padding:18px 32px;text-align:center;border-top:1px solid #eee">
-      <p style="margin:0;font-size:13px;color:#888">Health Hub — 📞 7303240289 &nbsp;|&nbsp; 📧 support@healthub.site</p>
+      <p style="margin:0;font-size:13px;color:#888">Batla Medicos — 📞 9990165925 &nbsp;|&nbsp; 📧 ordersupport@batlamedicos.shop</p>
     </div>
   </div>
 </body>
 </html>`;
-  await sendMail(email, `${info.emoji} ${info.label} — Health Hub`, html);
+  await sendMail(email, `${info.emoji} ${info.label} — Batla Medicos`, html);
 }
 
 module.exports = { sendMail, sendOrderConfirmation, sendOrderStatusUpdate, sendEmailVerification, sendPasswordReset, sendEmailVerificationOtp, sendPasswordResetOtp, verifySmtpConnection, sendLabBookingConfirmation, sendLabStatusUpdate, sendPrescriptionUpdate, sendDeliveryAssignmentEmail, sendDeliveryBoyStatusEmail };
@@ -530,14 +530,14 @@ async function sendPasswordReset(userEmail, userName, resetUrl) {
 <body style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,sans-serif">
   <div style="max-width:560px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
     <div style="background:#1565c0;padding:28px 32px;text-align:center">
-      <img src="cid:${LOGO_CID}" alt="Health Hub" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
+      <img src="cid:${LOGO_CID}" alt="Batla Medicos" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
       <h1 style="color:#fff;margin:0;font-size:22px">🔐 Reset Your Password</h1>
-      <p style="color:rgba(255,255,255,.8);margin:8px 0 0;font-size:14px">Health Hub Account Security</p>
+      <p style="color:rgba(255,255,255,.8);margin:8px 0 0;font-size:14px">Batla Medicos Account Security</p>
     </div>
     <div style="padding:28px 32px">
       <p style="margin:0 0 16px;color:#333;font-size:15px">Hello <strong>${userName || 'there'}</strong>,</p>
       <p style="margin:0 0 24px;color:#555;font-size:14px;line-height:1.6">
-        We received a request to reset the password for your Health Hub account.<br>
+        We received a request to reset the password for your Batla Medicos account.<br>
         Click the button below to set a new password. This link expires in <strong>1 hour</strong>.
       </p>
       <div style="text-align:center;margin:28px 0">
@@ -554,12 +554,12 @@ async function sendPasswordReset(userEmail, userName, resetUrl) {
       </p>
     </div>
     <div style="background:#f9f9f9;padding:18px 32px;text-align:center;border-top:1px solid #eee">
-      <p style="margin:0;font-size:13px;color:#888">Health Hub — 📞 7303240289 &nbsp;|&nbsp; 📧 support@healthub.site</p>
+      <p style="margin:0;font-size:13px;color:#888">Batla Medicos — 📞 9990165925 &nbsp;|&nbsp; 📧 ordersupport@batlamedicos.shop</p>
     </div>
   </div>
 </body>
 </html>`;
-  await sendMail(userEmail, '🔐 Reset Your Password — Health Hub', html);
+  await sendMail(userEmail, '🔐 Reset Your Password — Batla Medicos', html);
 }
 
 /**
@@ -574,14 +574,14 @@ async function sendEmailVerificationOtp(userEmail, userName, otp) {
 <body style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,sans-serif">
   <div style="max-width:520px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
     <div style="background:#3451D1;padding:28px 32px;text-align:center">
-      <img src="cid:${LOGO_CID}" alt="Health Hub" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
+      <img src="cid:${LOGO_CID}" alt="Batla Medicos" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
       <h1 style="color:#fff;margin:0;font-size:22px">✉️ Verify Your Email</h1>
-      <p style="color:rgba(255,255,255,.8);margin:8px 0 0;font-size:14px">Health Hub — Account Activation</p>
+      <p style="color:rgba(255,255,255,.8);margin:8px 0 0;font-size:14px">Batla Medicos — Account Activation</p>
     </div>
     <div style="padding:28px 32px">
       <p style="margin:0 0 16px;color:#333;font-size:15px">Hello <strong>${userName || 'there'}</strong>,</p>
       <p style="margin:0 0 20px;color:#555;font-size:14px;line-height:1.6">
-        Thanks for creating a <strong>Health Hub</strong> account! Use the OTP below to verify your email address.
+        Thanks for creating a <strong>Batla Medicos</strong> account! Use the OTP below to verify your email address.
         It expires in <strong>10 minutes</strong>.
       </p>
       <div style="background:#f0eded;border-radius:10px;padding:20px;text-align:center;margin:24px 0">
@@ -593,12 +593,12 @@ async function sendEmailVerificationOtp(userEmail, userName, otp) {
       </p>
     </div>
     <div style="background:#f9f9f9;padding:18px 32px;text-align:center;border-top:1px solid #eee">
-      <p style="margin:0;font-size:13px;color:#888">Health Hub — 📞 7303240289 &nbsp;|&nbsp; 📧 support@healthub.site</p>
+      <p style="margin:0;font-size:13px;color:#888">Batla Medicos — 📞 9990165925 &nbsp;|&nbsp; 📧 ordersupport@batlamedicos.shop</p>
     </div>
   </div>
 </body>
 </html>`;
-  await sendMail(userEmail, '🔑 Your Verification OTP — Health Hub', html);
+  await sendMail(userEmail, '🔑 Your Verification OTP — Batla Medicos', html);
 }
 
 /**
@@ -613,9 +613,9 @@ async function sendPasswordResetOtp(userEmail, userName, otp) {
 <body style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,sans-serif">
   <div style="max-width:520px;margin:32px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
     <div style="background:#1565c0;padding:28px 32px;text-align:center">
-      <img src="cid:${LOGO_CID}" alt="Health Hub" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
+      <img src="cid:${LOGO_CID}" alt="Batla Medicos" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:2px solid rgba(255,255,255,.3)">
       <h1 style="color:#fff;margin:0;font-size:22px">🔐 Reset Your Password</h1>
-      <p style="color:rgba(255,255,255,.8);margin:8px 0 0;font-size:14px">Health Hub Account Security</p>
+      <p style="color:rgba(255,255,255,.8);margin:8px 0 0;font-size:14px">Batla Medicos Account Security</p>
     </div>
     <div style="padding:28px 32px">
       <p style="margin:0 0 16px;color:#333;font-size:15px">Hello <strong>${userName || 'there'}</strong>,</p>
@@ -632,11 +632,11 @@ async function sendPasswordResetOtp(userEmail, userName, otp) {
       </div>
     </div>
     <div style="background:#f9f9f9;padding:18px 32px;text-align:center;border-top:1px solid #eee">
-      <p style="margin:0;font-size:13px;color:#888">Health Hub — 📞 7303240289 &nbsp;|&nbsp; 📧 support@healthub.site</p>
+      <p style="margin:0;font-size:13px;color:#888">Batla Medicos — 📞 9990165925 &nbsp;|&nbsp; 📧 ordersupport@batlamedicos.shop</p>
     </div>
   </div>
 </body>
 </html>`;
-  await sendMail(userEmail, '🔐 Password Reset OTP — Health Hub', html);
+  await sendMail(userEmail, '🔐 Password Reset OTP — Batla Medicos', html);
 }
 

@@ -94,7 +94,7 @@ export default function Account() {
 
   return (
     <main className="account-page container">
-      <SEO title="My Account" description="Manage your Health Hub account, profile and family members." path="/account" noIndex />
+      <SEO title="My Account" description="Manage your Batla Medicos account, profile and family members." path="/account" noIndex />
       <h1>My Account</h1>
 
       <div className="account-tabs">
