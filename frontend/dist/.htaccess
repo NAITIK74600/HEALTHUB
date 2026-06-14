@@ -58,6 +58,10 @@
   RewriteEngine On
   RewriteBase /
 
+  # Proxy /api/* to Node.js backend on port 5000
+  RewriteCond %{REQUEST_URI} ^/api/ [NC]
+  RewriteRule ^api/(.*)$ http://localhost:5000/api/$1 [P,L,QSA]
+
   # Don't rewrite existing files or directories
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
