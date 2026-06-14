@@ -1,7 +1,7 @@
 ---
 deployment:
   tasks:
-    - export PATH=/home/batlamed/nodevenv/HEALTHUB/24/bin:$PATH && cd /home/batlamed/HEALTHUB/backend && npm install --production
-    - cp -r /home/batlamed/HEALTHUB/frontend/dist/. /home/batlamed/public_html/
-    - cp /home/batlamed/HEALTHUB/frontend/public/hero-pharmacy.png /home/batlamed/public_html/hero-pharmacy.png 2>/dev/null || true
-    - mkdir -p /home/batlamed/HEALTHUB/tmp && touch /home/batlamed/HEALTHUB/tmp/restart.txt
+    - export PATH=/home/healthub/nodevenv/HEALTHUB/24/bin:$PATH && cd /home/healthub/HEALTHUB/backend && npm install --production
+    - cp -r /home/healthub/HEALTHUB/frontend/dist/. /home/healthub/public_html/
+    - cp /home/healthub/HEALTHUB/frontend/public/hero-pharmacy.png /home/healthub/public_html/hero-pharmacy.png 2>/dev/null || true
+    - mkdir -p /home/healthub/HEALTHUB/tmp && touch /home/healthub/HEALTHUB/tmp/restart.txt
