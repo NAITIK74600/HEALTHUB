@@ -13,6 +13,7 @@ export default function Navbar() {
   const { items: wishItems } = useWishlist();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [searchQ, setSearchQ] = useState('');
   const navigate = useNavigate();
   const WHATSAPP = import.meta.env.VITE_WHATSAPP_NUMBER || '917303240289';
@@ -30,6 +31,7 @@ export default function Navbar() {
     e.preventDefault();
     if (searchQ.trim()) {
       navigate(`/products?search=${encodeURIComponent(searchQ.trim())}`);
+      setMobileSearchOpen(false);
       setSearchQ('');
     }
   };
@@ -90,6 +92,18 @@ export default function Navbar() {
               <Heart size={18} />
               {wishItems.length > 0 && <span className="navbar__wish-count">{wishItems.length}</span>}
             </Link>
+
+            <button
+              className="navbar__search-toggle"
+              aria-label="Search"
+              onClick={() => {
+                setMobileSearchOpen(v => !v);
+                setMobileOpen(false);
+              }}
+            >
+              <Search size={18} />
+            </button>
+
             {user && <NotificationBell adminMode={false} />}
 
             {/* My Account */}
@@ -128,7 +142,10 @@ export default function Navbar() {
 
             <button
               className="navbar__menu-btn"
-              onClick={() => setMobileOpen(!mobileOpen)}
+              onClick={() => {
+                setMobileOpen(v => !v);
+                setMobileSearchOpen(false);
+              }}
               aria-label="Toggle menu"
             >
               {mobileOpen ? <X size={22} /> : <Menu size={22} />}
@@ -173,26 +190,31 @@ export default function Navbar() {
             </>
           )}
         </div>
+
+        {/* Mobile search popover (opened from icon near wishlist) */}
+        {mobileSearchOpen && (
+          <div className="navbar__search-popover">
+            <form className="navbar__search navbar__search--mobile" onSubmit={handleSearch}>
+              <div className="navbar__search-field">
+                <Search size={16} className="navbar__search-icon" />
+                <input
+                  type="text"
+                  className="navbar__search-input"
+                  placeholder="Search medicines, brands, health products"
+                  value={searchQ}
+                  onChange={e => setSearchQ(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              <button type="submit" className="navbar__search-btn">Search</button>
+            </form>
+          </div>
+        )}
       </nav>
 
-      {mobileOpen && <div className="navbar__backdrop" onClick={() => setMobileOpen(false)} />}
-
-      {/* Dedicated mobile search strip (always visible on mobile) */}
-      <div className="navbar__mobile-search-shell">
-        <form className="navbar__search navbar__search--mobile" onSubmit={handleSearch}>
-          <div className="navbar__search-field">
-            <Search size={16} className="navbar__search-icon" />
-            <input
-              type="text"
-              className="navbar__search-input"
-              placeholder="Search medicines, brands, health products"
-              value={searchQ}
-              onChange={e => setSearchQ(e.target.value)}
-            />
-          </div>
-          <button type="submit" className="navbar__search-btn">Search</button>
-        </form>
-      </div>
+      {(mobileOpen || mobileSearchOpen) && (
+        <div className="navbar__backdrop" onClick={() => { setMobileOpen(false); setMobileSearchOpen(false); }} />
+      )}
 
       <CartDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </>
