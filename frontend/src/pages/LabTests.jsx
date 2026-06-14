@@ -186,7 +186,7 @@ export default function LabTests() {
           <div className="lab-hero__text">
             <div className="lab-hero__badge">
               <FlaskConical size={13} />
-              <span>Batla MediLab — Certified Diagnostics</span>
+              <span>Health Hub MediLab — Certified Diagnostics</span>
             </div>
             <h1 className="lab-hero__title">
               Book Lab Tests<br />

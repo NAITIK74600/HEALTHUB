@@ -109,8 +109,8 @@ export default function TermsConditions() {
         <section>
           <h2>10. Intellectual Property</h2>
           <p>
-            All content on this Platform — including text, images, logos, and software — is the property of Batla
-            Medicos or its licencors and is protected by applicable intellectual property laws. You may not
+            All content on this Platform — including text, images, logos, and software — is the property of Health
+            Hub or its licensors and is protected by applicable intellectual property laws. You may not
             reproduce, distribute, or create derivative works without our written consent.
           </p>
         </section>

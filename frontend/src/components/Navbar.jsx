@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Menu, X, LogOut, ClipboardList, LayoutDashboard, Truck, Clock, Phone, Heart, FileText, Bell as BellIcon, User, FlaskConical, Search, MapPin } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -16,6 +16,15 @@ export default function Navbar() {
   const [searchQ, setSearchQ] = useState('');
   const navigate = useNavigate();
   const WHATSAPP = import.meta.env.VITE_WHATSAPP_NUMBER || '917303240289';
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [mobileOpen]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -44,7 +53,7 @@ export default function Navbar() {
       </div>
 
       {/* ── Main Navbar ──────────────────────────────────────── */}
-      <nav className="navbar">
+      <nav className={`navbar ${mobileOpen ? 'navbar--mobile-open' : ''}`}>
         <div className="navbar__inner">
           {/* Logo */}
           <Link to="/" className="navbar__brand" aria-label="Health Hub home">
@@ -166,17 +175,21 @@ export default function Navbar() {
         </div>
       </nav>
 
+      {mobileOpen && <div className="navbar__backdrop" onClick={() => setMobileOpen(false)} />}
+
       {/* Dedicated mobile search strip */}
-      <div className="navbar__mobile-search-shell">
+      <div className={`navbar__mobile-search-shell ${mobileOpen ? 'navbar__mobile-search-shell--hidden' : ''}`}>
         <form className="navbar__search navbar__search--mobile" onSubmit={handleSearch}>
-          <Search size={16} className="navbar__search-icon" />
-          <input
-            type="text"
-            className="navbar__search-input"
-            placeholder="Search medicines, brands, health products"
-            value={searchQ}
-            onChange={e => setSearchQ(e.target.value)}
-          />
+          <div className="navbar__search-field">
+            <Search size={16} className="navbar__search-icon" />
+            <input
+              type="text"
+              className="navbar__search-input"
+              placeholder="Search medicines, brands, health products"
+              value={searchQ}
+              onChange={e => setSearchQ(e.target.value)}
+            />
+          </div>
           <button type="submit" className="navbar__search-btn">Search</button>
         </form>
       </div>

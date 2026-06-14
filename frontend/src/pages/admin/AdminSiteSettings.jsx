@@ -41,12 +41,21 @@ const CLICK_EFFECTS = [
   { value: 'none',      label: 'No Effect',    desc: 'Standard click behavior'          },
 ];
 
-const STORAGE_KEY = 'batla_animation_settings';
+const STORAGE_KEY = 'healthhub_animation_settings';
+const LEGACY_STORAGE_KEY = 'batla_animation_settings';
 
 function getSettings() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) return JSON.parse(saved);
+
+    // Migrate old key seamlessly for existing admins.
+    const legacySaved = localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (legacySaved) {
+      localStorage.setItem(STORAGE_KEY, legacySaved);
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
+      return JSON.parse(legacySaved);
+    }
   } catch { /* ignore */ }
   return null;
 }
@@ -88,6 +97,7 @@ export default function AdminSiteSettings() {
   const reset = () => {
     setSettings(getDefaults());
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
     toast.success('Reset to default animations.');
   };
 
