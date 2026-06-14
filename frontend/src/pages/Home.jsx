@@ -423,80 +423,48 @@ export default function Home() {
         path="/"
       />
       {/* ══════════════════════════════ HERO ══════════════════════════════ */}
-      <section className="hero" ref={heroParallax}>
-        {/* Interactive particle canvas */}
-        <canvas ref={particleCanvasRef} className="hero__canvas" aria-hidden="true" />
-        <div className="hero__particles" aria-hidden="true" data-depth="3">
-          {[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].map(n => <div key={n} className={`hero__particle hero__particle--${n}`} />)}
-        </div>
-        {/* 3D floating geometric shapes */}
-        <div className="hero__shapes" aria-hidden="true" data-depth="2">
-          <div className="hero__shape hero__shape--1" />
-          <div className="hero__shape hero__shape--2" />
-          <div className="hero__shape hero__shape--3" />
-          <div className="hero__shape hero__shape--4" />
-          <div className="hero__shape hero__shape--5" />
-        </div>
-        <div className="hero__layout">
-          <HeroVisual />
-          <div className="hero__content" data-depth="0.5">
+      <section className="hero">
+        <div className="hero__split-wrap">
+          {/* ── Left: text + CTAs ── */}
+          <div className="hero__split-left">
             <span className="hero__tag">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 2v20M2 12h20"/></svg>
-              Now Open in Connaught Place
+              Your Trusted Neighbourhood Pharmacy
             </span>
-            <h1>Your Neighbourhood<br /><span className="red">Health Hub</span><br />Now Open</h1>
-            <p>Allopathic · Ayurvedic · Cosmetics · Baby Products · Surgical</p>
-            <div className="hero__actions">
+            <h1 className="hero__headline">
+              Your Health,<br />
+              <em>Our Priority</em>
+            </h1>
+            <p className="hero__sub-text">
+              Order medicines &amp; health products online with fast delivery at your doorstep in Connaught Place, New Delhi.
+            </p>
+            <div className="hero__trust-badges">
+              <span className="hero__trust-badge"><ShieldCheck size={15} /> 100% Genuine</span>
+              <span className="hero__trust-badge"><Truck size={15} /> Express Delivery</span>
+              <span className="hero__trust-badge"><Star size={15} /> Best Prices</span>
+            </div>
+            <div className="hero__split-actions">
               <Link to="/products" className="btn btn--primary btn--lg ripple-btn" onClick={ripple}>Shop Now <ChevronRight size={18} /></Link>
-              <Link to="/prescriptions" className="btn btn--ghost btn--lg ripple-btn" onClick={ripple}>
-                <FileText size={18} /> Upload Prescription
+              <Link to="/prescriptions" className="btn btn--outline btn--lg ripple-btn" onClick={ripple}>
+                <FileText size={16} /> Upload Prescription
               </Link>
             </div>
-            {/* ── Hero Search Bar ── */}
-            <div className="hero-search" ref={searchRef}>
-              <form className="hero-search__form" onSubmit={handleSearchSubmit}>
-                <Search size={18} className="hero-search__icon" />
-                <input
-                  type="text"
-                  className="hero-search__input"
-                  placeholder="Search medicines, health products, brands..."
-                  value={searchQuery}
-                  onChange={e => handleSearch(e.target.value)}
-                  onFocus={() => searchResults.length > 0 && setShowResults(true)}
-                />
-                {searchQuery && (
-                  <button type="button" className="hero-search__clear" onClick={() => { setSearchQuery(''); setSearchResults([]); setShowResults(false); }}>✕</button>
-                )}
-                <button type="submit" className="hero-search__btn ripple-btn" onClick={ripple}>Search</button>
-              </form>
-              {showResults && searchResults.length > 0 && createPortal(
-                <div className="hero-search__dropdown" style={dropdownStyle}>
-                  {searchResults.map(p => (
-                    <Link
-                      key={p._id}
-                      to={`/products/${p.slug}`}
-                      className="hero-search__result"
-                      onClick={() => setShowResults(false)}
-                    >
-                      {p.images?.[0] && <img src={p.images[0]} alt={p.name} className="hero-search__thumb" />}
-                      <div className="hero-search__info">
-                        <span className="hero-search__name">{p.name}</span>
-                        <span className="hero-search__price">₹{p.price} {p.mrp > p.price && <s>₹{p.mrp}</s>}</span>
-                      </div>
-                    </Link>
-                  ))}
-                  <Link to={`/products?search=${encodeURIComponent(searchQuery)}`} className="hero-search__all" onClick={() => setShowResults(false)}>
-                    View all results <ChevronRight size={14} />
-                  </Link>
-                </div>,
-                document.body
-              )}
-              {showResults && searchResults.length === 0 && searchQuery.trim() && createPortal(
-                <div className="hero-search__dropdown" style={dropdownStyle}>
-                  <div className="hero-search__empty">No products found for "{searchQuery}"</div>
-                </div>,
-                document.body
-              )}
+          </div>
+
+          {/* ── Right: promo card ── */}
+          <div className="hero__split-right">
+            <div className="hero__promo-wrap">
+              <div className="hero__promo-flat">FLAT</div>
+              <div className="hero__promo-pct">20<span>%</span></div>
+              <div className="hero__promo-off">OFF</div>
+              <div className="hero__promo-line">On First Order</div>
+              <div className="hero__promo-code-box">Use Code: HEALTH20</div>
+              <div className="hero__promo-note">*T&amp;C Apply</div>
+            </div>
+            <div className="hero__promo-pills">
+              <div className="hero__promo-pill">💊</div>
+              <div className="hero__promo-pill">🌿</div>
+              <div className="hero__promo-pill">🧴</div>
             </div>
           </div>
         </div>
