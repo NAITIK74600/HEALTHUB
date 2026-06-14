@@ -426,9 +426,6 @@ svg { flex-shrink: 0; }
     font-size: 13px;
     box-shadow: 0 6px 14px rgba(26, 188, 156, 0.25);
   }
-  .navbar__mobile-search-shell--hidden {
-    display: none !important;
-  }
 }
 
 /* My Account button */
@@ -608,7 +605,7 @@ svg { flex-shrink: 0; }
   display: flex !important;
   flex-direction: column;
   position: fixed;
-  top: var(--nav-h);
+  top: calc(var(--nav-h) + 68px);
   left: 0;
   right: 0;
   bottom: 0;
@@ -624,7 +621,7 @@ svg { flex-shrink: 0; }
 
 .navbar__backdrop {
   position: fixed;
-  top: var(--nav-h);
+  top: calc(var(--nav-h) + 68px);
   left: 0;
   right: 0;
   bottom: 0;

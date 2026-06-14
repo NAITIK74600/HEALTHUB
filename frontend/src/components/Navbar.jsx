@@ -177,8 +177,8 @@ export default function Navbar() {
 
       {mobileOpen && <div className="navbar__backdrop" onClick={() => setMobileOpen(false)} />}
 
-      {/* Dedicated mobile search strip */}
-      <div className={`navbar__mobile-search-shell ${mobileOpen ? 'navbar__mobile-search-shell--hidden' : ''}`}>
+      {/* Dedicated mobile search strip (always visible on mobile) */}
+      <div className="navbar__mobile-search-shell">
         <form className="navbar__search navbar__search--mobile" onSubmit={handleSearch}>
           <div className="navbar__search-field">
             <Search size={16} className="navbar__search-icon" />
