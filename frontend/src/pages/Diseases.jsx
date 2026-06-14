@@ -101,7 +101,7 @@ export default function Diseases() {
     <div className="diseases-page">
       <SEO
         title="Health Resource Center – Diseases, Symptoms & Medicines"
-        description="Browse common diseases and health conditions from A to Z. Find symptoms, causes, and related medicines available at Batla Medicos. Expert health information for informed decisions."
+        description="Browse common diseases and health conditions from A to Z. Find symptoms, causes, and related medicines available at Health Hub. Expert health information for informed decisions."
         path="/diseases"
       />
       <div className="diseases-header">

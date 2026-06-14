@@ -40,7 +40,7 @@ export default function InstallPrompt() {
   return (
     <div style={{
       position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999,
-      background: 'linear-gradient(135deg, #C0392B 0%, #96281B 100%)',
+      background: 'linear-gradient(135deg, #1ABC9C 0%, #16A085 100%)',
       color: '#fff', padding: '14px 20px',
       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
       boxShadow: '0 -4px 20px rgba(0,0,0,.25)',
@@ -55,12 +55,12 @@ export default function InstallPrompt() {
         style={{ borderRadius: 10, background: '#fff', padding: 2 }} />
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 700, fontSize: 15 }}>Install Batla Medicos</div>
+        <div style={{ fontWeight: 700, fontSize: 15 }}>Install Health Hub</div>
         <div style={{ fontSize: 12, opacity: .85 }}>Get the app for faster ordering & offline access</div>
       </div>
 
       <button onClick={handleInstall} style={{
-        background: '#fff', color: '#C0392B', border: 'none',
+        background: '#fff', color: '#16A085', border: 'none',
         borderRadius: 8, padding: '8px 18px', fontWeight: 700, fontSize: 14,
         cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
         whiteSpace: 'nowrap',

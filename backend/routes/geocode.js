@@ -30,10 +30,10 @@ router.get('/reverse', async (req, res) => {
     const data = await new Promise((resolve, reject) => {
       const req = https.get(url, {
         headers: {
-          'User-Agent':       'BatlaMedicos/1.0 (contact@batlamedicos.shop)',
+          'User-Agent':       'HealthHub/1.0 (support@healthub.site)',
           'Accept':           'application/json',
           'Accept-Language':  'en',
-          'Referer':          'https://batlamedicos.shop',
+          'Referer':          'https://healthub.site',
         },
         timeout: 12000,
       }, (response) => {

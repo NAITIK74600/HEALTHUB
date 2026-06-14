@@ -78,7 +78,7 @@ export default function Register() {
     try {
       const res = await verifyEmailOtp(registeredEmail, otpValue);
       setUser(res.data.user);
-      toast.success('Email verified! Welcome to Batla Medicos.');
+      toast.success('Email verified! Welcome to Health Hub.');
       navigate('/');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Invalid OTP. Please try again.');
@@ -122,10 +122,10 @@ export default function Register() {
                 style={{
                   width: 48, height: 56, textAlign: 'center', fontSize: '1.5rem', fontWeight: 700,
                   border: '2px solid var(--border,#e0e0e0)', borderRadius: 10,
-                  outline: 'none', color: '#C0392B',
+                  outline: 'none', color: '#16A085',
                   transition: 'border-color .2s',
                 }}
-                onFocus={e => e.target.style.borderColor = '#C0392B'}
+                onFocus={e => e.target.style.borderColor = '#1ABC9C'}
                 onBlur={e => e.target.style.borderColor = 'var(--border,#e0e0e0)'}
               />
             ))}
@@ -145,7 +145,7 @@ export default function Register() {
             <button
               onClick={onResendOtp}
               disabled={resendLoading}
-              style={{ background: 'none', border: 'none', color: '#C0392B', cursor: 'pointer', fontWeight: 600, padding: 0, fontSize: 'inherit' }}
+              style={{ background: 'none', border: 'none', color: '#16A085', cursor: 'pointer', fontWeight: 600, padding: 0, fontSize: 'inherit' }}
             >
               {resendLoading ? 'Sending...' : 'Resend OTP'}
             </button>
@@ -166,7 +166,7 @@ export default function Register() {
       <div className="auth-card">
         {/* Logo */}
         <div className="auth-card__logo">
-          <img src="/logo.png" alt="Batla Medicos" className="auth-card__logo-img" />
+          <img src="/logo.jpg" alt="Health Hub" className="auth-card__logo-img" />
           <div className="auth-card__subtitle">Chemist &amp; Cosmetics</div>
         </div>
 

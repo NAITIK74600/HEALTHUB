@@ -84,14 +84,14 @@ const DeliveryLayout = () => (
   <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
     <div style={{
       background: '#fff',
-      borderBottom: '2px solid #c0392b',
+      borderBottom: '2px solid #1ABC9C',
       padding: '12px 24px',
       display: 'flex',
       alignItems: 'center',
       gap: '10px',
     }}>
-      <Truck size={20} color="#c0392b" />
-      <span style={{ fontWeight: 700, fontSize: '15px', color: '#c0392b' }}>Batla Medicos</span>
+      <Truck size={20} color="#1ABC9C" />
+      <span style={{ fontWeight: 700, fontSize: '15px', color: '#1ABC9C' }}>Health Hub</span>
       <span style={{ color: '#6b7280', fontSize: '13px', marginLeft: '4px' }}>· Delivery Partner Portal</span>
     </div>
     <Outlet />

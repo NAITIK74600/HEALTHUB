@@ -55,7 +55,7 @@ export default function NotificationBell({ adminMode = false }) {
         // Find the first unread notification to show
         const first = incoming.find(n => !n.is_read && !n.isRead);
         if (first) {
-          new Notification(first.title || 'Batla Medicos', { body: first.message || '', icon: '/favicon.ico' });
+          new Notification(first.title || 'Health Hub', { body: first.message || '', icon: '/favicon.ico' });
         }
       }
       prevUnreadRef.current = newUnread;

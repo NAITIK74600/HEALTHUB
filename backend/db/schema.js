@@ -15,6 +15,7 @@ async function ensureCoreSchema() {
       name VARCHAR(150) NOT NULL,
       slug VARCHAR(160) NOT NULL,
       icon VARCHAR(255) NULL,
+      image_url VARCHAR(500) NULL,
       ord INT NOT NULL DEFAULT 0,
       is_deleted TINYINT(1) NOT NULL DEFAULT 0,
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -354,6 +355,11 @@ async function ensureCoreSchema() {
   `);
 
   await execute(`ALTER TABLE offers ADD COLUMN display_on VARCHAR(20) NOT NULL DEFAULT 'both'`).catch(() => {});
+  await execute(`ALTER TABLE offers ADD COLUMN discount_pct TINYINT UNSIGNED NULL`).catch(() => {});
+  await execute(`ALTER TABLE offers ADD COLUMN promo_code VARCHAR(50) NULL`).catch(() => {});
+  await execute(`ALTER TABLE offers ADD COLUMN media_type VARCHAR(10) NOT NULL DEFAULT 'card'`).catch(() => {});
+  await execute(`ALTER TABLE offers ADD COLUMN promo_subtext VARCHAR(200) NULL`).catch(() => {});
+  await execute(`ALTER TABLE offers ADD COLUMN video_url VARCHAR(500) NULL`).catch(() => {});
 
   await execute(`
     CREATE TABLE IF NOT EXISTS prescriptions (
@@ -406,6 +412,11 @@ async function ensureCoreSchema() {
   // e.g. Dolo: primary = caps-tabs, secondary = [allopathic]
   await execute(`
     ALTER TABLE products ADD COLUMN secondary_category_ids JSON NULL DEFAULT NULL
+  `).catch(() => {});
+
+  // Category image — real photo shown on storefront category tiles (admin-uploaded)
+  await execute(`
+    ALTER TABLE categories ADD COLUMN image_url VARCHAR(500) NULL DEFAULT NULL
   `).catch(() => {});
 
   // ── Performance & data-integrity migrations ───────────────────────────────────────────

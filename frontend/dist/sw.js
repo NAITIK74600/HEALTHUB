@@ -1,10 +1,10 @@
-// Batla Medicos – Service Worker (Cache-first for static, network-first for API)
-const CACHE_NAME = 'batla-medicos-v2';
+// Health Hub – Service Worker (Cache-first for static, network-first for API)
+const CACHE_NAME = 'healthhub-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/logo.png',
+  '/logo.jpg',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
 ];
@@ -47,11 +47,7 @@ self.addEventListener('fetch', (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           return res;
         })
-        .catch(() =>
-          caches.match('/index.html').then(
-            (r) => r || new Response('<html><body>Offline</body></html>', { status: 200, headers: { 'Content-Type': 'text/html' } })
-          )
-        )
+        .catch(() => caches.match('/index.html'))
     );
     return;
   }
@@ -60,15 +56,13 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;
-      return fetch(request)
-        .then((res) => {
-          if (res.ok) {
-            const clone = res.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return res;
-        })
-        .catch(() => new Response('', { status: 404, statusText: 'Not Found' }));
+      return fetch(request).then((res) => {
+        if (res.ok) {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+        }
+        return res;
+      });
     })
   );
 });
