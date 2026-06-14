@@ -62,9 +62,7 @@
   RewriteCond %{HTTPS} off
   RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
-  # Proxy /api/* to Node.js backend on port 5000
-  RewriteCond %{REQUEST_URI} ^/api/ [NC]
-  RewriteRule ^api/(.*)$ http://localhost:5000/api/$1 [P,L,QSA]
+  # NOTE: /api/* is handled by Node.js app (Passenger) — no mod_proxy needed
 
   # Don't rewrite existing files or directories
   RewriteCond %{REQUEST_FILENAME} !-f
