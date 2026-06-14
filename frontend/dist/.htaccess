@@ -54,6 +54,10 @@
 </IfModule>
 
 # ── React Router SPA — all routes → index.html ───────────────────────────────
+# ── Force all requests through Passenger (Node.js) ───────────────────────────
+PassengerEnabled On
+
+# ── HTTPS redirect ────────────────────────────────────────────────────────────
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
