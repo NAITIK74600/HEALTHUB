@@ -203,6 +203,15 @@ export default function Home() {
   }, []);
   const dealTilt = useTilt3D({ maxTilt: 6, perspective: 1000 });
   const [offers, setOffers]         = useState([]);
+  const [heroSlides, setHeroSlides] = useState([]);
+  const [heroIdx, setHeroIdx]       = useState(0);
+
+  // Auto-advance hero slideshow
+  useEffect(() => {
+    if (heroSlides.length < 2) return;
+    const t = setInterval(() => setHeroIdx(i => (i + 1) % heroSlides.length), 4000);
+    return () => clearInterval(t);
+  }, [heroSlides]);
   const [categories, setCategories] = useState([]);
   const [featured, setFeatured]     = useState([]);
   const [newArrivals, setNewArrivals] = useState([]);
@@ -405,6 +414,9 @@ export default function Home() {
         if (deal.endDate) setDealEndDate(new Date(deal.endDate));
       }
     }).catch(() => {});
+    getActiveOffers('hero').then(r => {
+      setHeroSlides(r.data.offers || []);
+    }).catch(() => {});
     getCategories().then(r => setCategories(r.data.categories || [])).catch(() => {});
     getProducts({ limit: 8, sort: 'newest' }).then(r => setNewArrivals(r.data.products || [])).catch(() => {});
     getProducts({ limit: 8, sort: 'price_asc' }).then(r => setFeatured(r.data.products || [])).catch(() => {});
@@ -451,21 +463,93 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ── Right: promo card ── */}
+          {/* ── Right: promo card / hero carousel ── */}
           <div className="hero__split-right">
-            <div className="hero__promo-wrap">
-              <div className="hero__promo-flat">FLAT</div>
-              <div className="hero__promo-pct">20<span>%</span></div>
-              <div className="hero__promo-off">OFF</div>
-              <div className="hero__promo-line">On First Order</div>
-              <div className="hero__promo-code-box">Use Code: HEALTH20</div>
-              <div className="hero__promo-note">*T&amp;C Apply</div>
-            </div>
-            <div className="hero__promo-pills">
-              <div className="hero__promo-pill">💊</div>
-              <div className="hero__promo-pill">🌿</div>
-              <div className="hero__promo-pill">🧴</div>
-            </div>
+            {heroSlides.length > 0 ? (
+              /* ── DB-driven slideshow ── */
+              <div className="hero__carousel">
+                <div className="hero__carousel-track">
+                  {heroSlides.map((slide, i) => (
+                    <div
+                      key={slide._id}
+                      className={`hero__carousel-slide${i === heroIdx ? ' hero__carousel-slide--active' : ''}`}
+                    >
+                      {slide.mediaType === 'video' ? (
+                        /* Video slide */
+                        <div className="hero__slide-video-wrap">
+                          {slide.videoUrl?.includes('youtube') || slide.videoUrl?.includes('youtu.be') ? (
+                            <iframe
+                              src={slide.videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'www.youtube.com/embed/')}
+                              title={slide.title}
+                              allow="autoplay; muted"
+                              allowFullScreen
+                              className="hero__slide-video"
+                            />
+                          ) : (
+                            <video
+                              src={slide.videoUrl}
+                              autoPlay muted loop playsInline
+                              className="hero__slide-video"
+                            />
+                          )}
+                          {slide.title && <div className="hero__slide-caption">{slide.title}</div>}
+                        </div>
+                      ) : slide.mediaType === 'image' ? (
+                        /* Image slide */
+                        <div className="hero__slide-img-wrap">
+                          <img src={slide.imageUrl} alt={slide.title} className="hero__slide-img" />
+                          {slide.title && <div className="hero__slide-caption">{slide.title}</div>}
+                        </div>
+                      ) : (
+                        /* Card slide (discount + promo code) */
+                        <a
+                          href={slide.link || '/products'}
+                          className="hero__promo-wrap hero__promo-wrap--link"
+                          onClick={e => { if (slide.link?.startsWith('/')) { e.preventDefault(); navigate(slide.link); } }}
+                        >
+                          {slide.discountPct && <>
+                            <div className="hero__promo-flat">FLAT</div>
+                            <div className="hero__promo-pct">{slide.discountPct}<span>%</span></div>
+                            <div className="hero__promo-off">OFF</div>
+                          </>}
+                          {!slide.discountPct && slide.title && (
+                            <div className="hero__promo-big-text">{slide.title}</div>
+                          )}
+                          {slide.promoSubtext && <div className="hero__promo-line">{slide.promoSubtext}</div>}
+                          {slide.promoCode && (
+                            <div className="hero__promo-code-box">Use Code: {slide.promoCode}</div>
+                          )}
+                          {slide.description && <div className="hero__promo-note">{slide.description}</div>}
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {/* Dots */}
+                {heroSlides.length > 1 && (
+                  <div className="hero__slide-dots">
+                    {heroSlides.map((_, i) => (
+                      <button
+                        key={i}
+                        className={`hero__slide-dot${i === heroIdx ? ' hero__slide-dot--active' : ''}`}
+                        onClick={() => setHeroIdx(i)}
+                        aria-label={`Slide ${i + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* ── Fallback: local pharmacy image ── */
+              <div className="hero__static-slides">
+                <img
+                  src="/hero-pharmacy.png"
+                  alt="Health Hub Pharmacy"
+                  className="hero__static-img"
+                  style={{ opacity: 1, animation: 'none' }}
+                />
+              </div>
+            )}
           </div>
         </div>
       </section>

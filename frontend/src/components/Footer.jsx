@@ -47,6 +47,56 @@ export default function Footer() {
               <span key={s} className="footer__service-chip"><Shield size={10} /> {s}</span>
             ))}
           </div>
+          {/* Payment accepted */}
+          <div className="footer__pay-row">
+            <span className="footer__pay-label">Accepted Payments</span>
+            <div className="footer__pay-logos">
+              {/* Visa */}
+              <span className="footer__pay-logo" title="Visa">
+                <svg viewBox="0 0 60 20" width="42" height="14" xmlns="http://www.w3.org/2000/svg">
+                  <text x="1" y="16" fontFamily="'Arial Black',Arial" fontWeight="900" fontSize="17" fontStyle="italic" fill="#1A1F71">VISA</text>
+                </svg>
+              </span>
+              {/* Mastercard */}
+              <span className="footer__pay-logo" title="Mastercard">
+                <svg viewBox="0 0 40 26" width="36" height="26" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="14" cy="13" r="11" fill="#EB001B"/>
+                  <circle cx="26" cy="13" r="11" fill="#F79E1B"/>
+                  <path d="M20 4.8a11 11 0 010 16.4A11 11 0 0120 4.8z" fill="#FF5F00"/>
+                </svg>
+              </span>
+              {/* RuPay */}
+              <span className="footer__pay-logo footer__pay-logo--text" title="RuPay">
+                <span style={{color:'#007B3E', fontWeight:900, fontSize:11}}>Ru</span><span style={{color:'#F7941D', fontWeight:900, fontSize:11}}>Pay</span>
+              </span>
+              {/* UPI */}
+              <span className="footer__pay-logo footer__pay-logo--text" title="UPI">
+                <svg viewBox="0 0 40 20" width="36" height="18" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="0" y="0" width="40" height="20" rx="3" fill="white"/>
+                  <text x="5" y="14" fontFamily="'Arial Black',Arial" fontWeight="900" fontSize="12" fill="#097939">UPI</text>
+                  <circle cx="33" cy="10" r="5" fill="#FF6B35"/>
+                </svg>
+              </span>
+              {/* Paytm */}
+              <span className="footer__pay-logo" title="Paytm">
+                <svg viewBox="0 0 52 20" width="46" height="20" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="52" height="20" rx="3" fill="#00BAF2"/>
+                  <text x="4" y="14" fontFamily="Arial,sans-serif" fontWeight="900" fontSize="11" fill="white">Pay</text>
+                  <rect x="28" y="0" width="24" height="20" rx="0" fill="#012970"/>
+                  <text x="30" y="14" fontFamily="Arial,sans-serif" fontWeight="900" fontSize="11" fill="white">TM</text>
+                </svg>
+              </span>
+              {/* COD */}
+              <span className="footer__pay-logo footer__pay-logo--cod" title="Cash on Delivery">
+                <svg viewBox="0 0 16 16" width="13" height="13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="1" y="4" width="14" height="9" rx="2" stroke="#166534" strokeWidth="1.4"/>
+                  <circle cx="8" cy="8.5" r="2" stroke="#166534" strokeWidth="1.4"/>
+                  <path d="M4 4V3a2 2 0 014 0v1" stroke="#166534" strokeWidth="1.4"/>
+                </svg>
+                COD
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* ── Column 2: Store Info ── */}

@@ -355,6 +355,11 @@ async function ensureCoreSchema() {
   `);
 
   await execute(`ALTER TABLE offers ADD COLUMN display_on VARCHAR(20) NOT NULL DEFAULT 'both'`).catch(() => {});
+  await execute(`ALTER TABLE offers ADD COLUMN discount_pct TINYINT UNSIGNED NULL`).catch(() => {});
+  await execute(`ALTER TABLE offers ADD COLUMN promo_code VARCHAR(50) NULL`).catch(() => {});
+  await execute(`ALTER TABLE offers ADD COLUMN media_type VARCHAR(10) NOT NULL DEFAULT 'card'`).catch(() => {});
+  await execute(`ALTER TABLE offers ADD COLUMN promo_subtext VARCHAR(200) NULL`).catch(() => {});
+  await execute(`ALTER TABLE offers ADD COLUMN video_url VARCHAR(500) NULL`).catch(() => {});
 
   await execute(`
     CREATE TABLE IF NOT EXISTS prescriptions (
